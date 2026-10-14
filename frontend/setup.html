@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scoreboard - Tournament & Roster Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="console-page">
+    <!-- Top bar -->
+    <header class="top-bar">
+      <div class="brand-and-tabs">
+        <a href="console.html" class="brand" aria-label="Scoreboard Home">
+          <span class="brand-bar" aria-hidden="true"></span>
+          <span>SCOREBOARD</span>
+        </a>
+        <nav class="nav-tabs" aria-label="Main Navigation">
+          <a href="console.html" class="nav-tab-link">Live</a>
+          <a href="calibrate.html" class="nav-tab-link">Calibrate</a>
+          <a href="setup.html" class="nav-tab-link active">Setup</a>
+          <a href="history.html" class="nav-tab-link">History</a>
+          <a href="output.html" class="nav-tab-link">Output</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="live-match-text">LIVE · Match 3 of 6</span>
+      </div>
+    </header>
+
+    <!-- Status strip -->
+    <div class="status-strip-wrapper">
+      <div class="status-panel">
+        <div class="stat-item">
+          <div class="stat-value">8</div>
+          <div class="stat-label">TEAMS ACTIVE</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">32</div>
+          <div class="stat-label">ROSTER PLAYERS</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">3 of 6</div>
+          <div class="stat-label">CURRENT MATCH</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">ERANGEL</div>
+          <div class="stat-label">MAP</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">1 PT</div>
+          <div class="stat-label">KILL VALUE</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value amber">BGIS 10-PTS</div>
+          <div class="stat-label">POINTS SYSTEM</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
+        <div class="setup-grid">
+          <!-- Left: Tournament & Rules Configuration -->
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Match Settings -->
+            <section class="panel" style="padding: 20px;">
+              <div class="panel-header" style="height: auto; padding: 0 0 16px 0;">
+                <span class="panel-title">MATCH & LOBBY CONFIGURATION</span>
+                <span class="chip chip-teal">Match 3</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label" for="tourney-name">Tournament Title</label>
+                  <input type="text" id="tourney-name" class="form-input" value="BGMI Invitational Scrims Season 4">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="map-select">Active Map</label>
+                  <select id="map-select" class="form-select">
+                    <option selected>Erangel (Classic)</option>
+                    <option>Miramar (Desert)</option>
+                    <option>Sanhok (Rainforest)</option>
+                    <option>Vikendi (Snow)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label" for="match-cur">Current Match Number</label>
+                  <input type="number" id="match-cur" class="form-input" value="3" min="1" max="20">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="match-total">Total Matches in Day</label>
+                  <input type="number" id="match-total" class="form-input" value="6" min="1" max="20">
+                </div>
+              </div>
+            </section>
+
+            <!-- Points Table Rules -->
+            <section class="panel" style="padding: 20px;">
+              <div class="panel-header" style="height: auto; padding: 0 0 16px 0;">
+                <span class="panel-title">PLACEMENT & KILL POINTS TABLE</span>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Standard BGIS Preset loaded')">Standard Scrim</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="alert('15-pt PMCO Preset loaded')">15-Pts PMCO</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Points Per Kill: <span style="color: var(--amber); font-weight: 700;">1 Point</span></label>
+                <input type="number" class="form-input" value="1" min="1" max="5" style="max-width: 140px;">
+              </div>
+
+              <label class="form-label" style="margin-bottom: 8px; display: block;">Placement Points Matrix</label>
+              <div class="points-table-config-grid">
+                <div class="pts-config-item">
+                  <span class="pts-config-rank">#1 WWCD</span>
+                  <input type="number" class="pts-config-val" value="10">
+                </div>
+                <div class="pts-config-item">
+                  <span class="pts-config-rank">#2 Place</span>
+                  <input type="number" class="pts-config-val" value="6">
+                </div>
+                <div class="pts-config-item">
+                  <span class="pts-config-rank">#3 Place</span>
+                  <input type="number" class="pts-config-val" value="5">
+                </div>
+                <div class="pts-config-item">
+                  <span class="pts-config-rank">#4 Place</span>
+                  <input type="number" class="pts-config-val" value="4">
+                </div>
+                <div class="pts-config-item">
+                  <span class="pts-config-rank">#5 Place</span>
+                  <input type="number" class="pts-config-val" value="3">
+                </div>
+                <div class="pts-config-item">
+                  <span class="pts-config-rank">#6 Place</span>
+                  <input type="number" class="pts-config-val" value="2">
+                </div>
+                <div class="pts-config-item">
+                  <span class="pts-config-rank">#7 Place</span>
+                  <input type="number" class="pts-config-val" value="1">
+                </div>
+                <div class="pts-config-item">
+                  <span class="pts-config-rank">#8 Place</span>
+                  <input type="number" class="pts-config-val" value="1">
+                </div>
+              </div>
+
+              <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary">Discard Changes</button>
+                <button type="button" class="btn btn-primary" onclick="alert('Configuration saved successfully!')">Save Scoring Rules</button>
+              </div>
+            </section>
+          </div>
+
+          <!-- Right: Team Roster & Alias Manager -->
+          <section class="panel" style="padding: 20px; display: flex; flex-direction: column;">
+            <div class="panel-header" style="height: auto; padding: 0 0 16px 0;">
+              <span class="panel-title">TEAM ROSTERS & ALIASES</span>
+              <button type="button" class="btn btn-secondary btn-sm">+ Add Team</button>
+            </div>
+
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 14px;">
+              Aliases allow OCR to accurately match typo-heavy in-game player fonts to official rosters.
+            </p>
+
+            <table class="roster-table">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Color</th>
+                  <th>Players & OCR Aliases</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong style="color: var(--text);">KRAIT</strong></td>
+                  <td><span class="team-color-bar" style="background-color: #FF7A45;"></span></td>
+                  <td>
+                    <span style="font-weight: 600;">Ravi</span> <span style="color: var(--muted); font-size: 12px;">(Rav1, R4VI)</span>,
+                    <span style="font-weight: 600;">Kabir</span>,
+                    <span style="font-weight: 600;">Arjun</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">NOVA</strong></td>
+                  <td><span class="team-color-bar" style="background-color: #4DA3FF;"></span></td>
+                  <td>
+                    <span style="font-weight: 600;">Aarav</span> <span style="color: var(--muted); font-size: 12px;">(Aar4v, NOVA_A)</span>,
+                    <span style="font-weight: 600;">Rahul</span>,
+                    <span style="font-weight: 600;">Vicky</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">ZENITH</strong></td>
+                  <td><span class="team-color-bar" style="background-color: #A78BFA;"></span></td>
+                  <td>
+                    <span style="font-weight: 600;">Sam</span> <span style="color: var(--muted); font-size: 12px;">(5am, Z3NlTH_Sam)</span>,
+                    <span style="font-weight: 600;">Rex</span>,
+                    <span style="font-weight: 600;">Max</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">VORTEX</strong></td>
+                  <td><span class="team-color-bar" style="background-color: #2DD4BF;"></span></td>
+                  <td>
+                    <span style="font-weight: 600;">Isha</span> <span style="color: var(--muted); font-size: 12px;">(lsha, V0RT3X_lsha)</span>,
+                    <span style="font-weight: 600;">Ron</span>,
+                    <span style="font-weight: 600;">Karan</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">ASHEN</strong></td>
+                  <td><span class="team-color-bar" style="background-color: #F472B6;"></span></td>
+                  <td>
+                    <span style="font-weight: 600;">Kabir</span> <span style="color: var(--muted); font-size: 12px;">(K4bir)</span>,
+                    <span style="font-weight: 600;">Rishi</span>,
+                    <span style="font-weight: 600;">Aman</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">MIRAGE</strong></td>
+                  <td><span class="team-color-bar" style="background-color: #84CC16;"></span></td>
+                  <td>
+                    <span style="font-weight: 600;">Rohan</span>,
+                    <span style="font-weight: 600;">Tara</span>,
+                    <span style="font-weight: 600;">Sid</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">TALON</strong></td>
+                  <td><span class="team-color-bar" style="background-color: #FACC15;"></span></td>
+                  <td>
+                    <span style="font-weight: 600;">Dev</span> <span style="color: var(--muted); font-size: 12px;">(D3v)</span>,
+                    <span style="font-weight: 600;">Rocky</span>,
+                    <span style="font-weight: 600;">Sunny</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="color: var(--text);">OBSIDIAN</strong></td>
+                  <td><span class="team-color-bar" style="background-color: #94A3B8;"></span></td>
+                  <td>
+                    <span style="font-weight: 600;">Neel</span> <span style="color: var(--muted); font-size: 12px;">(N3el)</span>,
+                    <span style="font-weight: 600;">Aryan</span>,
+                    <span style="font-weight: 600;">Veer</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
