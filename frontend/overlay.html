@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay - Live Points Table</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body style="background-color: #05070a; margin: 0; padding: 0;">
+  <div class="overlay-stage-wrapper">
+    <div class="overlay-stage">
+      <!-- Live Points Table -->
+      <div class="overlay-table">
+        <div class="overlay-header">
+          <span class="overlay-title">MATCH 3 · LIVE</span>
+          <div class="overlay-header-cols">
+            <span style="width: 56px; text-align: right;">KILLS</span>
+            <span style="width: 64px; text-align: right;">PTS</span>
+          </div>
+        </div>
+
+        <!-- Row 1: KRAIT -->
+        <div class="overlay-row">
+          <div class="overlay-rank">1</div>
+          <span class="overlay-bar" style="background-color: #FF7A45;"></span>
+          <div class="overlay-name">KRAIT</div>
+          <div class="overlay-kills">11</div>
+          <div class="overlay-pts amber">23</div>
+        </div>
+
+        <!-- Row 2: NOVA -->
+        <div class="overlay-row">
+          <div class="overlay-rank">2</div>
+          <span class="overlay-bar" style="background-color: #4DA3FF;"></span>
+          <div class="overlay-name">NOVA</div>
+          <div class="overlay-kills">9</div>
+          <div class="overlay-pts">19</div>
+        </div>
+
+        <!-- Row 3: ZENITH -->
+        <div class="overlay-row">
+          <div class="overlay-rank">3</div>
+          <span class="overlay-bar" style="background-color: #A78BFA;"></span>
+          <div class="overlay-name">ZENITH</div>
+          <div class="overlay-kills">8</div>
+          <div class="overlay-pts">17</div>
+        </div>
+
+        <!-- Row 4: VORTEX -->
+        <div class="overlay-row">
+          <div class="overlay-rank">4</div>
+          <span class="overlay-bar" style="background-color: #2DD4BF;"></span>
+          <div class="overlay-name">VORTEX</div>
+          <div class="overlay-kills">7</div>
+          <div class="overlay-pts">15</div>
+        </div>
+
+        <!-- Row 5: ASHEN -->
+        <div class="overlay-row">
+          <div class="overlay-rank">5</div>
+          <span class="overlay-bar" style="background-color: #F472B6;"></span>
+          <div class="overlay-name">ASHEN</div>
+          <div class="overlay-kills">8</div>
+          <div class="overlay-pts">14</div>
+        </div>
+
+        <!-- Row 6: MIRAGE -->
+        <div class="overlay-row">
+          <div class="overlay-rank">6</div>
+          <span class="overlay-bar" style="background-color: #84CC16;"></span>
+          <div class="overlay-name">MIRAGE</div>
+          <div class="overlay-kills">6</div>
+          <div class="overlay-pts">11</div>
+        </div>
+
+        <!-- Row 7: TALON -->
+        <div class="overlay-row">
+          <div class="overlay-rank">7</div>
+          <span class="overlay-bar" style="background-color: #FACC15;"></span>
+          <div class="overlay-name">TALON</div>
+          <div class="overlay-kills">5</div>
+          <div class="overlay-pts">9</div>
+        </div>
+
+        <!-- Row 8: OBSIDIAN -->
+        <div class="overlay-row">
+          <div class="overlay-rank">8</div>
+          <span class="overlay-bar" style="background-color: #94A3B8;"></span>
+          <div class="overlay-name">OBSIDIAN</div>
+          <div class="overlay-kills">4</div>
+          <div class="overlay-pts">7</div>
+        </div>
+      </div>
+
+      <!-- Kill-Feed Region Box -->
+      <div class="killfeed-box">
+        <div class="killfeed-label">KILL-FEED REGION</div>
+
+        <div class="killfeed-item" style="top: 20px;">
+          <span><strong>KRAIT</strong> Ravi <span style="color: #8B95A3; margin: 0 4px;">›</span> <strong>ZENITH</strong> Sam</span>
+          <span class="killfeed-weapon">M416</span>
+        </div>
+
+        <div class="killfeed-item" style="top: 66px;">
+          <span><strong>NOVA</strong> Aarav <span style="color: #8B95A3; margin: 0 4px;">›</span> <strong>ASHEN</strong> Kabir</span>
+          <span class="killfeed-weapon">AWM</span>
+        </div>
+
+        <div class="killfeed-item" style="top: 112px;">
+          <span><strong>VORTEX</strong> Isha <span style="color: #8B95A3; margin: 0 4px;">›</span> <strong>TALON</strong> Dev</span>
+          <span class="killfeed-weapon">SCAR-L</span>
+        </div>
+
+        <div class="killfeed-item" style="top: 158px;">
+          <span><strong>MIRAGE</strong> Rohan <span style="color: #8B95A3; margin: 0 4px;">›</span> <strong>OBSIDIAN</strong> Neel</span>
+          <span class="killfeed-weapon">Grenade</span>
+        </div>
+      </div>
+
+      <!-- Bottom Caption -->
+      <div class="overlay-caption">
+        Stream canvas placeholder · the overlay is a transparent OBS browser source
+      </div>
+    </div>
+  </div>
+</body>
+</html>
