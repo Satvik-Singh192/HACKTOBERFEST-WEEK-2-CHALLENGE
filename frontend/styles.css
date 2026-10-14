@@ -754,104 +754,127 @@ button:active {
   outline-offset: 2px;
 }
 
-/* MVP Card */
-.mvp-banner {
+/* ==========================================================================
+   KILL & KNOCK FOCUSED STAT CARDS
+   ========================================================================== */
+
+.stat-cards-trio {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 20px 20px 20px;
+}
+
+.highlight-stat-card {
   background: #11161e;
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 16px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   position: relative;
   overflow: hidden;
 }
 
-.mvp-badge-tag {
-  background-color: var(--amber);
-  color: var(--text-on-amber);
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  padding: 2px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  display: inline-block;
+.highlight-stat-card.fragger {
+  border-left: 4px solid var(--amber);
 }
 
-.mvp-avatar {
-  width: 56px;
-  height: 56px;
+.highlight-stat-card.top-team {
+  border-left: 4px solid #FF7A45;
+}
+
+.highlight-stat-card.most-knocked {
+  border-left: 4px solid var(--danger-text);
+}
+
+.highlight-card-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.highlight-icon-circle {
+  width: 48px;
+  height: 48px;
   border-radius: 8px;
   background: #1d242d;
-  border: 2px solid var(--amber);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.highlight-icon-circle.amber {
   color: var(--amber);
+  border: 1px solid rgba(255, 176, 32, 0.3);
 }
 
-.mvp-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.highlight-icon-circle.team {
+  color: #FF7A45;
+  border: 1px solid rgba(255, 122, 69, 0.3);
 }
 
-.mvp-name-row {
+.highlight-icon-circle.danger {
+  color: var(--danger-text);
+  border: 1px solid rgba(255, 154, 154, 0.3);
+}
+
+.highlight-label-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.highlight-primary-text {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: 0.04em;
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: 2px;
 }
 
-.mvp-player-name {
+.highlight-sub-text {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.highlight-count-badge {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.highlight-count-number {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 20px;
-  color: var(--text);
-  letter-spacing: 0.05em;
+  font-size: 34px;
+  line-height: 1;
 }
 
-.mvp-team-pill {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: #1A1200;
-}
-
-.mvp-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.mvp-stat-box {
-  background: #0B0E12;
-  border: 1px solid var(--divider);
-  border-radius: 6px;
-  padding: 6px 10px;
-  text-align: center;
-}
-
-.mvp-stat-val {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--text);
-  line-height: 1.1;
-}
-
-.mvp-stat-val.amber {
+.highlight-count-number.amber {
   color: var(--amber);
 }
 
-.mvp-stat-lbl {
-  font-size: 10px;
-  font-weight: 600;
+.highlight-count-number.orange {
+  color: #FF7A45;
+}
+
+.highlight-count-number.danger {
+  color: var(--danger-text);
+}
+
+.highlight-count-unit {
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
