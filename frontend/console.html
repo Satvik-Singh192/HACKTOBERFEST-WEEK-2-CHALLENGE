@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scoreboard - Operator Console</title>
+  <title>Scoreboard - Operator Console (Live)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -14,16 +14,16 @@
     <!-- Top bar -->
     <header class="top-bar">
       <div class="brand-and-tabs">
-        <a href="#live" class="brand" aria-label="Scoreboard Home">
+        <a href="console.html" class="brand" aria-label="Scoreboard Home">
           <span class="brand-bar" aria-hidden="true"></span>
           <span>SCOREBOARD</span>
         </a>
         <nav class="nav-tabs" aria-label="Main Navigation">
-          <button class="nav-tab active" type="button">Live</button>
-          <button class="nav-tab" type="button">Calibrate</button>
-          <button class="nav-tab" type="button">Setup</button>
-          <button class="nav-tab" type="button">History</button>
-          <button class="nav-tab" type="button">Output</button>
+          <a href="console.html" class="nav-tab-link active">Live</a>
+          <a href="calibrate.html" class="nav-tab-link">Calibrate</a>
+          <a href="setup.html" class="nav-tab-link">Setup</a>
+          <a href="history.html" class="nav-tab-link">History</a>
+          <a href="output.html" class="nav-tab-link">Output</a>
         </nav>
       </div>
       <div class="top-bar-right">
@@ -189,67 +189,160 @@
         </div>
       </section>
 
-      <!-- Right: Detected events & Review queue -->
+      <!-- Right: Esports Intelligence: MVP, Top Fraggers, Frag Dominance & Review Queue -->
       <div class="col-right">
-        <!-- Detected Events Panel -->
-        <section class="panel" aria-label="Detected Events Section">
+        <!-- MATCH MVP SPOTLIGHT -->
+        <section class="panel" aria-label="Match MVP Section">
           <div class="panel-header">
-            <span class="panel-title">DETECTED EVENTS</span>
-            <span class="panel-subtitle">Newest first</span>
+            <span class="panel-title">MATCH MVP SPOTLIGHT</span>
+            <span class="mvp-badge-tag">Current Leader</span>
           </div>
-
-          <!-- Event 1 -->
-          <div class="event-row">
-            <span class="event-time">12:41:08</span>
-            <span class="event-players">
-              <span class="event-team">KRAIT</span> Ravi<span class="event-sep">›</span><span class="event-team">ZENITH</span> Sam
-            </span>
-            <span class="event-weapon">M416</span>
-            <span class="event-conf">98%</span>
-          </div>
-
-          <!-- Event 2 -->
-          <div class="event-row">
-            <span class="event-time">12:40:52</span>
-            <span class="event-players">
-              <span class="event-team">NOVA</span> Aarav<span class="event-sep">›</span><span class="event-team">ASHEN</span> Kabir
-            </span>
-            <span class="event-weapon">AWM</span>
-            <span class="event-conf">96%</span>
-          </div>
-
-          <!-- Event 3 -->
-          <div class="event-row">
-            <span class="event-time">12:40:31</span>
-            <span class="event-players">
-              <span class="event-team">VORTEX</span> Isha<span class="event-sep">›</span><span class="event-team">TALON</span> Dev
-            </span>
-            <span class="event-weapon">SCAR-L</span>
-            <span class="event-conf">93%</span>
-          </div>
-
-          <!-- Event 4 -->
-          <div class="event-row">
-            <span class="event-time">12:40:09</span>
-            <span class="event-players">
-              <span class="event-team">MIRAGE</span> Rohan<span class="event-sep">›</span><span class="event-team">OBSIDIAN</span> Neel
-            </span>
-            <span class="event-weapon">Grenade</span>
-            <span class="event-conf">91%</span>
-          </div>
-
-          <!-- Event 5 -->
-          <div class="event-row">
-            <span class="event-time">12:39:47</span>
-            <span class="event-players">
-              <span class="event-team">ZENITH</span> Sam<span class="event-sep">›</span><span class="event-team">MIRAGE</span> Tara
-            </span>
-            <span class="event-weapon">Kar98k</span>
-            <span class="event-conf">97%</span>
+          <div style="padding: 0 20px 18px 20px;">
+            <div class="mvp-banner">
+              <div class="mvp-avatar">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                  <path d="M4 22h16"></path>
+                  <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                  <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                </svg>
+              </div>
+              <div class="mvp-details">
+                <div class="mvp-name-row">
+                  <span class="mvp-player-name">RAVI</span>
+                  <span class="mvp-team-pill" style="background-color: #FF7A45;">KRAIT</span>
+                </div>
+                <div class="mvp-stats-grid">
+                  <div class="mvp-stat-box">
+                    <div class="mvp-stat-val amber">7</div>
+                    <div class="mvp-stat-lbl">FRAGS</div>
+                  </div>
+                  <div class="mvp-stat-box">
+                    <div class="mvp-stat-val">1,480</div>
+                    <div class="mvp-stat-lbl">DAMAGE</div>
+                  </div>
+                  <div class="mvp-stat-box">
+                    <div class="mvp-stat-val">38%</div>
+                    <div class="mvp-stat-lbl">HEADSHOT</div>
+                  </div>
+                  <div class="mvp-stat-box">
+                    <div class="mvp-stat-val">M416</div>
+                    <div class="mvp-stat-lbl">WEAPON</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <!-- Review Queue Panel -->
+        <!-- TOP FRAGGERS & FRAG DOMINANCE -->
+        <section class="panel" aria-label="Top Fraggers Section">
+          <div class="panel-header">
+            <span class="panel-title">TOP FRAGGERS</span>
+            <span class="panel-subtitle">Individual Kill Leaders</span>
+          </div>
+
+          <div class="fraggers-list">
+            <!-- Fragger 1 -->
+            <div class="fragger-row rank-1">
+              <span class="fragger-rank">1</span>
+              <div class="fragger-player">
+                <span class="fragger-team-badge" style="background-color: #FF7A45;">KRAIT</span>
+                <span class="fragger-name">Ravi</span>
+              </div>
+              <span class="fragger-stat">1,480 dmg</span>
+              <span class="fragger-stat frags">7</span>
+              <span class="chip chip-amber" style="font-size: 10px; padding: 2px 5px;">M416</span>
+            </div>
+
+            <!-- Fragger 2 -->
+            <div class="fragger-row">
+              <span class="fragger-rank">2</span>
+              <div class="fragger-player">
+                <span class="fragger-team-badge" style="background-color: #4DA3FF;">NOVA</span>
+                <span class="fragger-name">Aarav</span>
+              </div>
+              <span class="fragger-stat">1,120 dmg</span>
+              <span class="fragger-stat frags">5</span>
+              <span class="chip chip-teal" style="font-size: 10px; padding: 2px 5px;">AWM</span>
+            </div>
+
+            <!-- Fragger 3 -->
+            <div class="fragger-row">
+              <span class="fragger-rank">3</span>
+              <div class="fragger-player">
+                <span class="fragger-team-badge" style="background-color: #F472B6;">ASHEN</span>
+                <span class="fragger-name">Kabir</span>
+              </div>
+              <span class="fragger-stat">980 dmg</span>
+              <span class="fragger-stat frags">4</span>
+              <span class="chip chip-teal" style="font-size: 10px; padding: 2px 5px;">Beryl</span>
+            </div>
+
+            <!-- Fragger 4 -->
+            <div class="fragger-row">
+              <span class="fragger-rank">4</span>
+              <div class="fragger-player">
+                <span class="fragger-team-badge" style="background-color: #2DD4BF; color: #0E1116;">VORTEX</span>
+                <span class="fragger-name">Isha</span>
+              </div>
+              <span class="fragger-stat">910 dmg</span>
+              <span class="fragger-stat frags">4</span>
+              <span class="chip chip-teal" style="font-size: 10px; padding: 2px 5px;">SCAR-L</span>
+            </div>
+
+            <!-- Fragger 5 -->
+            <div class="fragger-row">
+              <span class="fragger-rank">5</span>
+              <div class="fragger-player">
+                <span class="fragger-team-badge" style="background-color: #A78BFA;">ZENITH</span>
+                <span class="fragger-name">Sam</span>
+              </div>
+              <span class="fragger-stat">790 dmg</span>
+              <span class="fragger-stat frags">3</span>
+              <span class="chip chip-teal" style="font-size: 10px; padding: 2px 5px;">Kar98k</span>
+            </div>
+          </div>
+
+          <!-- Team Frag Dominance Bar -->
+          <div class="frag-breakdown-card">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);">
+              <span>Team Frag Share</span>
+              <span>Total 58 Lobby Frags</span>
+            </div>
+            <div class="frag-bar-container" title="Frag Share Breakdown">
+              <div class="frag-bar-seg" style="width: 19%; background-color: #FF7A45;" title="KRAIT (11 frags)"></div>
+              <div class="frag-bar-seg" style="width: 16%; background-color: #4DA3FF;" title="NOVA (9 frags)"></div>
+              <div class="frag-bar-seg" style="width: 14%; background-color: #A78BFA;" title="ZENITH (8 frags)"></div>
+              <div class="frag-bar-seg" style="width: 14%; background-color: #F472B6;" title="ASHEN (8 frags)"></div>
+              <div class="frag-bar-seg" style="width: 12%; background-color: #2DD4BF;" title="VORTEX (7 frags)"></div>
+              <div class="frag-bar-seg" style="width: 10%; background-color: #84CC16;" title="MIRAGE (6 frags)"></div>
+              <div class="frag-bar-seg" style="width: 9%; background-color: #FACC15;" title="TALON (5 frags)"></div>
+              <div class="frag-bar-seg" style="width: 6%; background-color: #94A3B8;" title="OBSIDIAN (4 frags)"></div>
+            </div>
+            <div class="frag-team-chips">
+              <div class="frag-team-chip">
+                <span class="frag-chip-dot" style="background-color: #FF7A45;"></span>
+                <span>KRAIT</span>
+                <span class="frag-chip-kills">11 Kills (Highest)</span>
+              </div>
+              <div class="frag-team-chip">
+                <span class="frag-chip-dot" style="background-color: #4DA3FF;"></span>
+                <span>NOVA</span>
+                <span class="frag-chip-kills">9 Kills</span>
+              </div>
+              <div class="frag-team-chip">
+                <span class="frag-chip-dot" style="background-color: #A78BFA;"></span>
+                <span>ZENITH</span>
+                <span class="frag-chip-kills">8 Kills</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- REVIEW QUEUE -->
         <section class="panel" aria-label="Review Queue Section">
           <div class="panel-header">
             <span class="panel-title">REVIEW QUEUE</span>
