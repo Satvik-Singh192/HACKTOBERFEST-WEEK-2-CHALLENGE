@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scoreboard - Operator Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="console-page">
+    <!-- Top bar -->
+    <header class="top-bar">
+      <div class="brand-and-tabs">
+        <a href="#live" class="brand" aria-label="Scoreboard Home">
+          <span class="brand-bar" aria-hidden="true"></span>
+          <span>SCOREBOARD</span>
+        </a>
+        <nav class="nav-tabs" aria-label="Main Navigation">
+          <button class="nav-tab active" type="button">Live</button>
+          <button class="nav-tab" type="button">Calibrate</button>
+          <button class="nav-tab" type="button">Setup</button>
+          <button class="nav-tab" type="button">History</button>
+          <button class="nav-tab" type="button">Output</button>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="live-match-text">LIVE · Match 3 of 6</span>
+      </div>
+    </header>
+
+    <!-- Status strip -->
+    <div class="status-strip-wrapper">
+      <div class="status-panel">
+        <div class="stat-item">
+          <div class="stat-value">30</div>
+          <div class="stat-label">FPS</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">38 ms</div>
+          <div class="stat-label">OCR LATENCY</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">210 ms</div>
+          <div class="stat-label">CAPTURE TO PAINT P95</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">0</div>
+          <div class="stat-label">DROPPED FRAMES</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">2</div>
+          <div class="stat-label">OVERLAYS CONNECTED</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value amber">2</div>
+          <div class="stat-label">NEEDS REVIEW</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Left: Points table -->
+      <section class="col-left" aria-label="Points Table Section">
+        <div class="panel points-table-panel">
+          <div class="panel-header">
+            <span class="panel-title">POINTS TABLE</span>
+            <span class="chip chip-teal">Updated 1s ago</span>
+          </div>
+
+          <!-- Column Header -->
+          <div class="table-col-header" aria-hidden="true">
+            <span>#</span>
+            <span>TEAM</span>
+            <span class="col-num">PLACE PTS</span>
+            <span class="col-num">KILLS</span>
+            <span class="col-num">TOTAL</span>
+          </div>
+
+          <!-- Table Rows -->
+          <!-- Row 1: KRAIT (Highlighted) -->
+          <div class="table-row highlighted">
+            <div class="row-rank">1</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: #FF7A45;"></span>
+              <span class="team-name">KRAIT</span>
+              <span class="row-kill-chip">+1 kill</span>
+            </div>
+            <div class="row-num">12</div>
+            <div class="row-num">11</div>
+            <div class="row-total">23</div>
+          </div>
+
+          <!-- Row 2: NOVA -->
+          <div class="table-row">
+            <div class="row-rank">2</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: #4DA3FF;"></span>
+              <span class="team-name">NOVA</span>
+            </div>
+            <div class="row-num">10</div>
+            <div class="row-num">9</div>
+            <div class="row-total">19</div>
+          </div>
+
+          <!-- Row 3: ZENITH -->
+          <div class="table-row">
+            <div class="row-rank">3</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: #A78BFA;"></span>
+              <span class="team-name">ZENITH</span>
+            </div>
+            <div class="row-num">9</div>
+            <div class="row-num">8</div>
+            <div class="row-total">17</div>
+          </div>
+
+          <!-- Row 4: VORTEX -->
+          <div class="table-row">
+            <div class="row-rank">4</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: #2DD4BF;"></span>
+              <span class="team-name">VORTEX</span>
+            </div>
+            <div class="row-num">8</div>
+            <div class="row-num">7</div>
+            <div class="row-total">15</div>
+          </div>
+
+          <!-- Row 5: ASHEN -->
+          <div class="table-row">
+            <div class="row-rank">5</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: #F472B6;"></span>
+              <span class="team-name">ASHEN</span>
+            </div>
+            <div class="row-num">6</div>
+            <div class="row-num">8</div>
+            <div class="row-total">14</div>
+          </div>
+
+          <!-- Row 6: MIRAGE -->
+          <div class="table-row">
+            <div class="row-rank">6</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: #84CC16;"></span>
+              <span class="team-name">MIRAGE</span>
+            </div>
+            <div class="row-num">5</div>
+            <div class="row-num">6</div>
+            <div class="row-total">11</div>
+          </div>
+
+          <!-- Row 7: TALON -->
+          <div class="table-row">
+            <div class="row-rank">7</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: #FACC15;"></span>
+              <span class="team-name">TALON</span>
+            </div>
+            <div class="row-num">4</div>
+            <div class="row-num">5</div>
+            <div class="row-total">9</div>
+          </div>
+
+          <!-- Row 8: OBSIDIAN -->
+          <div class="table-row">
+            <div class="row-rank">8</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: #94A3B8;"></span>
+              <span class="team-name">OBSIDIAN</span>
+            </div>
+            <div class="row-num">3</div>
+            <div class="row-num">4</div>
+            <div class="row-total">7</div>
+          </div>
+
+          <!-- Table Footer Buttons -->
+          <div class="table-footer">
+            <button type="button" class="btn btn-primary">Team eliminated</button>
+            <button type="button" class="btn btn-secondary">+ Kill</button>
+            <button type="button" class="btn btn-secondary">Undo last</button>
+            <button type="button" class="btn btn-secondary btn-danger-text btn-push-right">End match</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Detected events & Review queue -->
+      <div class="col-right">
+        <!-- Detected Events Panel -->
+        <section class="panel" aria-label="Detected Events Section">
+          <div class="panel-header">
+            <span class="panel-title">DETECTED EVENTS</span>
+            <span class="panel-subtitle">Newest first</span>
+          </div>
+
+          <!-- Event 1 -->
+          <div class="event-row">
+            <span class="event-time">12:41:08</span>
+            <span class="event-players">
+              <span class="event-team">KRAIT</span> Ravi<span class="event-sep">›</span><span class="event-team">ZENITH</span> Sam
+            </span>
+            <span class="event-weapon">M416</span>
+            <span class="event-conf">98%</span>
+          </div>
+
+          <!-- Event 2 -->
+          <div class="event-row">
+            <span class="event-time">12:40:52</span>
+            <span class="event-players">
+              <span class="event-team">NOVA</span> Aarav<span class="event-sep">›</span><span class="event-team">ASHEN</span> Kabir
+            </span>
+            <span class="event-weapon">AWM</span>
+            <span class="event-conf">96%</span>
+          </div>
+
+          <!-- Event 3 -->
+          <div class="event-row">
+            <span class="event-time">12:40:31</span>
+            <span class="event-players">
+              <span class="event-team">VORTEX</span> Isha<span class="event-sep">›</span><span class="event-team">TALON</span> Dev
+            </span>
+            <span class="event-weapon">SCAR-L</span>
+            <span class="event-conf">93%</span>
+          </div>
+
+          <!-- Event 4 -->
+          <div class="event-row">
+            <span class="event-time">12:40:09</span>
+            <span class="event-players">
+              <span class="event-team">MIRAGE</span> Rohan<span class="event-sep">›</span><span class="event-team">OBSIDIAN</span> Neel
+            </span>
+            <span class="event-weapon">Grenade</span>
+            <span class="event-conf">91%</span>
+          </div>
+
+          <!-- Event 5 -->
+          <div class="event-row">
+            <span class="event-time">12:39:47</span>
+            <span class="event-players">
+              <span class="event-team">ZENITH</span> Sam<span class="event-sep">›</span><span class="event-team">MIRAGE</span> Tara
+            </span>
+            <span class="event-weapon">Kar98k</span>
+            <span class="event-conf">97%</span>
+          </div>
+        </section>
+
+        <!-- Review Queue Panel -->
+        <section class="panel" aria-label="Review Queue Section">
+          <div class="panel-header">
+            <span class="panel-title">REVIEW QUEUE</span>
+            <span class="chip chip-amber">2 waiting</span>
+          </div>
+
+          <div class="review-cards">
+            <!-- Card 1 -->
+            <div class="review-card">
+              <div class="crop-box">
+                <span>KRA1T_Rav1</span>
+                <span style="color: #8B95A3; font-size: 14px;">▸</span>
+                <span>Z3NlTH_5am</span>
+              </div>
+              <div class="review-meta">
+                Closest roster match: <strong>KRAIT Ravi › ZENITH Sam</strong> · 84%
+              </div>
+              <div class="review-actions">
+                <button type="button" class="btn btn-primary btn-sm">Accept</button>
+                <button type="button" class="btn btn-secondary btn-sm">Fix</button>
+                <button type="button" class="btn btn-secondary btn-sm btn-danger-text">Discard</button>
+              </div>
+              <div class="review-card-divider" aria-hidden="true"></div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="review-card">
+              <div class="crop-box">
+                <span>VORT3X_lsha</span>
+                <span style="color: #8B95A3; font-size: 14px;">▸</span>
+                <span>??????</span>
+              </div>
+              <div class="review-meta">
+                No confident match for the victim name
+              </div>
+              <div class="review-actions">
+                <button type="button" class="btn btn-primary btn-sm">Pick victim</button>
+                <button type="button" class="btn btn-secondary btn-sm">Discard</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
