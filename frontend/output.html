@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scoreboard - OBS Broadcast Overlays</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="console-page">
+    <!-- Top bar -->
+    <header class="top-bar">
+      <div class="brand-and-tabs">
+        <a href="console.html" class="brand" aria-label="Scoreboard Home">
+          <span class="brand-bar" aria-hidden="true"></span>
+          <span>SCOREBOARD</span>
+        </a>
+        <nav class="nav-tabs" aria-label="Main Navigation">
+          <a href="console.html" class="nav-tab-link">Live</a>
+          <a href="calibrate.html" class="nav-tab-link">Calibrate</a>
+          <a href="setup.html" class="nav-tab-link">Setup</a>
+          <a href="history.html" class="nav-tab-link">History</a>
+          <a href="output.html" class="nav-tab-link active">Output</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="live-match-text">LIVE · Match 3 of 6</span>
+      </div>
+    </header>
+
+    <!-- Status strip -->
+    <div class="status-strip-wrapper">
+      <div class="status-panel">
+        <div class="stat-item">
+          <div class="stat-value">3</div>
+          <div class="stat-label">OBS OVERLAYS</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">1280×720</div>
+          <div class="stat-label">NATIVE RESOLUTION</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">TRANSPARENT</div>
+          <div class="stat-label">OBS BACKGROUND</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">60 FPS</div>
+          <div class="stat-label">CSS HARDWARE ACCEL</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">&lt; 30 KB</div>
+          <div class="stat-label">PAYLOAD SIZE</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value amber">OBS READY</div>
+          <div class="stat-label">BROWSER SOURCE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 24px;">
+        <!-- Overlay 1: Live Points Table -->
+        <div class="overlay-preview-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 style="font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: 0.05em;">1. LIVE POINTS TABLE OVERLAY</h2>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">In-game transparent leaderboard for OBS Browser Source</p>
+            </div>
+            <a href="overlay.html" target="_blank" class="btn btn-primary btn-sm">Open Direct Source ↗</a>
+          </div>
+
+          <div class="copy-url-bar">
+            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8080/overlay.html?top=8&theme=dark" id="url-overlay">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('url-overlay').value); alert('Copied to clipboard!')">Copy OBS URL</button>
+          </div>
+
+          <div class="preview-iframe-wrapper">
+            <iframe src="overlay.html" class="preview-iframe" title="Points Table Preview"></iframe>
+          </div>
+        </div>
+
+        <!-- Overlay 2: Match MVP Spotlight -->
+        <div class="overlay-preview-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 style="font-size: 16px; font-weight: 700; color: var(--amber); letter-spacing: 0.05em;">2. MATCH MVP SPOTLIGHT OVERLAY</h2>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Broadcast showcase card for match MVP, total frags, damage, and weapon</p>
+            </div>
+            <a href="mvp-overlay.html" target="_blank" class="btn btn-primary btn-sm">Open Direct Source ↗</a>
+          </div>
+
+          <div class="copy-url-bar">
+            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8080/mvp-overlay.html" id="url-mvp">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('url-mvp').value); alert('Copied to clipboard!')">Copy OBS URL</button>
+          </div>
+
+          <div class="preview-iframe-wrapper">
+            <iframe src="mvp-overlay.html" class="preview-iframe" title="MVP Spotlight Preview"></iframe>
+          </div>
+        </div>
+
+        <!-- Overlay 3: Top Fraggers Leaderboard -->
+        <div class="overlay-preview-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 style="font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: 0.05em;">3. TOP 5 FRAGGERS OVERLAY</h2>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Casters overlay showing top fragging players in the lobby</p>
+            </div>
+            <a href="top-fraggers-overlay.html" target="_blank" class="btn btn-primary btn-sm">Open Direct Source ↗</a>
+          </div>
+
+          <div class="copy-url-bar">
+            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8080/top-fraggers-overlay.html" id="url-fraggers">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('url-fraggers').value); alert('Copied to clipboard!')">Copy OBS URL</button>
+          </div>
+
+          <div class="preview-iframe-wrapper">
+            <iframe src="top-fraggers-overlay.html" class="preview-iframe" title="Top Fraggers Preview"></iframe>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

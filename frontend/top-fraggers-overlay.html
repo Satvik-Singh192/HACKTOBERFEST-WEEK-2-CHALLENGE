@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay - Top 5 Fraggers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body style="background-color: transparent; margin: 0; padding: 0;">
+  <div class="overlay-stage-wrapper">
+    <div class="overlay-stage" style="display: flex; align-items: center; justify-content: center;">
+      <div style="width: 640px; background: rgba(11, 14, 18, 0.95); border: 2px solid var(--border); border-radius: 12px; overflow: hidden;">
+        <!-- Header -->
+        <div style="height: 52px; background-color: var(--amber); color: var(--text-on-amber); padding: 0 20px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; letter-spacing: 0.1em;">TOP 5 FRAGGERS</span>
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 15px; letter-spacing: 0.05em;">MATCH 3 · ERANGEL</span>
+        </div>
+
+        <!-- Table column headers -->
+        <div style="height: 38px; padding: 0 20px; display: grid; grid-template-columns: 40px 1fr 100px 70px 70px; align-items: center; border-bottom: 1px solid var(--divider); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);">
+          <span>#</span>
+          <span>PLAYER</span>
+          <span style="text-align: right;">DAMAGE</span>
+          <span style="text-align: right;">FRAGS</span>
+          <span style="text-align: right;">GUN</span>
+        </div>
+
+        <!-- Fraggers list -->
+        <!-- Rank 1: Ravi -->
+        <div style="height: 50px; padding: 0 20px; display: grid; grid-template-columns: 40px 1fr 100px 70px 70px; align-items: center; border-bottom: 1px solid var(--divider); background: rgba(255, 176, 32, 0.06);">
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; color: var(--amber);">#1</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="team-color-bar" style="background-color: #FF7A45;"></span>
+            <div>
+              <div style="font-weight: 700; font-size: 16px; color: var(--text);">Ravi</div>
+              <div style="font-size: 11px; color: var(--muted);">KRAIT</div>
+            </div>
+          </div>
+          <span style="font-family: var(--font-heading); font-weight: 600; font-size: 18px; color: var(--muted); text-align: right;">1,480</span>
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 26px; color: var(--amber); text-align: right;">7</span>
+          <div style="text-align: right;"><span class="chip chip-amber" style="font-size: 10px;">M416</span></div>
+        </div>
+
+        <!-- Rank 2: Aarav -->
+        <div style="height: 50px; padding: 0 20px; display: grid; grid-template-columns: 40px 1fr 100px 70px 70px; align-items: center; border-bottom: 1px solid var(--divider);">
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; color: var(--muted);">#2</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="team-color-bar" style="background-color: #4DA3FF;"></span>
+            <div>
+              <div style="font-weight: 700; font-size: 16px; color: var(--text);">Aarav</div>
+              <div style="font-size: 11px; color: var(--muted);">NOVA</div>
+            </div>
+          </div>
+          <span style="font-family: var(--font-heading); font-weight: 600; font-size: 18px; color: var(--muted); text-align: right;">1,120</span>
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 26px; color: var(--text); text-align: right;">5</span>
+          <div style="text-align: right;"><span class="chip chip-teal" style="font-size: 10px;">AWM</span></div>
+        </div>
+
+        <!-- Rank 3: Kabir -->
+        <div style="height: 50px; padding: 0 20px; display: grid; grid-template-columns: 40px 1fr 100px 70px 70px; align-items: center; border-bottom: 1px solid var(--divider);">
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; color: var(--muted);">#3</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="team-color-bar" style="background-color: #F472B6;"></span>
+            <div>
+              <div style="font-weight: 700; font-size: 16px; color: var(--text);">Kabir</div>
+              <div style="font-size: 11px; color: var(--muted);">ASHEN</div>
+            </div>
+          </div>
+          <span style="font-family: var(--font-heading); font-weight: 600; font-size: 18px; color: var(--muted); text-align: right;">980</span>
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 26px; color: var(--text); text-align: right;">4</span>
+          <div style="text-align: right;"><span class="chip chip-teal" style="font-size: 10px;">Beryl</span></div>
+        </div>
+
+        <!-- Rank 4: Isha -->
+        <div style="height: 50px; padding: 0 20px; display: grid; grid-template-columns: 40px 1fr 100px 70px 70px; align-items: center; border-bottom: 1px solid var(--divider);">
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; color: var(--muted);">#4</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="team-color-bar" style="background-color: #2DD4BF;"></span>
+            <div>
+              <div style="font-weight: 700; font-size: 16px; color: var(--text);">Isha</div>
+              <div style="font-size: 11px; color: var(--muted);">VORTEX</div>
+            </div>
+          </div>
+          <span style="font-family: var(--font-heading); font-weight: 600; font-size: 18px; color: var(--muted); text-align: right;">910</span>
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 26px; color: var(--text); text-align: right;">4</span>
+          <div style="text-align: right;"><span class="chip chip-teal" style="font-size: 10px;">SCAR-L</span></div>
+        </div>
+
+        <!-- Rank 5: Sam -->
+        <div style="height: 50px; padding: 0 20px; display: grid; grid-template-columns: 40px 1fr 100px 70px 70px; align-items: center;">
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; color: var(--muted);">#5</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="team-color-bar" style="background-color: #A78BFA;"></span>
+            <div>
+              <div style="font-weight: 700; font-size: 16px; color: var(--text);">Sam</div>
+              <div style="font-size: 11px; color: var(--muted);">ZENITH</div>
+            </div>
+          </div>
+          <span style="font-family: var(--font-heading); font-weight: 600; font-size: 18px; color: var(--muted); text-align: right;">790</span>
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 26px; color: var(--text); text-align: right;">3</span>
+          <div style="text-align: right;"><span class="chip chip-teal" style="font-size: 10px;">Kar98k</span></div>
+        </div>
+      </div>
+
+      <!-- Bottom Caption -->
+      <div class="overlay-caption">
+        Stream canvas placeholder · the overlay is a transparent OBS browser source
+      </div>
+    </div>
+  </div>
+</body>
+</html>

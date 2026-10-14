@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay - Match MVP Spotlight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body style="background-color: transparent; margin: 0; padding: 0;">
+  <div class="overlay-stage-wrapper">
+    <div class="broadcast-mvp-stage">
+      <div class="broadcast-mvp-card">
+        <!-- Header -->
+        <div class="broadcast-mvp-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="brand-bar" style="width: 6px; height: 32px;" aria-hidden="true"></span>
+            <span class="broadcast-mvp-title">MATCH MVP</span>
+          </div>
+          <span class="broadcast-mvp-match">MATCH 3 · ERANGEL</span>
+        </div>
+
+        <!-- Body -->
+        <div class="broadcast-mvp-body">
+          <!-- Player Profile Hero -->
+          <div class="broadcast-mvp-player-hero">
+            <div class="broadcast-avatar-circle">
+              <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#FFB020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+            </div>
+            <div class="broadcast-player-name">RAVI</div>
+            <div class="broadcast-player-team" style="background-color: #FF7A45;">TEAM KRAIT</div>
+          </div>
+
+          <!-- Stats 2x2 Grid -->
+          <div class="broadcast-stats-grid">
+            <div class="broadcast-stat-tile">
+              <div class="broadcast-stat-val amber">7</div>
+              <div class="broadcast-stat-lbl">TOTAL FRAGS</div>
+            </div>
+            <div class="broadcast-stat-tile">
+              <div class="broadcast-stat-val">1,480</div>
+              <div class="broadcast-stat-lbl">DAMAGE DEALT</div>
+            </div>
+            <div class="broadcast-stat-tile">
+              <div class="broadcast-stat-val">38%</div>
+              <div class="broadcast-stat-lbl">HEADSHOT ACCURACY</div>
+            </div>
+            <div class="broadcast-stat-tile">
+              <div class="broadcast-stat-val" style="font-size: 30px;">M416</div>
+              <div class="broadcast-stat-lbl">FAVORITE WEAPON</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Caption -->
+      <div class="overlay-caption">
+        Stream canvas placeholder · the overlay is a transparent OBS browser source
+      </div>
+    </div>
+  </div>
+</body>
+</html>
