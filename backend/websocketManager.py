@@ -66,5 +66,4 @@ class WebsocketManager:
             self.update_dataframe(dataframe_snapshot), self._loop
         )
 
-
 manager = WebsocketManager()

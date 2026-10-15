@@ -3,6 +3,8 @@ import time
 import cv2
 import numpy as np
 from ultralytics import YOLO
+from backend.events import Event
+from backend.events import Event, Icon
 
 # Import preprocessing & OCR engine directly from your existing ocr.py
 from .ocr import SingleRowKillfeedOCR
@@ -95,73 +97,44 @@ class KillfeedPipeline:
         for box in yolo_res.boxes:
             cls_id = int(box.cls[0])
             cls_name = self.icon_model.names[cls_id].lower()
-            coords = box.xyxy[0].cpu().numpy()
-            x_center = (coords[0] + coords[2]) / 2.0
-            detected_icons.append({"class": cls_name, "x_center": x_center})
+            detected_icons.append(cls_name)
+            #changed to list 
 
-        middle_classes = [
-            icon["class"]
-            for icon in detected_icons
-            if x_left <= icon["x_center"] <= x_right
-        ]
+        # middle_classes = [
+        #     icon["class"]
+        #     for icon in detected_icons
+        #     if x_left <= icon["x_center"] <= x_right
+        # ]
 
-        if "knock" in middle_classes:
-            resolved_icon = "knock"
-        elif "playzone" in middle_classes:
-            resolved_icon = "playzone"
-        else:
-            resolved_icon = "object"
+        # if "knock" in middle_classes:
+        #     resolved_icon = "knock"
+        # elif "playzone" in middle_classes:
+        #     resolved_icon = "playzone"
+        # else:
+        #     resolved_icon = "object"
         t_postprocess = time.perf_counter() - t0
 
         t_total = time.perf_counter() - t_total_start
 
-        # --- Timing Breakdown Output ---
-        print("\n" + "=" * 45)
-        print("          PIPELINE LATENCY PROFILE          ")
-        print("=" * 45)
-        timings = [
-            ("Image Loading", t_load),
-            ("OCR Preprocess (Resize+CLAHE)", t_preprocess),
-            ("OCR Model Inference", t_ocr_infer),
-            ("OCR Output Parsing", t_ocr_parse),
-            ("YOLO Model Inference", t_yolo_infer),
-            ("Icon Spatial Resolution", t_postprocess),
-        ]
-        for name, duration in timings:
-            pct = (duration / t_total) * 100 if t_total > 0 else 0
-            print(f"{name:<30}: {duration * 1000:7.2f} ms ({pct:5.1f}%)")
-        print("-" * 45)
-        print(
-            f"{'Total Elapsed Time':<30}: {t_total * 1000:7.2f} ms ({t_total:4.2f} s)")
-        print("=" * 45 + "\n")
 
-        return {
-            "attacker": attacker_text,
-            "icon": resolved_icon,
-            "victim": victim_text,
+        icon_mapping = {
+            "playzone": Icon.PLAYZONE,
+            "knock": Icon.KNOCK,
+            "object": Icon.OBJECT,
+            "obj": Icon.OBJECT,
+            "zone": Icon.PLAYZONE,
         }
 
+        icons = [
+            icon_mapping[name.lower()]
+            for name in detected_icons
+            if name.lower() in icon_mapping
+        ]
 
-if __name__ == "__main__":
-    import time
+        eventobject = Event(
+            attacker=attacker_text,
+            icons=icons,
+            victim=victim_text,
+        )
 
-    WEIGHTS = r"D:\Attendance_ml\runs\detect\train\weights\best_openvino_model"
-    pipeline = KillfeedPipeline(
-        yolo_weights_path=WEIGHTS, min_ocr_conf=0.50, yolo_conf=0.25, imgsz=352
-    )
-
-    sample_img = "./image1.png"
-
-    print("\n--- 1. WARM-UP RUN (Includes Graph Compilation) ---")
-    pipeline.process(sample_img)
-
-    print("\n--- 2. CONSECUTIVE INFERENCE BENCHMARK (Real-time speed) ---")
-    times = []
-    for i in range(5):
-        t0 = time.perf_counter()
-        pipeline.process(sample_img)
-        times.append((time.perf_counter() - t0) * 1000)
-
-    avg_time = sum(times) / len(times)
-    print(
-        f"\nAverage steady-state process() time over 5 runs: {avg_time:.2f} ms")
+        return eventobject

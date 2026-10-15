@@ -3,6 +3,8 @@ from pathlib import Path
 from preprocess import config
 from preprocess.pipeline import VideoFileSource, run_pipeline
 from model_experiments.pipeline import KillfeedPipeline
+from backend.event_pipeline import EventPipeline
+
 
 
 # Update this to the actual location of your model weights.
@@ -24,25 +26,21 @@ def main() -> None:
         yolo_conf=0.25,
         imgsz=352,
     )
+    event_pipeline = EventPipeline()
+
 
     def handle_candidate(candidate) -> None:
-        result = ml_pipeline.process(candidate.crop_bgr)
+        event = ml_pipeline.process(candidate.crop_bgr)
 
-        if result is None:
-            print(
-                f"[ML REJECTED] "
-                f"t={candidate.timestamp_seconds:.2f}s "
-                f"frame={candidate.frame_index}"
-            )
+        if event is None:
             return
 
+        event_pipeline.process_event(event)
+
         print(
-            f"[KILL FEED EVENT] "
-            f"t={candidate.timestamp_seconds:.2f}s "
-            f"frame={candidate.frame_index} | "
-            f"{result['attacker']} "
-            f"-- {result['icon']} --> "
-            f"{result['victim']}"
+            f"Attacker: {event.attacker} | "
+            f"Icons: {event.icons} | "
+            f"Victim: {event.victim}"
         )
 
     run_pipeline(
