@@ -1,12 +1,15 @@
 import pandas as pd
 from backend.teams import Team, Player, PlayerStatus
 from backend.events import Event, Icon
+from backend.playerMatcher import PlayerMatcher
+
 class TeamManager:
     def __init__(self):
         self.teams:dict[str,Team]={}
         self.player_team_map:dict[str,str]={}
         self.last_knocked_by:dict[str,str]={}
         self.eliminatedTeams=0
+        self.player_matcher=None
     def add_team(self,team:Team)->None:
         if team.name in self.teams:
             raise ValueError(f"Team already exists: {team.name}")
@@ -19,6 +22,10 @@ class TeamManager:
 
         for player in team.players:
             self.player_team_map[player.name] = team.name
+    # SHREYAS BHAU JAB manager.process_events(event) KRO TB ye fuzzy matching ko use kr lena
+    def initialize_player_matcher(self)->None:
+        self.player_matcher=PlayerMatcher(self.player_team_map)
+
     def get_player(self, player_name: str) -> Player:
         team_name = self.player_team_map.get(player_name)
 
@@ -41,7 +48,35 @@ class TeamManager:
         return self.teams[team_name]
     
     
+    def resolve_event(self, event: Event) -> Event:
+        if self.player_matcher is None:
+            raise RuntimeError(
+                "Call initialize_player_matcher() after registering teams"
+            )
+
+        victim = self.player_matcher.match(event.victim)
+
+        if victim is None:
+            raise ValueError(
+                f"Could not confidently match victim: {event.victim}"
+            )
+
+        attacker = event.attacker
+
+        if attacker is not None and attacker.casefold() != "playzone":
+            attacker = self.player_matcher.match(attacker)
+
+            if attacker is None:
+                raise ValueError(
+                    f"Could not confidently match attacker: {event.attacker}"
+                )
+
+        from dataclasses import replace
+
+        return replace(event, attacker=attacker, victim=victim)
+
     def process_events(self, event: Event) -> None:
+        event=self.resolve_event(event)
         victim = self.get_player(event.victim)
         victim_team = self.get_team(event.victim)
 
@@ -167,3 +202,42 @@ class TeamManager:
         if is_eliminated:
             self.awardPlacementPoints(team)
 
+if __name__ == "__main__":
+    manager = TeamManager()
+
+    manager.add_team(Team(
+        name="TS",
+        players=[
+            Player(name="TS_HARSH"),
+            Player(name="TS_PRESENCE"),
+        ],
+    ))
+
+    manager.add_team(Team(
+        name="FLx",
+        players=[
+            Player(name="FLx_ELNdix"),
+            Player(name="FLx_KRISH"),
+        ],
+    ))
+
+    manager.initialize_player_matcher()
+
+    # Test fuzzy matching through process_events()
+    event = Event(
+        attacker="TS HAR1H",
+        icons=[Icon.KNOCK],
+        victim="FLx ELNdix",
+    )
+
+    manager.process_events(event)
+
+    victim = manager.get_player("FLx_ELNdix")
+
+    print("Victim status:", victim.status.value)
+    print("Last knocker:", manager.last_knocked_by.get("FLx_ELNdix"))
+
+    assert victim.status == PlayerStatus.KNOCKED
+    assert manager.last_knocked_by["FLx_ELNdix"] == "TS_HARSH"
+
+    print("OPTION B TEST PASSED!")
