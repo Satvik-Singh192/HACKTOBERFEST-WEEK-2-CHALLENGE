@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scoreboard - User Manual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .manual-content {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .manual-section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+    }
+    .manual-section h2 {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--divider);
+    }
+    .manual-section h3 {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 18px 0 8px;
+    }
+    .manual-section p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+      margin: 0 0 10px;
+    }
+    .step-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .step-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .step-num {
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--amber);
+      color: #0A0D11;
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-content strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .step-content code {
+      background: #0B0E12;
+      border: 1px solid var(--divider);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 12.5px;
+      color: #2DD4BF;
+    }
+    .note-box {
+      background: rgba(255, 176, 32, 0.08);
+      border: 1px solid rgba(255, 176, 32, 0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--amber);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 12px;
+    }
+    .info-box {
+      background: rgba(45, 212, 191, 0.07);
+      border: 1px solid rgba(45, 212, 191, 0.25);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #2DD4BF;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 12px;
+    }
+    .url-chip {
+      display: inline-block;
+      background: #0B0E12;
+      border: 1px solid var(--divider);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #2DD4BF;
+      margin: 4px 0;
+    }
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .page-card {
+      background: #0B0E12;
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .page-card .page-name {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .page-card .page-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .flow-box {
+      background: #0B0E12;
+      border: 1px solid var(--divider);
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .flow-arrow {
+      color: var(--amber);
+      font-size: 18px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="console-page">
+    <!-- Top bar -->
+    <header class="top-bar">
+      <div class="brand-and-tabs">
+        <a href="console.html" class="brand" aria-label="Scoreboard Home">
+          <span class="brand-bar" aria-hidden="true"></span>
+          <span>SCOREBOARD</span>
+        </a>
+        <nav class="nav-tabs" aria-label="Main Navigation">
+          <a href="console.html" class="nav-tab-link">Live</a>
+          <a href="setup.html" class="nav-tab-link">Setup</a>
+          <a href="history.html" class="nav-tab-link">History</a>
+          <a href="output.html" class="nav-tab-link">Output</a>
+          <a href="manual.html" class="nav-tab-link active">Manual</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <span class="live-match-text">📖 HOW TO USE</span>
+      </div>
+    </header>
+
+    <!-- Main manual content -->
+    <main style="overflow-y: auto; flex: 1;">
+      <div class="manual-content">
+
+        <!-- Overview -->
+        <div class="manual-section">
+          <h2>🎮 What Is This?</h2>
+          <p>
+            <strong>BGMI Live Scoreboard</strong> is a tournament scoring system for BGMI/PUBG esports events.
+            It uses OBS Virtual Camera + live OCR to automatically detect kill-feed events from a game stream,
+            then updates a live scoreboard overlay in real time that you can add as a browser source in OBS.
+          </p>
+          <div class="flow-row">
+            <div class="flow-box">OBS Game Capture</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box">OBS Virtual Camera</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box">Pipeline (main.py)</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box">Backend API</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box">Live Overlay</div>
+          </div>
+        </div>
+
+        <!-- Prerequisites -->
+        <div class="manual-section">
+          <h2>✅ Prerequisites</h2>
+          <ul class="step-list">
+            <li>
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <strong>OBS Studio</strong> — Download from <code>obsproject.com</code>. You need it to capture the game feed and expose it as a Virtual Camera.
+              </div>
+            </li>
+            <li>
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <strong>Python 3.10+</strong> + <strong>uv</strong> package manager installed. Dependencies are already in <code>pyproject.toml</code>.
+              </div>
+            </li>
+            <li>
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <strong>BGMI / PUBG game running</strong> on the same machine (or a capture card if streaming from a phone/console).
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Step-by-step setup -->
+        <div class="manual-section">
+          <h2>🚀 Step-by-Step Setup</h2>
+
+          <h3>Step 1 — Configure OBS</h3>
+          <ul class="step-list">
+            <li>
+              <div class="step-num">A</div>
+              <div class="step-content">Open <strong>OBS Studio</strong>. Add a <em>Game Capture</em> or <em>Window Capture</em> source pointing to the game window.</div>
+            </li>
+            <li>
+              <div class="step-num">B</div>
+              <div class="step-content">Click <strong>Start Virtual Camera</strong> in OBS (bottom-right). This makes the game feed available as a webcam to other applications.</div>
+            </li>
+            <li>
+              <div class="step-num">C</div>
+              <div class="step-content">Optionally, add a <em>Video Capture Device</em> scene for the game feed — but keep Virtual Camera running throughout the match.</div>
+            </li>
+          </ul>
+          <div class="note-box">⚠️ Make sure the game is visible in OBS <em>before</em> starting Virtual Camera. The kill-feed zone must be clearly visible and not cropped.</div>
+
+          <h3>Step 2 — Enter Teams & Players (this page)</h3>
+          <ul class="step-list">
+            <li>
+              <div class="step-num">1</div>
+              <div class="step-content">Go to the <strong>Setup</strong> tab. Add each competing team with its name, color, and players.</div>
+            </li>
+            <li>
+              <div class="step-num">2</div>
+              <div class="step-content">For each player enter: <code>PlayerName (alias1, alias2)</code> — aliases are the in-game names OCR will look for in the kill-feed.</div>
+            </li>
+            <li>
+              <div class="step-num">3</div>
+              <div class="step-content">Fill in tournament settings (title, map, total matches). Click <strong>Save Tournament Settings</strong>.</div>
+            </li>
+          </ul>
+
+          <h3>Step 3 — Start the Backend Server</h3>
+          <ul class="step-list">
+            <li>
+              <div class="step-num">1</div>
+              <div class="step-content">Open a terminal in the project root and run:<br><code>uv run uvicorn backend.main:app --port 8000</code></div>
+            </li>
+            <li>
+              <div class="step-num">2</div>
+              <div class="step-content">The browser will auto-open to the Setup page. If not, navigate to <code>http://127.0.0.1:8000/frontend/setup.html</code></div>
+            </li>
+          </ul>
+
+          <h3>Step 4 — Start the OCR Pipeline</h3>
+          <ul class="step-list">
+            <li>
+              <div class="step-num">1</div>
+              <div class="step-content">In a <strong>second terminal</strong>, run:<br><code>uv run python main.py --live</code></div>
+            </li>
+            <li>
+              <div class="step-num">2</div>
+              <div class="step-content">The pipeline will connect to OBS Virtual Camera (device index 0 or 1) and start reading kill-feed frames.</div>
+            </li>
+            <li>
+              <div class="step-num">3</div>
+              <div class="step-content">When a kill event is detected, it is automatically posted to the API and broadcast to all connected clients.</div>
+            </li>
+          </ul>
+          <div class="info-box">ℹ️ If OBS Virtual Camera is not detected at index 0, try: <code>uv run python main.py --live --camera-index 1</code></div>
+
+          <h3>Step 5 — Add Overlays in OBS</h3>
+          <ul class="step-list">
+            <li>
+              <div class="step-num">1</div>
+              <div class="step-content">In OBS, add a <strong>Browser Source</strong> for each overlay you want.</div>
+            </li>
+            <li>
+              <div class="step-num">2</div>
+              <div class="step-content">Go to the <strong>Output</strong> tab in this UI for the exact URLs to paste.</div>
+            </li>
+            <li>
+              <div class="step-num">3</div>
+              <div class="step-content">Recommended overlay sizes: Scoreboard <code>1280×720</code>, MVP <code>400×220</code>, Top Fraggers <code>380×340</code>.</div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Pages Reference -->
+        <div class="manual-section">
+          <h2>📄 Pages Reference</h2>
+          <div class="page-grid">
+            <div class="page-card">
+              <div class="page-name">🔴 Live</div>
+              <div class="page-desc">Operator console. Score kills, eliminate teams, pause/end/start matches. Shows real-time leaderboard.</div>
+            </div>
+            <div class="page-card">
+              <div class="page-name">⚙️ Setup</div>
+              <div class="page-desc">Enter team names, players & aliases. Configure tournament title, map, and match count before starting.</div>
+            </div>
+            <div class="page-card">
+              <div class="page-name">📊 History</div>
+              <div class="page-desc">Cumulative tournament standings across all archived matches. Download CSV for publishing.</div>
+            </div>
+            <div class="page-card">
+              <div class="page-name">📡 Output</div>
+              <div class="page-desc">Browser source URLs for OBS overlays (scoreboard, MVP, top fraggers).</div>
+            </div>
+            <div class="page-card">
+              <div class="page-name">📖 Manual</div>
+              <div class="page-desc">This page. How-to guide for setting up and operating the system.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match Lifecycle -->
+        <div class="manual-section">
+          <h2>⏱️ Match Lifecycle</h2>
+          <p>Use the control bar at the top of the <strong>Live</strong> page to manage match state:</p>
+          <ul class="step-list">
+            <li>
+              <div class="step-num" style="background:#2DD4BF;">●</div>
+              <div class="step-content"><strong>LIVE COUNTING</strong> — OCR and operator kills are accepted and broadcast instantly.</div>
+            </li>
+            <li>
+              <div class="step-num" style="background:#FFB020;">⏸</div>
+              <div class="step-content"><strong>PAUSED</strong> — Kill registration is blocked. Use during circle transitions or halftime. Toggle with <em>Pause / Resume Counting</em>.</div>
+            </li>
+            <li>
+              <div class="step-num" style="background:#F43F5E;">🏁</div>
+              <div class="step-content"><strong>FINISHED</strong> — Match is locked. Placement points are assigned based on elimination order and saved to history automatically. Click <em>Next Match</em> to start a new round.</div>
+            </li>
+          </ul>
+          <div class="note-box">⚠️ Placement points follow BGIS rules: 1st = 12pts, 2nd = 9pts, 3rd = 8pts … Click <strong>End &amp; Lock Match</strong> when the match winner is determined.</div>
+        </div>
+
+        <!-- Operator Tips -->
+        <div class="manual-section">
+          <h2>💡 Operator Tips</h2>
+          <ul class="step-list">
+            <li>
+              <div class="step-num">👆</div>
+              <div class="step-content"><strong>Manual kill entry</strong>: click a team row in the Live tab to select it, then click the <code>+</code> button on the right-side operator panel, or use the kill select buttons.</div>
+            </li>
+            <li>
+              <div class="step-num">↩</div>
+              <div class="step-content"><strong>Undo last kill</strong>: if OCR or an operator makes a mistake, click <em>Undo Last Kill</em> in the table footer immediately.</div>
+            </li>
+            <li>
+              <div class="step-num">❌</div>
+              <div class="step-content"><strong>Eliminate a team</strong>: select the team row and click <em>Team Eliminated</em>. Placement points are NOT assigned until <em>End &amp; Lock Match</em>.</div>
+            </li>
+            <li>
+              <div class="step-num">🔄</div>
+              <div class="step-content"><strong>Reset current match</strong>: zeroes all kills for this match without advancing the match number. Use only to fix a data entry disaster.</div>
+            </li>
+            <li>
+              <div class="step-num">📥</div>
+              <div class="step-content"><strong>History CSV</strong>: go to History → click <em>Download CSV</em> to export overall standings for publishing or as a spreadsheet backup.</div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="manual-section">
+          <h2>🔧 Troubleshooting</h2>
+          <ul class="step-list">
+            <li>
+              <div class="step-num">?</div>
+              <div class="step-content">
+                <strong>OCR detects 0 kills</strong> — Make sure OBS Virtual Camera is running and the game's kill-feed is in the top-right area of the frame. If the kill-feed looks different in this game version, re-run with <code>--no-ocr</code> and score manually.
+              </div>
+            </li>
+            <li>
+              <div class="step-num">?</div>
+              <div class="step-content">
+                <strong>WebSocket not connecting</strong> — Check that the backend is running (<code>uv run uvicorn backend.main:app --port 8000</code>). Look for red error badges in the status strip.
+              </div>
+            </li>
+            <li>
+              <div class="step-num">?</div>
+              <div class="step-content">
+                <strong>Wrong team names detected</strong> — Update player aliases in the Setup tab so they match exactly what appears in the in-game kill-feed. Short aliases (6–10 chars) work best.
+              </div>
+            </li>
+            <li>
+              <div class="step-num">?</div>
+              <div class="step-content">
+                <strong>CORS errors in browser</strong> — Always open the frontend through <code>http://127.0.0.1:8000/frontend/</code>, not directly via <code>file://</code> paths.
+              </div>
+            </li>
+            <li>
+              <div class="step-num">?</div>
+              <div class="step-content">
+                <strong>Browser didn't auto-open</strong> — Navigate manually to <code>http://127.0.0.1:8000/frontend/setup.html</code>.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</body>
+</html>
