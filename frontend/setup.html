@@ -8,6 +8,50 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 480px;
+      max-width: 90vw;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .action-btn-sm {
+      background: #1C232E;
+      border: 1px solid var(--divider);
+      color: var(--text);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .action-btn-sm:hover {
+      background: #252F3E;
+    }
+    .action-btn-danger {
+      color: var(--danger-text);
+      border-color: #5C1D24;
+    }
+    .action-btn-danger:hover {
+      background: #3B1418;
+    }
+  </style>
 </head>
 <body>
   <div class="console-page">
@@ -20,15 +64,15 @@
         </a>
         <nav class="nav-tabs" aria-label="Main Navigation">
           <a href="console.html" class="nav-tab-link">Live</a>
-          <a href="calibrate.html" class="nav-tab-link">Calibrate</a>
           <a href="setup.html" class="nav-tab-link active">Setup</a>
           <a href="history.html" class="nav-tab-link">History</a>
           <a href="output.html" class="nav-tab-link">Output</a>
+          <a href="manual.html" class="nav-tab-link">Manual</a>
         </nav>
       </div>
       <div class="top-bar-right">
-        <span class="live-dot" aria-hidden="true"></span>
-        <span class="live-match-text">LIVE · Match 3 of 6</span>
+        <span class="live-dot" aria-hidden="true" id="live-dot"></span>
+        <span class="live-match-text" id="top-match-title">LIVE · Match 1 of 6</span>
       </div>
     </header>
 
@@ -36,19 +80,19 @@
     <div class="status-strip-wrapper">
       <div class="status-panel">
         <div class="stat-item">
-          <div class="stat-value">8</div>
+          <div class="stat-value" id="stat-teams-count">8</div>
           <div class="stat-label">TEAMS ACTIVE</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">32</div>
+          <div class="stat-value" id="stat-players-count">32</div>
           <div class="stat-label">ROSTER PLAYERS</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">3 of 6</div>
+          <div class="stat-value" id="stat-match-cur">1 of 6</div>
           <div class="stat-label">CURRENT MATCH</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">ERANGEL</div>
+          <div class="stat-value" id="stat-map-cur">ERANGEL</div>
           <div class="stat-label">MAP</div>
         </div>
         <div class="stat-item">
@@ -56,7 +100,7 @@
           <div class="stat-label">KILL VALUE</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value amber">BGIS 10-PTS</div>
+          <div class="stat-value amber" id="stat-points-sys">BGIS 10-PTS</div>
           <div class="stat-label">POINTS SYSTEM</div>
         </div>
       </div>
@@ -72,7 +116,7 @@
             <section class="panel" style="padding: 20px;">
               <div class="panel-header" style="height: auto; padding: 0 0 16px 0;">
                 <span class="panel-title">MATCH & LOBBY CONFIGURATION</span>
-                <span class="chip chip-teal">Match 3</span>
+                <span class="chip chip-teal" id="badge-match-num">Match 1</span>
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -83,18 +127,18 @@
                 <div class="form-group">
                   <label class="form-label" for="map-select">Active Map</label>
                   <select id="map-select" class="form-select">
-                    <option selected>Erangel (Classic)</option>
-                    <option>Miramar (Desert)</option>
-                    <option>Sanhok (Rainforest)</option>
-                    <option>Vikendi (Snow)</option>
+                    <option value="Erangel (Classic)">Erangel (Classic)</option>
+                    <option value="Miramar (Desert)">Miramar (Desert)</option>
+                    <option value="Sanhok (Rainforest)">Sanhok (Rainforest)</option>
+                    <option value="Vikendi (Snow)">Vikendi (Snow)</option>
                   </select>
                 </div>
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
                 <div class="form-group">
                   <label class="form-label" for="match-cur">Current Match Number</label>
-                  <input type="number" id="match-cur" class="form-input" value="3" min="1" max="20">
+                  <input type="number" id="match-cur" class="form-input" value="1" min="1" max="20">
                 </div>
                 <div class="form-group">
                   <label class="form-label" for="match-total">Total Matches in Day</label>
@@ -108,55 +152,55 @@
               <div class="panel-header" style="height: auto; padding: 0 0 16px 0;">
                 <span class="panel-title">PLACEMENT & KILL POINTS TABLE</span>
                 <div style="display: flex; gap: 8px;">
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Standard BGIS Preset loaded')">Standard Scrim</button>
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="alert('15-pt PMCO Preset loaded')">15-Pts PMCO</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="loadPreset('bgis')">BGIS 10-Pts</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="loadPreset('pmco')">15-Pts PMCO</button>
                 </div>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Points Per Kill: <span style="color: var(--amber); font-weight: 700;">1 Point</span></label>
-                <input type="number" class="form-input" value="1" min="1" max="5" style="max-width: 140px;">
+                <label class="form-label">Points Per Kill: <span style="color: var(--amber); font-weight: 700;" id="pts-kill-display">1 Point</span></label>
+                <input type="number" id="pts-kill" class="form-input" value="1" min="1" max="5" style="max-width: 140px;" onchange="document.getElementById('pts-kill-display').textContent = this.value + ' Point' + (this.value > 1 ? 's' : '')">
               </div>
 
               <label class="form-label" style="margin-bottom: 8px; display: block;">Placement Points Matrix</label>
               <div class="points-table-config-grid">
                 <div class="pts-config-item">
                   <span class="pts-config-rank">#1 WWCD</span>
-                  <input type="number" class="pts-config-val" value="10">
+                  <input type="number" class="pts-config-val" id="place-1" value="10">
                 </div>
                 <div class="pts-config-item">
                   <span class="pts-config-rank">#2 Place</span>
-                  <input type="number" class="pts-config-val" value="6">
+                  <input type="number" class="pts-config-val" id="place-2" value="6">
                 </div>
                 <div class="pts-config-item">
                   <span class="pts-config-rank">#3 Place</span>
-                  <input type="number" class="pts-config-val" value="5">
+                  <input type="number" class="pts-config-val" id="place-3" value="5">
                 </div>
                 <div class="pts-config-item">
                   <span class="pts-config-rank">#4 Place</span>
-                  <input type="number" class="pts-config-val" value="4">
+                  <input type="number" class="pts-config-val" id="place-4" value="4">
                 </div>
                 <div class="pts-config-item">
                   <span class="pts-config-rank">#5 Place</span>
-                  <input type="number" class="pts-config-val" value="3">
+                  <input type="number" class="pts-config-val" id="place-5" value="3">
                 </div>
                 <div class="pts-config-item">
                   <span class="pts-config-rank">#6 Place</span>
-                  <input type="number" class="pts-config-val" value="2">
+                  <input type="number" class="pts-config-val" id="place-6" value="2">
                 </div>
                 <div class="pts-config-item">
                   <span class="pts-config-rank">#7 Place</span>
-                  <input type="number" class="pts-config-val" value="1">
+                  <input type="number" class="pts-config-val" id="place-7" value="1">
                 </div>
                 <div class="pts-config-item">
                   <span class="pts-config-rank">#8 Place</span>
-                  <input type="number" class="pts-config-val" value="1">
+                  <input type="number" class="pts-config-val" id="place-8" value="1">
                 </div>
               </div>
 
               <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn btn-secondary">Discard Changes</button>
-                <button type="button" class="btn btn-primary" onclick="alert('Configuration saved successfully!')">Save Scoring Rules</button>
+                <button type="button" class="btn btn-secondary" onclick="fetchSettings()">Reload Saved</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Scoring Rules</button>
               </div>
             </section>
           </div>
@@ -164,95 +208,29 @@
           <!-- Right: Team Roster & Alias Manager -->
           <section class="panel" style="padding: 20px; display: flex; flex-direction: column;">
             <div class="panel-header" style="height: auto; padding: 0 0 16px 0;">
-              <span class="panel-title">TEAM ROSTERS & ALIASES</span>
-              <button type="button" class="btn btn-secondary btn-sm">+ Add Team</button>
+              <div>
+                <span class="panel-title">TEAM ROSTERS & OCR ALIASES</span>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+                  All changes are saved directly to the backend and recognized live by PaddleOCR.
+                </p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="resetDefaults()">Reset Defaults</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="openAddTeamModal()">+ Add Team</button>
+              </div>
             </div>
 
-            <p style="font-size: 12px; color: var(--muted); margin-bottom: 14px;">
-              Aliases allow OCR to accurately match typo-heavy in-game player fonts to official rosters.
-            </p>
-
-            <table class="roster-table">
+            <table class="roster-table" style="margin-top: 10px;">
               <thead>
                 <tr>
-                  <th>Team</th>
-                  <th>Color</th>
+                  <th style="width: 100px;">Team</th>
+                  <th style="width: 50px;">Color</th>
                   <th>Players & OCR Aliases</th>
+                  <th style="width: 90px; text-align: right;">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td><strong style="color: var(--text);">KRAIT</strong></td>
-                  <td><span class="team-color-bar" style="background-color: #FF7A45;"></span></td>
-                  <td>
-                    <span style="font-weight: 600;">Ravi</span> <span style="color: var(--muted); font-size: 12px;">(Rav1, R4VI)</span>,
-                    <span style="font-weight: 600;">Kabir</span>,
-                    <span style="font-weight: 600;">Arjun</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong style="color: var(--text);">NOVA</strong></td>
-                  <td><span class="team-color-bar" style="background-color: #4DA3FF;"></span></td>
-                  <td>
-                    <span style="font-weight: 600;">Aarav</span> <span style="color: var(--muted); font-size: 12px;">(Aar4v, NOVA_A)</span>,
-                    <span style="font-weight: 600;">Rahul</span>,
-                    <span style="font-weight: 600;">Vicky</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong style="color: var(--text);">ZENITH</strong></td>
-                  <td><span class="team-color-bar" style="background-color: #A78BFA;"></span></td>
-                  <td>
-                    <span style="font-weight: 600;">Sam</span> <span style="color: var(--muted); font-size: 12px;">(5am, Z3NlTH_Sam)</span>,
-                    <span style="font-weight: 600;">Rex</span>,
-                    <span style="font-weight: 600;">Max</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong style="color: var(--text);">VORTEX</strong></td>
-                  <td><span class="team-color-bar" style="background-color: #2DD4BF;"></span></td>
-                  <td>
-                    <span style="font-weight: 600;">Isha</span> <span style="color: var(--muted); font-size: 12px;">(lsha, V0RT3X_lsha)</span>,
-                    <span style="font-weight: 600;">Ron</span>,
-                    <span style="font-weight: 600;">Karan</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong style="color: var(--text);">ASHEN</strong></td>
-                  <td><span class="team-color-bar" style="background-color: #F472B6;"></span></td>
-                  <td>
-                    <span style="font-weight: 600;">Kabir</span> <span style="color: var(--muted); font-size: 12px;">(K4bir)</span>,
-                    <span style="font-weight: 600;">Rishi</span>,
-                    <span style="font-weight: 600;">Aman</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong style="color: var(--text);">MIRAGE</strong></td>
-                  <td><span class="team-color-bar" style="background-color: #84CC16;"></span></td>
-                  <td>
-                    <span style="font-weight: 600;">Rohan</span>,
-                    <span style="font-weight: 600;">Tara</span>,
-                    <span style="font-weight: 600;">Sid</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong style="color: var(--text);">TALON</strong></td>
-                  <td><span class="team-color-bar" style="background-color: #FACC15;"></span></td>
-                  <td>
-                    <span style="font-weight: 600;">Dev</span> <span style="color: var(--muted); font-size: 12px;">(D3v)</span>,
-                    <span style="font-weight: 600;">Rocky</span>,
-                    <span style="font-weight: 600;">Sunny</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong style="color: var(--text);">OBSIDIAN</strong></td>
-                  <td><span class="team-color-bar" style="background-color: #94A3B8;"></span></td>
-                  <td>
-                    <span style="font-weight: 600;">Neel</span> <span style="color: var(--muted); font-size: 12px;">(N3el)</span>,
-                    <span style="font-weight: 600;">Aryan</span>,
-                    <span style="font-weight: 600;">Veer</span>
-                  </td>
-                </tr>
+              <tbody id="roster-tbody">
+                <!-- Dynamically rendered -->
               </tbody>
             </table>
           </section>
@@ -260,5 +238,267 @@
       </div>
     </main>
   </div>
+
+  <!-- Add/Edit Team Modal -->
+  <div class="modal-overlay" id="team-modal">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--text);" id="modal-title">Add Team to Roster</h3>
+        <button type="button" class="action-btn-sm" onclick="closeTeamModal()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modal-team-name">Team Name / Tag</label>
+        <input type="text" id="modal-team-name" class="form-input" placeholder="e.g. GODLIKE" style="text-transform: uppercase;">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modal-team-color">Team Color</label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input type="color" id="modal-team-color" value="#FF7A45" style="border: none; background: none; width: 44px; height: 38px; cursor: pointer;">
+          <input type="text" id="modal-team-color-hex" class="form-input" value="#FF7A45" style="flex: 1;" oninput="document.getElementById('modal-team-color').value = this.value">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modal-team-players">Players & Aliases</label>
+        <p style="font-size: 11px; color: var(--muted); margin-bottom: 6px;">
+          Format: Player (alias1, alias2). Example: <code>Jonathan (JONATHAN, JONNY), Neyoo (Ney00)</code>
+        </p>
+        <textarea id="modal-team-players" class="form-input" rows="4" placeholder="Jonathan (JONATHAN), Neyoo, Zgod, ClutchGod"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button type="button" class="btn btn-secondary" onclick="closeTeamModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitTeamModal()">Save Team</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeRoster = [];
+
+    // ----------------- Settings & Presets -----------------
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/match/settings');
+        const s = await res.json();
+        if (!s) return;
+
+        document.getElementById('tourney-name').value = s.tournament_title || 'BGMI Invitational';
+        document.getElementById('map-select').value = s.active_map || 'Erangel (Classic)';
+        document.getElementById('match-cur').value = s.current_match_number || 1;
+        document.getElementById('match-total').value = s.total_matches || 6;
+        document.getElementById('pts-kill').value = s.points_per_kill || 1;
+        document.getElementById('pts-kill-display').textContent = `${s.points_per_kill || 1} Point${(s.points_per_kill || 1) > 1 ? 's' : ''}`;
+
+        const pm = s.placement_points || {};
+        for (let i = 1; i <= 8; i++) {
+          const el = document.getElementById(`place-${i}`);
+          if (el && pm[i] !== undefined) el.value = pm[i];
+        }
+
+        // Update status strip
+        document.getElementById('top-match-title').textContent = `LIVE · Match ${s.current_match_number || 1} of ${s.total_matches || 6}`;
+        document.getElementById('badge-match-num').textContent = `Match ${s.current_match_number || 1}`;
+        document.getElementById('stat-match-cur').textContent = `${s.current_match_number || 1} of ${s.total_matches || 6}`;
+        document.getElementById('stat-map-cur').textContent = (s.active_map || 'ERANGEL').split(' ')[0].toUpperCase();
+      } catch (e) {
+        console.error('fetchSettings error:', e);
+      }
+    }
+
+    async function saveSettings() {
+      const placement_points = {};
+      for (let i = 1; i <= 8; i++) {
+        const el = document.getElementById(`place-${i}`);
+        placement_points[String(i)] = el ? parseInt(el.value) || 0 : 0;
+      }
+
+      const payload = {
+        tournament_title: document.getElementById('tourney-name').value.trim(),
+        active_map: document.getElementById('map-select').value,
+        current_match_number: parseInt(document.getElementById('match-cur').value) || 1,
+        total_matches: parseInt(document.getElementById('match-total').value) || 6,
+        points_per_kill: parseInt(document.getElementById('pts-kill').value) || 1,
+        placement_points: placement_points
+      };
+
+      try {
+        const res = await fetch('/api/match/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        alert('Tournament & Scoring settings saved successfully!');
+        fetchSettings();
+      } catch (e) {
+        alert('Failed to save settings: ' + e);
+      }
+    }
+
+    function loadPreset(type) {
+      if (type === 'bgis') {
+        const vals = [10, 6, 5, 4, 3, 2, 1, 1];
+        vals.forEach((v, i) => document.getElementById(`place-${i+1}`).value = v);
+        document.getElementById('stat-points-sys').textContent = 'BGIS 10-PTS';
+      } else if (type === 'pmco') {
+        const vals = [15, 12, 10, 8, 6, 4, 2, 1];
+        vals.forEach((v, i) => document.getElementById(`place-${i+1}`).value = v);
+        document.getElementById('stat-points-sys').textContent = '15-PT PMCO';
+      }
+    }
+
+    // ----------------- Roster CRUD -----------------
+    async function fetchRoster() {
+      try {
+        const res = await fetch('/api/roster');
+        activeRoster = await res.json();
+        renderRosterTable();
+      } catch (e) {
+        console.error('fetchRoster error:', e);
+      }
+    }
+
+    function renderRosterTable() {
+      const tbody = document.getElementById('roster-tbody');
+      tbody.innerHTML = '';
+
+      let totalPlayers = 0;
+      activeRoster.forEach(team => {
+        const tr = document.createElement('tr');
+        const players = team.players || [];
+        totalPlayers += players.length;
+
+        const playersHtml = players.map(p => {
+          const aliasStr = p.aliases && p.aliases.length > 0 ? ` <span style="color: var(--muted); font-size: 11px;">(${p.aliases.join(', ')})</span>` : '';
+          return `<span style="font-weight: 600; color: var(--text);">${p.name}</span>${aliasStr}`;
+        }).join(', ');
+
+        tr.innerHTML = `
+          <td><strong style="color: var(--text); font-size: 14px;">${team.team}</strong></td>
+          <td><span class="team-color-bar" style="background-color: ${team.color || '#94A3B8'};"></span></td>
+          <td style="font-size: 13px;">${playersHtml || '<em style="color: var(--muted);">No players registered</em>'}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button type="button" class="action-btn-sm" onclick="openEditTeamModal('${team.team}')">Edit</button>
+            <button type="button" class="action-btn-sm action-btn-danger" onclick="deleteTeam('${team.team}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('stat-teams-count').textContent = activeRoster.length;
+      document.getElementById('stat-players-count').textContent = totalPlayers;
+    }
+
+    function openAddTeamModal() {
+      document.getElementById('modal-title').textContent = 'Add Team to Roster';
+      document.getElementById('modal-team-name').value = '';
+      document.getElementById('modal-team-name').readOnly = false;
+      document.getElementById('modal-team-color').value = '#FF7A45';
+      document.getElementById('modal-team-color-hex').value = '#FF7A45';
+      document.getElementById('modal-team-players').value = '';
+      document.getElementById('team-modal').classList.add('open');
+    }
+
+    function openEditTeamModal(teamName) {
+      const t = activeRoster.find(item => item.team.toUpperCase() === teamName.toUpperCase());
+      if (!t) return;
+
+      document.getElementById('modal-title').textContent = `Edit Team: ${t.team}`;
+      document.getElementById('modal-team-name').value = t.team;
+      document.getElementById('modal-team-name').readOnly = true;
+      document.getElementById('modal-team-color').value = t.color || '#FF7A45';
+      document.getElementById('modal-team-color-hex').value = t.color || '#FF7A45';
+
+      const pText = (t.players || []).map(p => {
+        if (p.aliases && p.aliases.length > 0) {
+          return `${p.name} (${p.aliases.join(', ')})`;
+        }
+        return p.name;
+      }).join(', ');
+      document.getElementById('modal-team-players').value = pText;
+
+      document.getElementById('team-modal').classList.add('open');
+    }
+
+    function closeTeamModal() {
+      document.getElementById('team-modal').classList.remove('open');
+    }
+
+    async function submitTeamModal() {
+      const teamName = document.getElementById('modal-team-name').value.trim().toUpperCase();
+      if (!teamName) {
+        alert('Please enter a team name');
+        return;
+      }
+      const color = document.getElementById('modal-team-color-hex').value.trim() || '#94A3B8';
+      const rawPlayers = document.getElementById('modal-team-players').value;
+
+      // Parse players and aliases: "Ravi (Rav1, R4VI), Kabir"
+      const parsedPlayers = [];
+      const parts = rawPlayers.split(',');
+      parts.forEach(part => {
+        const trimmed = part.trim();
+        if (!trimmed) return;
+        const match = trimmed.match(/^([^(]+)(?:\(([^)]+)\))?$/);
+        if (match) {
+          const name = match[1].trim();
+          const aliasStr = match[2] ? match[2].trim() : '';
+          const aliases = aliasStr ? aliasStr.split(',').map(a => a.trim()).filter(Boolean) : [];
+          if (name) {
+            parsedPlayers.push({ name, aliases });
+          }
+        }
+      });
+
+      try {
+        const res = await fetch('/api/roster', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            team: teamName,
+            color: color,
+            players: parsedPlayers
+          })
+        });
+        const data = await res.json();
+        closeTeamModal();
+        fetchRoster();
+      } catch (e) {
+        alert('Failed to save team: ' + e);
+      }
+    }
+
+    async function deleteTeam(teamName) {
+      if (!confirm(`Delete team "${teamName}" from active roster?`)) return;
+      try {
+        await fetch(`/api/roster/${encodeURIComponent(teamName)}`, { method: 'DELETE' });
+        fetchRoster();
+      } catch (e) {
+        alert('Failed to delete team: ' + e);
+      }
+    }
+
+    async function resetDefaults() {
+      if (!confirm('Reset roster back to the standard 8 tournament teams?')) return;
+      try {
+        await fetch('/api/roster/reset-default', { method: 'POST' });
+        fetchRoster();
+      } catch (e) {
+        alert('Failed to reset: ' + e);
+      }
+    }
+
+    // Sync color picker with hex input
+    document.getElementById('modal-team-color').addEventListener('input', (e) => {
+      document.getElementById('modal-team-color-hex').value = e.target.value.toUpperCase();
+    });
+
+    // Initial load
+    fetchSettings();
+    fetchRoster();
+  </script>
 </body>
 </html>

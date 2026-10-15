@@ -317,6 +317,16 @@ button:active {
   background-color: var(--row-highlight-bg);
 }
 
+.table-row.selected {
+  outline: 1px solid var(--amber);
+  background-color: rgba(255, 176, 32, 0.08);
+}
+
+.table-row.eliminated {
+  opacity: 0.45;
+  filter: grayscale(0.5);
+}
+
 .row-rank {
   font-family: var(--font-heading);
   font-weight: 700;
@@ -660,6 +670,11 @@ button:active {
 
 .overlay-pts.amber {
   color: var(--amber);
+}
+
+.overlay-row.eliminated {
+  opacity: 0.45;
+  filter: grayscale(0.7);
 }
 
 /* Kill-Feed Region Box */

@@ -8,6 +8,58 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .match-control-bar {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 16px 20px 0 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .status-badge-live {
+      background: rgba(45, 212, 191, 0.15);
+      color: #2DD4BF;
+      border: 1px solid #2DD4BF;
+    }
+    .status-badge-paused {
+      background: rgba(255, 176, 32, 0.15);
+      color: #FFB020;
+      border: 1px solid #FFB020;
+    }
+    .status-badge-finished {
+      background: rgba(244, 63, 94, 0.15);
+      color: #F43F5E;
+      border: 1px solid #F43F5E;
+    }
+    .operator-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      padding: 0 20px 20px 20px;
+    }
+    .operator-team-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0B0E12;
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      padding: 8px 12px;
+      transition: border-color 0.15s ease;
+    }
+    .operator-team-card:hover {
+      border-color: var(--amber);
+    }
+    .operator-team-card.eliminated {
+      opacity: 0.45;
+      filter: grayscale(0.6);
+    }
+  </style>
 </head>
 <body>
   <div class="console-page">
@@ -20,44 +72,58 @@
         </a>
         <nav class="nav-tabs" aria-label="Main Navigation">
           <a href="console.html" class="nav-tab-link active">Live</a>
-          <a href="calibrate.html" class="nav-tab-link">Calibrate</a>
           <a href="setup.html" class="nav-tab-link">Setup</a>
           <a href="history.html" class="nav-tab-link">History</a>
           <a href="output.html" class="nav-tab-link">Output</a>
+          <a href="manual.html" class="nav-tab-link">Manual</a>
         </nav>
       </div>
       <div class="top-bar-right">
-        <span class="live-dot" aria-hidden="true"></span>
-        <span class="live-match-text">LIVE · Match 3 of 6</span>
+        <span class="live-dot" aria-hidden="true" id="live-dot"></span>
+        <span class="live-match-text" id="top-bar-match-text">LIVE · Match 1 of 6</span>
       </div>
     </header>
+
+    <!-- Match Lifecycle Server Control Bar -->
+    <div class="match-control-bar">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);">Match Engine:</span>
+        <span id="match-status-badge" class="chip status-badge-live" style="font-weight: 700; font-size: 11px; letter-spacing: 0.05em;">● LIVE COUNTING</span>
+        <span id="match-notice" style="font-size: 12px; color: var(--muted); font-weight: 500;">Ingesting eliminations from live OCR and operator clicks</span>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-pause" onclick="togglePause()">⏸ Pause Counting</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-end-match" onclick="triggerEndMatch()">🏁 End & Lock Match</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-new-match" onclick="triggerNewMatch()">➕ Next Match</button>
+      </div>
+    </div>
 
     <!-- Status strip -->
     <div class="status-strip-wrapper">
       <div class="status-panel">
         <div class="stat-item">
-          <div class="stat-value">30</div>
-          <div class="stat-label">FPS</div>
+          <div class="stat-value" id="strip-alive-teams">8/8</div>
+          <div class="stat-label">ALIVE TEAMS</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">38 ms</div>
-          <div class="stat-label">OCR LATENCY</div>
+          <div class="stat-value" id="strip-lobby-kills">0</div>
+          <div class="stat-label">LOBBY KILLS</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">210 ms</div>
-          <div class="stat-label">CAPTURE TO PAINT P95</div>
+          <div class="stat-value amber" id="strip-leader-team">NONE</div>
+          <div class="stat-label">MATCH LEADER</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">0</div>
-          <div class="stat-label">DROPPED FRAMES</div>
+          <div class="stat-value" id="strip-map-name">ERANGEL</div>
+          <div class="stat-label">MAP</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">2</div>
-          <div class="stat-label">OVERLAYS CONNECTED</div>
+          <div class="stat-value" id="strip-match-num">1 of 6</div>
+          <div class="stat-label">CURRENT MATCH</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value amber">2</div>
-          <div class="stat-label">NEEDS REVIEW</div>
+          <div class="stat-value amber" id="strip-engine-status">ONLINE</div>
+          <div class="stat-label">SERVER STATUS</div>
         </div>
       </div>
     </div>
@@ -68,8 +134,11 @@
       <section class="col-left" aria-label="Points Table Section">
         <div class="panel points-table-panel">
           <div class="panel-header">
-            <span class="panel-title">POINTS TABLE</span>
-            <span class="chip chip-teal">Updated 1s ago</span>
+            <div>
+              <span class="panel-title" id="table-panel-title">LIVE POINTS TABLE</span>
+              <span style="font-size: 11px; color: var(--muted); margin-left: 8px;" id="selected-team-hint">Click a team row to select</span>
+            </div>
+            <span class="chip chip-teal" id="table-sync-badge">Live Synced</span>
           </div>
 
           <!-- Column Header -->
@@ -81,121 +150,28 @@
             <span class="col-num">TOTAL</span>
           </div>
 
-          <!-- Table Rows -->
-          <!-- Row 1: KRAIT (Highlighted) -->
-          <div class="table-row highlighted">
-            <div class="row-rank">1</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #FF7A45;"></span>
-              <span class="team-name">KRAIT</span>
-              <span class="row-kill-chip">+1 kill</span>
-            </div>
-            <div class="row-num">12</div>
-            <div class="row-num">11</div>
-            <div class="row-total">23</div>
-          </div>
-
-          <!-- Row 2: NOVA -->
-          <div class="table-row">
-            <div class="row-rank">2</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #4DA3FF;"></span>
-              <span class="team-name">NOVA</span>
-            </div>
-            <div class="row-num">10</div>
-            <div class="row-num">9</div>
-            <div class="row-total">19</div>
-          </div>
-
-          <!-- Row 3: ZENITH -->
-          <div class="table-row">
-            <div class="row-rank">3</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #A78BFA;"></span>
-              <span class="team-name">ZENITH</span>
-            </div>
-            <div class="row-num">9</div>
-            <div class="row-num">8</div>
-            <div class="row-total">17</div>
-          </div>
-
-          <!-- Row 4: VORTEX -->
-          <div class="table-row">
-            <div class="row-rank">4</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #2DD4BF;"></span>
-              <span class="team-name">VORTEX</span>
-            </div>
-            <div class="row-num">8</div>
-            <div class="row-num">7</div>
-            <div class="row-total">15</div>
-          </div>
-
-          <!-- Row 5: ASHEN -->
-          <div class="table-row">
-            <div class="row-rank">5</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #F472B6;"></span>
-              <span class="team-name">ASHEN</span>
-            </div>
-            <div class="row-num">6</div>
-            <div class="row-num">8</div>
-            <div class="row-total">14</div>
-          </div>
-
-          <!-- Row 6: MIRAGE -->
-          <div class="table-row">
-            <div class="row-rank">6</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #84CC16;"></span>
-              <span class="team-name">MIRAGE</span>
-            </div>
-            <div class="row-num">5</div>
-            <div class="row-num">6</div>
-            <div class="row-total">11</div>
-          </div>
-
-          <!-- Row 7: TALON -->
-          <div class="table-row">
-            <div class="row-rank">7</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #FACC15;"></span>
-              <span class="team-name">TALON</span>
-            </div>
-            <div class="row-num">4</div>
-            <div class="row-num">5</div>
-            <div class="row-total">9</div>
-          </div>
-
-          <!-- Row 8: OBSIDIAN -->
-          <div class="table-row">
-            <div class="row-rank">8</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #94A3B8;"></span>
-              <span class="team-name">OBSIDIAN</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num">4</div>
-            <div class="row-total">7</div>
+          <!-- Table Rows Container -->
+          <div id="points-rows-container">
+            <!-- Dynamically populated -->
           </div>
 
           <!-- Table Footer Buttons -->
           <div class="table-footer">
-            <button type="button" class="btn btn-primary">Team eliminated</button>
-            <button type="button" class="btn btn-secondary">+ Kill</button>
-            <button type="button" class="btn btn-secondary">Undo last</button>
-            <button type="button" class="btn btn-secondary btn-danger-text btn-push-right">End match</button>
+            <button type="button" class="btn btn-primary" onclick="eliminateSelected()">Team eliminated</button>
+            <button type="button" class="btn btn-secondary" onclick="quickAddKill()">+ Kill</button>
+            <button type="button" class="btn btn-secondary" onclick="undoLast()">Undo last</button>
+            <button type="button" class="btn btn-secondary btn-danger-text btn-push-right" onclick="resetCurrentMatch()">Reset match</button>
           </div>
         </div>
       </section>
 
-      <!-- Right: Pure Kill & Knock Analytics: Highest Fragger, Highest Total Team, Most Knocked Team -->
+      <!-- Right: Pure Kill & Knock Analytics -->
       <div class="col-right">
         <!-- KEY MATCH STATS -->
         <section class="panel" aria-label="Key Match Stats Section">
           <div class="panel-header">
             <span class="panel-title">MATCH COMBAT LEADERS</span>
-            <span class="chip chip-amber">Kill & Knock Feed</span>
+            <span class="chip chip-amber">Kills & Knocks Feed</span>
           </div>
 
           <div class="stat-cards-trio">
@@ -211,14 +187,14 @@
                 <div>
                   <div class="highlight-label-tag">HIGHEST FRAGGER OVERALL</div>
                   <div class="highlight-primary-text">
-                    <span>Ravi</span>
-                    <span class="chip" style="background-color: #FF7A45; color: #1A1200; font-size: 11px;">KRAIT</span>
+                    <span id="mvp-player-name">None</span>
+                    <span class="chip" id="mvp-team-chip" style="background-color: #FF7A45; color: #1A1200; font-size: 11px;">KRAIT</span>
                   </div>
-                  <div class="highlight-sub-text">18 Total Frags Across Scrims · 7 in Match 3</div>
+                  <div class="highlight-sub-text" id="mvp-sub-text">Match Kill Leader</div>
                 </div>
               </div>
               <div class="highlight-count-badge">
-                <div class="highlight-count-number amber">7</div>
+                <div class="highlight-count-number amber" id="mvp-kills-count">0</div>
                 <div class="highlight-count-unit">MATCH KILLS</div>
               </div>
             </div>
@@ -239,14 +215,14 @@
                 <div>
                   <div class="highlight-label-tag">HIGHEST TOTAL TEAM</div>
                   <div class="highlight-primary-text">
-                    <span>KRAIT</span>
+                    <span id="top-team-name">KRAIT</span>
                     <span class="chip chip-amber" style="font-size: 11px;">Rank #1</span>
                   </div>
-                  <div class="highlight-sub-text">11 Kill Points + 12 Placement Points</div>
+                  <div class="highlight-sub-text" id="top-team-sub">0 Kill Pts + 0 Placement Pts</div>
                 </div>
               </div>
               <div class="highlight-count-badge">
-                <div class="highlight-count-number orange">23</div>
+                <div class="highlight-count-number orange" id="top-team-pts">0</div>
                 <div class="highlight-count-unit">TOTAL PTS</div>
               </div>
             </div>
@@ -264,101 +240,375 @@
                 <div>
                   <div class="highlight-label-tag">MOST KNOCKED TEAM</div>
                   <div class="highlight-primary-text">
-                    <span>OBSIDIAN</span>
-                    <span class="chip" style="background-color: #2D1418; color: var(--danger-text); font-size: 11px;">High Pressure</span>
+                    <span id="knocked-team-name">None</span>
+                    <span class="chip" style="background-color: #2D1418; color: var(--danger-text); font-size: 11px;">Combat Pressure</span>
                   </div>
-                  <div class="highlight-sub-text">9 Total Squad Knockdowns Suffered (4 Eliminated)</div>
+                  <div class="highlight-sub-text" id="knocked-sub-text">0 Squad Knockdowns Suffered</div>
                 </div>
               </div>
               <div class="highlight-count-badge">
-                <div class="highlight-count-number danger">9</div>
+                <div class="highlight-count-number danger" id="knocked-count">0</div>
                 <div class="highlight-count-unit">KNOCKS</div>
               </div>
             </div>
           </div>
 
-          <!-- Total Kills Breakdown Bar -->
+          <!-- Dynamic Team Kill Share Bar -->
           <div class="frag-breakdown-card" style="border-top: 1px solid var(--divider);">
             <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);">
-              <span>Team Kill Share (Counting Kills Only)</span>
-              <span>58 Total Lobby Kills</span>
+              <span>Team Kill Share (Active Match)</span>
+              <span id="kill-share-total-label">0 Total Lobby Kills</span>
             </div>
-            <div class="frag-bar-container" title="Kill Share Breakdown">
-              <div class="frag-bar-seg" style="width: 19%; background-color: #FF7A45;" title="KRAIT: 11 kills"></div>
-              <div class="frag-bar-seg" style="width: 16%; background-color: #4DA3FF;" title="NOVA: 9 kills"></div>
-              <div class="frag-bar-seg" style="width: 14%; background-color: #A78BFA;" title="ZENITH: 8 kills"></div>
-              <div class="frag-bar-seg" style="width: 14%; background-color: #F472B6;" title="ASHEN: 8 kills"></div>
-              <div class="frag-bar-seg" style="width: 12%; background-color: #2DD4BF;" title="VORTEX: 7 kills"></div>
-              <div class="frag-bar-seg" style="width: 10%; background-color: #84CC16;" title="MIRAGE: 6 kills"></div>
-              <div class="frag-bar-seg" style="width: 9%; background-color: #FACC15;" title="TALON: 5 kills"></div>
-              <div class="frag-bar-seg" style="width: 6%; background-color: #94A3B8;" title="OBSIDIAN: 4 kills"></div>
-            </div>
-            <div class="frag-team-chips">
-              <div class="frag-team-chip">
-                <span class="frag-chip-dot" style="background-color: #FF7A45;"></span>
-                <span>KRAIT: <strong style="color: var(--amber);">11 Kills (Top)</strong></span>
-              </div>
-              <div class="frag-team-chip">
-                <span class="frag-chip-dot" style="background-color: #4DA3FF;"></span>
-                <span>NOVA: <strong style="color: var(--text);">9 Kills</strong></span>
-              </div>
-              <div class="frag-team-chip">
-                <span class="frag-chip-dot" style="background-color: #A78BFA;"></span>
-                <span>ZENITH: <strong style="color: var(--text);">8 Kills</strong></span>
-              </div>
-              <div class="frag-team-chip">
-                <span class="frag-chip-dot" style="background-color: #94A3B8;"></span>
-                <span>OBSIDIAN: <strong style="color: var(--danger-text);">9 Knocks Suffered</strong></span>
-              </div>
+            <div class="frag-bar-container" id="frag-bar-container" title="Kill Share Breakdown">
+              <!-- Dynamically populated segments -->
             </div>
           </div>
         </section>
 
-        <!-- REVIEW QUEUE -->
-        <section class="panel" aria-label="Review Queue Section">
+        <!-- DYNAMIC 1-CLICK OPERATOR KILL & KNOCK ACTIONS -->
+        <section class="panel" aria-label="Quick Scoring Section">
           <div class="panel-header">
-            <span class="panel-title">REVIEW QUEUE</span>
-            <span class="chip chip-amber">2 waiting</span>
+            <span class="panel-title">LIVE OPERATOR KILL ACTIONS</span>
+            <span class="chip chip-teal">1-Click Fast Sync</span>
           </div>
-
-          <div class="review-cards">
-            <!-- Card 1 -->
-            <div class="review-card">
-              <div class="crop-box">
-                <span>KRA1T_Rav1</span>
-                <span style="color: #8B95A3; font-size: 14px;">▸</span>
-                <span>Z3NlTH_5am</span>
-              </div>
-              <div class="review-meta">
-                Closest roster match: <strong>KRAIT Ravi › ZENITH Sam</strong> · 84%
-              </div>
-              <div class="review-actions">
-                <button type="button" class="btn btn-primary btn-sm">Accept</button>
-                <button type="button" class="btn btn-secondary btn-sm">Fix</button>
-                <button type="button" class="btn btn-secondary btn-sm btn-danger-text">Discard</button>
-              </div>
-              <div class="review-card-divider" aria-hidden="true"></div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="review-card">
-              <div class="crop-box">
-                <span>VORT3X_lsha</span>
-                <span style="color: #8B95A3; font-size: 14px;">▸</span>
-                <span>??????</span>
-              </div>
-              <div class="review-meta">
-                No confident match for the victim name
-              </div>
-              <div class="review-actions">
-                <button type="button" class="btn btn-primary btn-sm">Pick victim</button>
-                <button type="button" class="btn btn-secondary btn-sm">Discard</button>
-              </div>
-            </div>
+          <div class="operator-actions-grid" id="operator-actions-grid">
+            <!-- Dynamically generated for every team in active match -->
           </div>
         </section>
       </div>
     </main>
   </div>
+
+  <script>
+    let currentTeams = [];
+    let selectedTeam = '';
+    let currentMatchStatus = 'LIVE';
+    let lastAction = null;
+
+    // ----------------- Server Match Controls -----------------
+    async function togglePause() {
+      const newStatus = currentMatchStatus === 'PAUSED' ? 'LIVE' : 'PAUSED';
+      try {
+        const res = await fetch('/api/match/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await res.json();
+        if (data.snapshot) renderConsole(data.snapshot);
+      } catch (e) {
+        alert('Failed to change match status: ' + e);
+      }
+    }
+
+    async function triggerEndMatch() {
+      if (!confirm('End and finalize this match? Placement points will be awarded according to BGIS rules, and results will be saved to Tournament History.')) return;
+      try {
+        const res = await fetch('/api/match/end', { method: 'POST' });
+        const data = await res.json();
+        if (data.snapshot) renderConsole(data.snapshot);
+        alert('Match ended and results saved to History!');
+      } catch (e) {
+        alert('Failed to end match: ' + e);
+      }
+    }
+
+    async function triggerNewMatch() {
+      const mapName = prompt('Enter map name for the next match (or leave blank to keep current):');
+      try {
+        const res = await fetch('/api/match/new', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ map: mapName ? mapName.trim() : null })
+        });
+        const data = await res.json();
+        if (data.snapshot) renderConsole(data.snapshot);
+      } catch (e) {
+        alert('Failed to start new match: ' + e);
+      }
+    }
+
+    // ----------------- Scoring Actions -----------------
+    async function sendKill(team, delta = 1) {
+      if (!team) return;
+      if (currentMatchStatus === 'PAUSED' || currentMatchStatus === 'FINISHED') {
+        alert(`Cannot add kills: Match is currently ${currentMatchStatus}. Please resume counting first.`);
+        return;
+      }
+      try {
+        lastAction = { type: 'kill', team, delta };
+        const res = await fetch('/api/kill', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ team, delta })
+        });
+        const data = await res.json();
+        if (data.snapshot) renderConsole(data.snapshot);
+      } catch (err) {
+        console.error('sendKill error:', err);
+      }
+    }
+
+    async function sendKnock(team, delta = 1) {
+      if (!team) return;
+      try {
+        const res = await fetch('/api/knock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ team, delta })
+        });
+        const data = await res.json();
+        if (data.snapshot) renderConsole(data.snapshot);
+      } catch (err) {
+        console.error('sendKnock error:', err);
+      }
+    }
+
+    async function quickAddKill() {
+      if (!selectedTeam && currentTeams.length > 0) {
+        selectedTeam = currentTeams[0].team;
+      }
+      if (!selectedTeam) {
+        alert('Please select a team row first');
+        return;
+      }
+      sendKill(selectedTeam, 1);
+    }
+
+    async function undoLast() {
+      try {
+        const res = await fetch('/api/undo', { method: 'POST' });
+        const data = await res.json();
+        if (data.snapshot) {
+          renderConsole(data.snapshot);
+        } else {
+          alert(data.message || 'No action to undo');
+        }
+      } catch (err) {
+        console.error('undo error:', err);
+      }
+    }
+
+    async function eliminateSelected() {
+      if (!selectedTeam) {
+        alert('Please click on a team row first to select it for elimination');
+        return;
+      }
+      try {
+        const res = await fetch('/api/eliminate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ team: selectedTeam })
+        });
+        const data = await res.json();
+        if (data.snapshot) renderConsole(data.snapshot);
+      } catch (err) {
+        console.error('eliminate error:', err);
+      }
+    }
+
+    async function resetCurrentMatch() {
+      if (!confirm('Reset current match scores back to 0?')) return;
+      try {
+        const res = await fetch('/api/reset', { method: 'POST' });
+        const data = await res.json();
+        if (data.snapshot) renderConsole(data.snapshot);
+      } catch (err) {
+        console.error('reset error:', err);
+      }
+    }
+
+    function selectTeamRow(team) {
+      selectedTeam = team;
+      document.getElementById('selected-team-hint').textContent = `Selected: ${team}`;
+      renderTableRows(currentTeams);
+    }
+
+    // ----------------- Core Rendering -----------------
+    function renderConsole(snapshot) {
+      if (!snapshot) return;
+      const teams = snapshot.teams || [];
+      currentTeams = teams;
+      currentMatchStatus = snapshot.status || 'LIVE';
+
+      // 1. Update Match Lifecycle bar
+      const badgeEl = document.getElementById('match-status-badge');
+      const pauseBtn = document.getElementById('btn-toggle-pause');
+      const noticeEl = document.getElementById('match-notice');
+
+      if (currentMatchStatus === 'LIVE') {
+        badgeEl.className = 'chip status-badge-live';
+        badgeEl.textContent = '● LIVE COUNTING';
+        pauseBtn.textContent = '⏸ Pause Counting';
+        noticeEl.textContent = 'Active: killfeed OCR and operator scoring are running';
+      } else if (currentMatchStatus === 'PAUSED') {
+        badgeEl.className = 'chip status-badge-paused';
+        badgeEl.textContent = '⏸ COUNTING PAUSED';
+        pauseBtn.textContent = '▶ Resume Counting';
+        noticeEl.textContent = 'Counting paused: stream OCR events and clicks are blocked';
+      } else if (currentMatchStatus === 'FINISHED') {
+        badgeEl.className = 'chip status-badge-finished';
+        badgeEl.textContent = '🏁 MATCH FINISHED';
+        pauseBtn.textContent = '⏸ Pause Counting';
+        noticeEl.textContent = 'Match concluded: final placement points awarded and saved';
+      }
+
+      // 2. Update Top Bar & Status Strip
+      const matchNum = snapshot.match_number || 1;
+      const totalMatches = snapshot.total_matches || 6;
+      const mapName = (snapshot.map || 'ERANGEL').split(' ')[0].toUpperCase();
+      document.getElementById('top-bar-match-text').textContent = `${currentMatchStatus} · Match ${matchNum} of ${totalMatches} · ${mapName}`;
+
+      const aliveCount = teams.filter(t => !t.eliminated).length;
+      const totalKills = teams.reduce((acc, t) => acc + (t.kills || 0), 0);
+      const leader = teams[0];
+
+      document.getElementById('strip-alive-teams').textContent = `${aliveCount}/${teams.length}`;
+      document.getElementById('strip-lobby-kills').textContent = totalKills;
+      if (leader) {
+        document.getElementById('strip-leader-team').textContent = `${leader.team} (${leader.total || 0} PTS)`;
+      }
+      document.getElementById('strip-map-name').textContent = mapName;
+      document.getElementById('strip-match-num').textContent = `${matchNum} of ${totalMatches}`;
+
+      // 3. Render Points Table Rows
+      renderTableRows(teams);
+
+      // 4. Update Combat Leaders
+      // MVP / Highest Fragger
+      const mvp = snapshot.mvp || {};
+      if (mvp && mvp.player && mvp.player !== 'None') {
+        document.getElementById('mvp-player-name').textContent = mvp.player;
+        document.getElementById('mvp-team-chip').textContent = mvp.team || 'TEAM';
+        document.getElementById('mvp-team-chip').style.backgroundColor = leader ? leader.color : '#FF7A45';
+        document.getElementById('mvp-kills-count').textContent = mvp.kills || 0;
+        document.getElementById('mvp-sub-text').textContent = `${mvp.kills || 0} Frags (${mvp.knocks || 0} Knocks)`;
+      } else {
+        document.getElementById('mvp-player-name').textContent = leader ? leader.team : 'None';
+        document.getElementById('mvp-team-chip').textContent = leader ? leader.team : 'TOP';
+        document.getElementById('mvp-kills-count').textContent = leader ? leader.kills : 0;
+      }
+
+      // Highest Total Team
+      if (leader) {
+        document.getElementById('top-team-name').textContent = leader.team;
+        document.getElementById('top-team-pts').textContent = leader.total || 0;
+        document.getElementById('top-team-sub').textContent = `${leader.kills || 0} Kill Points + ${leader.place || 0} Placement Points`;
+      }
+
+      // Most Knocked Team
+      const mostKnocked = [...teams].sort((a, b) => (b.knocks || 0) - (a.knocks || 0))[0];
+      if (mostKnocked) {
+        document.getElementById('knocked-team-name').textContent = mostKnocked.team;
+        document.getElementById('knocked-count').textContent = mostKnocked.knocks || 0;
+        document.getElementById('knocked-sub-text').textContent = `${mostKnocked.knocks || 0} Total Squad Knockdowns Suffered`;
+      }
+
+      // 5. Team Kill Share Bar
+      document.getElementById('kill-share-total-label').textContent = `${totalKills} Total Lobby Kills`;
+      const barContainer = document.getElementById('frag-bar-container');
+      if (totalKills > 0) {
+        barContainer.innerHTML = teams.map(t => {
+          const k = t.kills || 0;
+          if (k <= 0) return '';
+          const pct = Math.max(3, Math.round((k / totalKills) * 100));
+          return `<div class="frag-bar-seg" style="width: ${pct}%; background-color: ${t.color || '#94A3B8'};" title="${t.team}: ${k} kills (${pct}%)"></div>`;
+        }).join('');
+      } else {
+        barContainer.innerHTML = '<div style="width: 100%; height: 100%; background: #1C232E; border-radius: 4px;"></div>';
+      }
+
+      // 6. Dynamic Operator Scoring Grid
+      renderOperatorGrid(teams);
+    }
+
+    function renderTableRows(teams) {
+      const container = document.getElementById('points-rows-container');
+      if (!container) return;
+
+      container.innerHTML = teams.map((t, idx) => {
+        const rank = idx + 1;
+        const kills = t.kills || 0;
+        const place = t.place || 0;
+        const total = t.total ?? (kills + place);
+        const color = t.color || '#94A3B8';
+        const isHighlighted = rank === 1;
+        const isSelected = t.team === selectedTeam;
+        const isEliminated = Boolean(t.eliminated);
+
+        return `
+          <div class="table-row ${isHighlighted ? 'highlighted' : ''} ${isSelected ? 'selected' : ''} ${isEliminated ? 'eliminated' : ''}"
+               onclick="selectTeamRow('${t.team}')" style="cursor: pointer;">
+            <div class="row-rank">${rank}</div>
+            <div class="row-team">
+              <span class="team-color-bar" style="background-color: ${color};"></span>
+              <span class="team-name">${t.team}</span>
+              ${isEliminated ? '<span class="chip" style="background: #2D1418; color: var(--danger-text); font-size: 10px; margin-left: 6px;">ELIM</span>' : ''}
+              ${isHighlighted && !isEliminated ? '<span class="row-kill-chip">+1 kill</span>' : ''}
+            </div>
+            <div class="row-num">${place}</div>
+            <div class="row-num">${kills}</div>
+            <div class="row-total">${total}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderOperatorGrid(teams) {
+      const grid = document.getElementById('operator-actions-grid');
+      if (!grid) return;
+
+      grid.innerHTML = teams.map(t => {
+        const isEliminated = Boolean(t.eliminated);
+        return `
+          <div class="operator-team-card ${isEliminated ? 'eliminated' : ''}">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="team-color-bar" style="background-color: ${t.color || '#94A3B8'}; height: 18px;"></span>
+              <div>
+                <div style="font-weight: 700; font-size: 13px; color: var(--text);">${t.team}</div>
+                <div style="font-size: 11px; color: var(--muted);">${t.kills || 0}K · ${t.knocks || 0}KN</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 4px;">
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 28px; padding: 0 8px; font-weight: 700;" onclick="sendKill('${t.team}', 1)" title="Add Kill">+1</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 28px; padding: 0 6px; color: var(--muted);" onclick="sendKill('${t.team}', -1)" title="Subtract Kill">-1</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 28px; padding: 0 6px; font-size: 11px;" onclick="sendKnock('${t.team}', 1)" title="Add Knock">Knk</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ----------------- Real-Time WebSocket & Init -----------------
+    fetch('/scoreboard')
+      .then(res => res.json())
+      .then(data => renderConsole(data))
+      .catch(err => console.log('Console initial fetch error:', err));
+
+    (function initConsoleWebSocket() {
+      const wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + (location.host || '127.0.0.1:8000') + '/scoreboard';
+      let ws;
+
+      function connect() {
+        try {
+          ws = new WebSocket(wsUrl);
+          ws.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              renderConsole(data);
+            } catch (err) {
+              console.error('Error updating console from WebSocket:', err);
+            }
+          };
+          ws.onclose = () => setTimeout(connect, 2500);
+          ws.onerror = () => ws.close();
+        } catch (e) {
+          setTimeout(connect, 2500);
+        }
+      }
+
+      connect();
+    })();
+  </script>
 </body>
 </html>

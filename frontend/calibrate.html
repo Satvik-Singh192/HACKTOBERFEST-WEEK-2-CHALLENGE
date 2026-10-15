@@ -230,14 +230,42 @@
       ctx.restore();
     }
 
-    drawGamePlaceholder();
+    // Try loading actual live frame snapshot from output/live_roi_box.jpg
+    function loadLiveSnapshot() {
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+      img.onerror = () => {
+        drawGamePlaceholder();
+      };
+      img.src = '/output/live_roi_box.jpg?t=' + Date.now();
+    }
 
-    document.getElementById('btn-save-roi').addEventListener('click', () => {
-      alert('ROI Configuration saved successfully: x=0.620, y=0.050, w=0.350, h=0.300');
+    loadLiveSnapshot();
+
+    document.getElementById('btn-save-roi').addEventListener('click', async () => {
+      const payload = {
+        xmin: parseFloat(document.getElementById('roi-x').textContent) || 0.62,
+        xmax: (parseFloat(document.getElementById('roi-x').textContent) || 0.62) + (parseFloat(document.getElementById('roi-w').textContent) || 0.35),
+        ymin: parseFloat(document.getElementById('roi-y').textContent) || 0.05,
+        ymax: (parseFloat(document.getElementById('roi-y').textContent) || 0.05) + (parseFloat(document.getElementById('roi-h').textContent) || 0.30)
+      };
+      try {
+        const res = await fetch('/api/calibrate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        alert('ROI coordinates saved successfully to backend persistent storage!');
+      } catch (e) {
+        alert('Failed to save ROI: ' + e);
+      }
     });
 
     document.getElementById('btn-snap').addEventListener('click', () => {
-      drawGamePlaceholder();
+      loadLiveSnapshot();
     });
   </script>
 </body>

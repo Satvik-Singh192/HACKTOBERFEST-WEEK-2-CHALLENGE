@@ -20,15 +20,15 @@
         </a>
         <nav class="nav-tabs" aria-label="Main Navigation">
           <a href="console.html" class="nav-tab-link">Live</a>
-          <a href="calibrate.html" class="nav-tab-link">Calibrate</a>
           <a href="setup.html" class="nav-tab-link">Setup</a>
           <a href="history.html" class="nav-tab-link active">History</a>
           <a href="output.html" class="nav-tab-link">Output</a>
+          <a href="manual.html" class="nav-tab-link">Manual</a>
         </nav>
       </div>
       <div class="top-bar-right">
         <span class="live-dot" aria-hidden="true"></span>
-        <span class="live-match-text">LIVE · Match 3 of 6</span>
+        <span class="live-match-text" id="top-bar-history-text">TOURNAMENT STANDINGS</span>
       </div>
     </header>
 
@@ -36,28 +36,28 @@
     <div class="status-strip-wrapper">
       <div class="status-panel">
         <div class="stat-item">
-          <div class="stat-value">3</div>
-          <div class="stat-label">MATCHES PLAYED</div>
+          <div class="stat-value" id="strip-matches-played">0</div>
+          <div class="stat-label">MATCHES ARCHIVED</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">174</div>
-          <div class="stat-label">TOTAL LOBBY FRAGS</div>
+          <div class="stat-value" id="strip-total-frags">0</div>
+          <div class="stat-label">TOTAL TOURNAMENT FRAGS</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value amber">KRAIT (68 PTS)</div>
+          <div class="stat-value amber" id="strip-overall-leader">NONE</div>
           <div class="stat-label">OVERALL LEADER</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">RAVI (18 FRAGS)</div>
-          <div class="stat-label">TOURNAMENT MVP</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">2 WWCD</div>
+          <div class="stat-value" id="strip-most-wwcd">NONE</div>
           <div class="stat-label">MOST CHICKEN DINNERS</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value amber">STANDINGS SYNCED</div>
-          <div class="stat-label">DATABASE STATUS</div>
+          <div class="stat-value" id="strip-active-teams">8</div>
+          <div class="stat-label">COMPETING TEAMS</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value amber">PERSISTED</div>
+          <div class="stat-label">DATA STORAGE</div>
         </div>
       </div>
     </div>
@@ -65,27 +65,27 @@
     <!-- Main Content -->
     <main class="main-content">
       <div style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
-        <!-- Esports Highlights Cards (Counting Kills & Knocks Only) -->
+        <!-- Esports Highlights Cards -->
         <div class="history-stats-bar">
           <div class="panel" style="padding: 18px 20px;">
             <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Highest Total Team</div>
-            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: #FF7A45; margin-top: 4px;">KRAIT</div>
-            <div style="font-size: 13px; color: var(--text); margin-top: 2px;">68 Total Pts · 2 WWCD · 33 Kills</div>
+            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: #FF7A45; margin-top: 4px;" id="card-top-team">NONE</div>
+            <div style="font-size: 13px; color: var(--text); margin-top: 2px;" id="card-top-team-sub">0 Total Pts · 0 WWCD</div>
           </div>
           <div class="panel" style="padding: 18px 20px;">
-            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Highest Fragger Overall</div>
-            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--amber); margin-top: 4px;">RAVI (KRAIT)</div>
-            <div style="font-size: 13px; color: var(--text); margin-top: 2px;">18 Total Kills Across 3 Matches</div>
+            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Highest Kill Team</div>
+            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--amber); margin-top: 4px;" id="card-kill-team">NONE</div>
+            <div style="font-size: 13px; color: var(--text); margin-top: 2px;" id="card-kill-team-sub">0 Total Frags</div>
           </div>
           <div class="panel" style="padding: 18px 20px;">
-            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Most Knocked Team</div>
-            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--danger-text); margin-top: 4px;">OBSIDIAN</div>
-            <div style="font-size: 13px; color: var(--text); margin-top: 2px;">24 Squad Knocks Suffered (Heaviest Pressure)</div>
+            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Most WWCDs</div>
+            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--teal-chip-text); margin-top: 4px;" id="card-wwcd-team">NONE</div>
+            <div style="font-size: 13px; color: var(--text); margin-top: 2px;" id="card-wwcd-sub">0 Chicken Dinners</div>
           </div>
           <div class="panel" style="padding: 18px 20px;">
-            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Highest Match Kills</div>
-            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--teal-chip-text); margin-top: 4px;">14 KILLS</div>
-            <div style="font-size: 13px; color: var(--text); margin-top: 2px;">NOVA in Match 2 (Miramar)</div>
+            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Tournament Avg Frags</div>
+            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--text); margin-top: 4px;" id="card-avg-frags">0</div>
+            <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">Average frags per match</div>
           </div>
         </div>
 
@@ -93,17 +93,18 @@
         <section class="panel" style="display: flex; flex-direction: column;">
           <div class="panel-header">
             <div style="display: flex; align-items: center; gap: 16px;">
-              <span class="panel-title">OVERALL TOURNAMENT STANDINGS</span>
-              <span class="chip chip-amber">After 3 of 6 Matches</span>
+              <span class="panel-title">CUMULATIVE TOURNAMENT STANDINGS</span>
+              <span class="chip chip-amber" id="standings-match-badge">0 Matches Concluded</span>
             </div>
             <div style="display: flex; gap: 10px;">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Exporting Standings to CSV...')">Export CSV</button>
-              <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">Print Report</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="downloadCsv()">📥 Download CSV</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="clearTournamentHistory()" style="color: var(--danger-text);">Clear History</button>
+              <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">Print Standings</button>
             </div>
           </div>
 
-          <!-- Standings Table -->
-          <div class="table-col-header" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
+          <!-- Standings Table Header -->
+          <div class="table-col-header" style="grid-template-columns: 50px 1.5fr 100px 90px 110px 100px 100px;">
             <span>RANK</span>
             <span>TEAM</span>
             <span class="col-num">MATCHES</span>
@@ -111,131 +112,154 @@
             <span class="col-num">PLACE PTS</span>
             <span class="col-num">KILL PTS</span>
             <span class="col-num">TOTAL PTS</span>
-            <span style="padding-left: 20px;">TOP FRAGGER</span>
           </div>
 
-          <!-- Team 1: KRAIT -->
-          <div class="table-row highlighted" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
-            <div class="row-rank" style="color: var(--amber);">#1</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #FF7A45;"></span>
-              <span class="team-name">KRAIT</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num" style="color: var(--amber); font-weight: 700;">2</div>
-            <div class="row-num">35</div>
-            <div class="row-num" style="color: var(--text);">33</div>
-            <div class="row-total" style="color: var(--amber);">68</div>
-            <div style="padding-left: 20px; font-size: 13px; color: var(--text);"><strong>Ravi</strong> (18 frags)</div>
+          <!-- Dynamic Standings Rows -->
+          <div id="standings-rows-container">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+
+        <!-- Past Matches Breakdown -->
+        <section class="panel" style="padding: 20px;">
+          <div class="panel-header" style="height: auto; padding: 0 0 16px 0;">
+            <span class="panel-title">ARCHIVED MATCHES LOG</span>
+            <span class="chip chip-teal" id="archived-count-badge">0 Matches</span>
           </div>
 
-          <!-- Team 2: NOVA -->
-          <div class="table-row" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
-            <div class="row-rank">#2</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #4DA3FF;"></span>
-              <span class="team-name">NOVA</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num">1</div>
-            <div class="row-num">24</div>
-            <div class="row-num" style="color: var(--text);">29</div>
-            <div class="row-total">53</div>
-            <div style="padding-left: 20px; font-size: 13px; color: var(--text);"><strong>Aarav</strong> (13 frags)</div>
-          </div>
-
-          <!-- Team 3: ZENITH -->
-          <div class="table-row" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
-            <div class="row-rank">#3</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #A78BFA;"></span>
-              <span class="team-name">ZENITH</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num">0</div>
-            <div class="row-num">22</div>
-            <div class="row-num" style="color: var(--text);">24</div>
-            <div class="row-total">46</div>
-            <div style="padding-left: 20px; font-size: 13px; color: var(--text);"><strong>Sam</strong> (10 frags)</div>
-          </div>
-
-          <!-- Team 4: VORTEX -->
-          <div class="table-row" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
-            <div class="row-rank">#4</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #2DD4BF;"></span>
-              <span class="team-name">VORTEX</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num">0</div>
-            <div class="row-num">19</div>
-            <div class="row-num" style="color: var(--text);">22</div>
-            <div class="row-total">41</div>
-            <div style="padding-left: 20px; font-size: 13px; color: var(--text);"><strong>Isha</strong> (11 frags)</div>
-          </div>
-
-          <!-- Team 5: ASHEN -->
-          <div class="table-row" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
-            <div class="row-rank">#5</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #F472B6;"></span>
-              <span class="team-name">ASHEN</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num">0</div>
-            <div class="row-num">18</div>
-            <div class="row-num" style="color: var(--text);">21</div>
-            <div class="row-total">39</div>
-            <div style="padding-left: 20px; font-size: 13px; color: var(--text);"><strong>Kabir</strong> (10 frags)</div>
-          </div>
-
-          <!-- Team 6: MIRAGE -->
-          <div class="table-row" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
-            <div class="row-rank">#6</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #84CC16;"></span>
-              <span class="team-name">MIRAGE</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num">0</div>
-            <div class="row-num">15</div>
-            <div class="row-num" style="color: var(--text);">18</div>
-            <div class="row-total">33</div>
-            <div style="padding-left: 20px; font-size: 13px; color: var(--text);"><strong>Rohan</strong> (8 frags)</div>
-          </div>
-
-          <!-- Team 7: TALON -->
-          <div class="table-row" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
-            <div class="row-rank">#7</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #FACC15;"></span>
-              <span class="team-name">TALON</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num">0</div>
-            <div class="row-num">12</div>
-            <div class="row-num" style="color: var(--text);">15</div>
-            <div class="row-total">27</div>
-            <div style="padding-left: 20px; font-size: 13px; color: var(--text);"><strong>Dev</strong> (7 frags)</div>
-          </div>
-
-          <!-- Team 8: OBSIDIAN -->
-          <div class="table-row" style="grid-template-columns: 50px 1.2fr 80px 80px 100px 90px 100px 1fr;">
-            <div class="row-rank">#8</div>
-            <div class="row-team">
-              <span class="team-color-bar" style="background-color: #94A3B8;"></span>
-              <span class="team-name">OBSIDIAN</span>
-            </div>
-            <div class="row-num">3</div>
-            <div class="row-num">0</div>
-            <div class="row-num">9</div>
-            <div class="row-num" style="color: var(--text);">12</div>
-            <div class="row-total">21</div>
-            <div style="padding-left: 20px; font-size: 13px; color: var(--text);"><strong>Neel</strong> (6 frags)</div>
+          <div id="matches-log-container" style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Dynamically populated -->
           </div>
         </section>
       </div>
     </main>
   </div>
+
+  <script>
+    async function fetchHistory() {
+      try {
+        const res = await fetch('/api/history');
+        const data = await res.json();
+        renderHistory(data);
+      } catch (e) {
+        console.error('fetchHistory error:', e);
+      }
+    }
+
+    function renderHistory(data) {
+      if (!data) return;
+      const matches = data.matches || [];
+      const standings = data.overall_standings || [];
+
+      // Top Status Strip
+      const totalMatches = matches.length;
+      document.getElementById('strip-matches-played').textContent = totalMatches;
+      document.getElementById('archived-count-badge').textContent = `${totalMatches} Match${totalMatches !== 1 ? 'es' : ''}`;
+      document.getElementById('standings-match-badge').textContent = `${totalMatches} Match${totalMatches !== 1 ? 'es' : ''} Concluded`;
+
+      const totalKills = standings.reduce((acc, s) => acc + (s.kills || 0), 0);
+      document.getElementById('strip-total-frags').textContent = totalKills;
+
+      const leader = standings[0];
+      if (leader && leader.total > 0) {
+        document.getElementById('strip-overall-leader').textContent = `${leader.team} (${leader.total} PTS)`;
+        document.getElementById('card-top-team').textContent = leader.team;
+        document.getElementById('card-top-team-sub').textContent = `${leader.total} Total Pts · ${leader.wwcd || 0} WWCD · ${leader.kills || 0} Kills`;
+      } else {
+        document.getElementById('strip-overall-leader').textContent = 'NONE';
+        document.getElementById('card-top-team').textContent = 'NONE';
+        document.getElementById('card-top-team-sub').textContent = '0 Matches Completed';
+      }
+
+      // Most WWCD
+      const topWwcd = [...standings].sort((a, b) => (b.wwcd || 0) - (a.wwcd || 0))[0];
+      if (topWwcd && topWwcd.wwcd > 0) {
+        document.getElementById('strip-most-wwcd').textContent = `${topWwcd.team} (${topWwcd.wwcd} WWCD)`;
+        document.getElementById('card-wwcd-team').textContent = topWwcd.team;
+        document.getElementById('card-wwcd-sub').textContent = `${topWwcd.wwcd} Chicken Dinners`;
+      }
+
+      // Highest Kill Team
+      const topKillTeam = [...standings].sort((a, b) => (b.kills || 0) - (a.kills || 0))[0];
+      if (topKillTeam && topKillTeam.kills > 0) {
+        document.getElementById('card-kill-team').textContent = topKillTeam.team;
+        document.getElementById('card-kill-team-sub').textContent = `${topKillTeam.kills} Total Frags`;
+      }
+
+      // Average frags
+      const avgFrags = totalMatches > 0 ? (totalKills / totalMatches).toFixed(1) : '0';
+      document.getElementById('card-avg-frags').textContent = avgFrags;
+
+      // Standings Rows
+      const container = document.getElementById('standings-rows-container');
+      if (standings.length === 0 || totalMatches === 0) {
+        container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--muted); font-size: 14px;">No matches completed yet. Finish a match from the Operator Console to populate tournament history.</div>';
+      } else {
+        container.innerHTML = standings.map((s, idx) => {
+          const rank = idx + 1;
+          const isTop = rank === 1;
+          return `
+            <div class="table-row ${isTop ? 'highlighted' : ''}" style="grid-template-columns: 50px 1.5fr 100px 90px 110px 100px 100px;">
+              <div class="row-rank" style="font-weight: 700; color: ${isTop ? 'var(--amber)' : 'var(--muted)'};">#${rank}</div>
+              <div class="row-team">
+                <span class="team-color-bar" style="background-color: ${s.color || '#94A3B8'};"></span>
+                <span class="team-name" style="font-weight: 700;">${s.team}</span>
+                ${isTop ? '<span class="chip chip-amber" style="font-size: 10px; margin-left: 8px;">Leader</span>' : ''}
+              </div>
+              <div class="row-num">${s.matches_played || 0}</div>
+              <div class="row-num" style="color: ${s.wwcd > 0 ? 'var(--teal-chip-text)' : 'inherit'}; font-weight: 700;">${s.wwcd || 0}</div>
+              <div class="row-num">${s.place || 0}</div>
+              <div class="row-num">${s.kills || 0}</div>
+              <div class="row-total" style="font-weight: 800; font-size: 16px; color: ${isTop ? 'var(--amber)' : 'var(--text)'};">${s.total || 0}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Archived Matches Log
+      const logContainer = document.getElementById('matches-log-container');
+      if (matches.length === 0) {
+        logContainer.innerHTML = '<div style="padding: 16px; color: var(--muted); font-size: 13px;">No archived match reports.</div>';
+      } else {
+        logContainer.innerHTML = matches.map(m => {
+          const mWinner = m.winner || 'None';
+          const matchTeams = m.teams || [];
+          const top3 = matchTeams.slice(0, 3).map(t => `${t.team} (${t.total} pts)`).join(' · ');
+
+          return `
+            <div style="background: #0B0E12; border: 1px solid var(--divider); border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap: 12px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-weight: 700; font-size: 15px; color: var(--text);">MATCH ${m.match_number}</span>
+                  <span class="chip chip-teal" style="font-size: 11px;">WWCD: ${mWinner}</span>
+                  <span style="font-size: 12px; color: var(--muted);">${m.map || 'Erangel'}</span>
+                </div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Top 3: <strong style="color: var(--text);">${top3}</strong></div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="chip chip-amber" style="font-size: 11px;">Completed</span>
+              </div>
+            </div>
+          `;
+        }).reverse().join('');
+      }
+    }
+
+    function downloadCsv() {
+      window.location.href = '/api/history/export-csv';
+    }
+
+    async function clearTournamentHistory() {
+      if (!confirm('Are you sure you want to permanently clear all completed match history?')) return;
+      try {
+        await fetch('/api/history/clear', { method: 'POST' });
+        fetchHistory();
+      } catch (e) {
+        alert('Failed to clear history: ' + e);
+      }
+    }
+
+    fetchHistory();
+  </script>
 </body>
 </html>
