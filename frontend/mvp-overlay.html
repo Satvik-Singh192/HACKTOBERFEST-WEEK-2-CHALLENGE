@@ -8,6 +8,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    body.obs-mode {
+      background-color: transparent !important;
+      overflow: hidden;
+    }
+    body.obs-mode .overlay-caption {
+      display: none !important;
+    }
+  </style>
 </head>
 <body style="background-color: transparent; margin: 0; padding: 0;">
   <div class="overlay-stage-wrapper">
@@ -19,7 +28,7 @@
             <span class="brand-bar" style="width: 6px; height: 32px;" aria-hidden="true"></span>
             <span class="broadcast-mvp-title">MATCH MVP</span>
           </div>
-          <span class="broadcast-mvp-match">MATCH 3 · ERANGEL</span>
+          <span class="broadcast-mvp-match" id="mvp-match-header">MATCH 1 · ERANGEL</span>
         </div>
 
         <!-- Body -->
@@ -36,27 +45,27 @@
                 <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
               </svg>
             </div>
-            <div class="broadcast-player-name">RAVI</div>
-            <div class="broadcast-player-team" style="background-color: #FF7A45;">TEAM KRAIT</div>
+            <div class="broadcast-player-name" id="mvp-name">RAVI</div>
+            <div class="broadcast-player-team" id="mvp-team" style="background-color: #FF7A45;">TEAM KRAIT</div>
           </div>
 
           <!-- Stats 2x2 Grid (Purely counting kills & knocks) -->
           <div class="broadcast-stats-grid">
             <div class="broadcast-stat-tile">
-              <div class="broadcast-stat-val amber">7</div>
+              <div class="broadcast-stat-val amber" id="mvp-stat-kills">0</div>
               <div class="broadcast-stat-lbl">MATCH KILLS</div>
             </div>
             <div class="broadcast-stat-tile">
-              <div class="broadcast-stat-val">18</div>
-              <div class="broadcast-stat-lbl">TOTAL OVERALL FRAGS</div>
-            </div>
-            <div class="broadcast-stat-tile">
-              <div class="broadcast-stat-val" style="color: var(--teal-chip-text);">8</div>
+              <div class="broadcast-stat-val" style="color: var(--teal-chip-text);" id="mvp-stat-knocks">0</div>
               <div class="broadcast-stat-lbl">KNOCKS SECURED</div>
             </div>
             <div class="broadcast-stat-tile">
-              <div class="broadcast-stat-val">64%</div>
+              <div class="broadcast-stat-val" id="mvp-stat-share">0%</div>
               <div class="broadcast-stat-lbl">SQUAD KILL SHARE</div>
+            </div>
+            <div class="broadcast-stat-tile">
+              <div class="broadcast-stat-val" id="mvp-stat-team-pts">0</div>
+              <div class="broadcast-stat-lbl">TEAM TOTAL PTS</div>
             </div>
           </div>
         </div>
@@ -64,9 +73,77 @@
 
       <!-- Bottom Caption -->
       <div class="overlay-caption">
-        Stream canvas placeholder · the overlay is a transparent OBS browser source
+        OBS Transparent Browser Source Overlay
       </div>
     </div>
   </div>
+
+  <script>
+    (function initMVPOverlay() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('bg') !== 'solid') {
+        document.body.classList.add('obs-mode');
+      }
+
+      function updateMVP(snapshot) {
+        if (!snapshot) return;
+        const mvp = snapshot.mvp || {};
+        const teams = snapshot.teams || [];
+        const topTeam = teams[0] || {};
+
+        const matchNum = snapshot.match_number || 1;
+        const mapName = (snapshot.map || 'ERANGEL').split(' ')[0].toUpperCase();
+        document.getElementById('mvp-match-header').textContent = `MATCH ${matchNum} · ${mapName}`;
+
+        const playerName = mvp.player && mvp.player !== 'None' ? mvp.player : (topTeam.team || 'LEADER');
+        const teamName = mvp.team && mvp.team !== 'Unknown' && mvp.team !== 'None' ? mvp.team : (topTeam.team || 'TEAM');
+        const teamColor = topTeam.team === teamName ? (topTeam.color || '#FF7A45') : '#FF7A45';
+
+        document.getElementById('mvp-name').textContent = playerName.toUpperCase();
+        document.getElementById('mvp-team').textContent = `TEAM ${teamName.toUpperCase()}`;
+        document.getElementById('mvp-team').style.backgroundColor = teamColor;
+
+        const kills = mvp.kills || 0;
+        const knocks = mvp.knocks || 0;
+        document.getElementById('mvp-stat-kills').textContent = kills;
+        document.getElementById('mvp-stat-knocks').textContent = knocks;
+
+        // Squad kill share
+        const parentTeam = teams.find(t => t.team.toUpperCase() === teamName.toUpperCase()) || topTeam;
+        const teamKills = parentTeam ? (parentTeam.kills || 0) : 0;
+        const share = teamKills > 0 ? Math.round((kills / teamKills) * 100) : 0;
+        document.getElementById('mvp-stat-share').textContent = `${share}%`;
+        document.getElementById('mvp-stat-team-pts').textContent = parentTeam ? (parentTeam.total || 0) : 0;
+      }
+
+      fetch('/scoreboard')
+        .then(res => res.json())
+        .then(data => updateMVP(data))
+        .catch(e => console.log('MVP fetch error:', e));
+
+      const wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + (location.host || '127.0.0.1:8000') + '/scoreboard';
+      let ws;
+
+      function connect() {
+        try {
+          ws = new WebSocket(wsUrl);
+          ws.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              updateMVP(data);
+            } catch (err) {
+              console.error('Error handling MVP update:', err);
+            }
+          };
+          ws.onclose = () => setTimeout(connect, 3000);
+          ws.onerror = () => ws.close();
+        } catch (e) {
+          setTimeout(connect, 3000);
+        }
+      }
+
+      connect();
+    })();
+  </script>
 </body>
 </html>

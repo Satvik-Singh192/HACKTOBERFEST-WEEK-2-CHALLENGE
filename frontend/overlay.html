@@ -8,123 +8,152 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* OBS transparent mode — default when loaded without ?preview=true */
+    body {
+      background: transparent;
+      margin: 0;
+      padding: 0;
+    }
+    body.preview-mode {
+      background: #0A0D11;
+    }
+    .overlay-stage-wrapper {
+      background: transparent;
+    }
+    body.preview-mode .overlay-stage-wrapper {
+      background: #0A0D11;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 24px;
+    }
+    /* Connection indicator */
+    #ws-indicator {
+      position: fixed;
+      bottom: 8px;
+      right: 10px;
+      font-size: 10px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      color: rgba(255,255,255,0.25);
+      display: none;
+    }
+    body.preview-mode #ws-indicator { display: block; }
+    #ws-indicator.connected { color: #2DD4BF; }
+    #ws-indicator.disconnected { color: #F43F5E; }
+  </style>
 </head>
-<body style="background-color: #05070a; margin: 0; padding: 0;">
+<body>
   <div class="overlay-stage-wrapper">
     <div class="overlay-stage">
-      <!-- Live Points Table -->
-      <div class="overlay-table">
-        <div class="overlay-header">
-          <span class="overlay-title">MATCH 3 · LIVE</span>
+      <!-- Dynamic table — populated entirely by JS -->
+      <div class="overlay-table" id="overlay-table">
+        <div class="overlay-header" id="overlay-header">
+          <span class="overlay-title" id="overlay-title">MATCH 1 · LIVE</span>
           <div class="overlay-header-cols">
             <span style="width: 56px; text-align: right;">KILLS</span>
             <span style="width: 64px; text-align: right;">PTS</span>
           </div>
         </div>
-
-        <!-- Row 1: KRAIT -->
-        <div class="overlay-row">
-          <div class="overlay-rank">1</div>
-          <span class="overlay-bar" style="background-color: #FF7A45;"></span>
-          <div class="overlay-name">KRAIT</div>
-          <div class="overlay-kills">11</div>
-          <div class="overlay-pts amber">23</div>
-        </div>
-
-        <!-- Row 2: NOVA -->
-        <div class="overlay-row">
-          <div class="overlay-rank">2</div>
-          <span class="overlay-bar" style="background-color: #4DA3FF;"></span>
-          <div class="overlay-name">NOVA</div>
-          <div class="overlay-kills">9</div>
-          <div class="overlay-pts">19</div>
-        </div>
-
-        <!-- Row 3: ZENITH -->
-        <div class="overlay-row">
-          <div class="overlay-rank">3</div>
-          <span class="overlay-bar" style="background-color: #A78BFA;"></span>
-          <div class="overlay-name">ZENITH</div>
-          <div class="overlay-kills">8</div>
-          <div class="overlay-pts">17</div>
-        </div>
-
-        <!-- Row 4: VORTEX -->
-        <div class="overlay-row">
-          <div class="overlay-rank">4</div>
-          <span class="overlay-bar" style="background-color: #2DD4BF;"></span>
-          <div class="overlay-name">VORTEX</div>
-          <div class="overlay-kills">7</div>
-          <div class="overlay-pts">15</div>
-        </div>
-
-        <!-- Row 5: ASHEN -->
-        <div class="overlay-row">
-          <div class="overlay-rank">5</div>
-          <span class="overlay-bar" style="background-color: #F472B6;"></span>
-          <div class="overlay-name">ASHEN</div>
-          <div class="overlay-kills">8</div>
-          <div class="overlay-pts">14</div>
-        </div>
-
-        <!-- Row 6: MIRAGE -->
-        <div class="overlay-row">
-          <div class="overlay-rank">6</div>
-          <span class="overlay-bar" style="background-color: #84CC16;"></span>
-          <div class="overlay-name">MIRAGE</div>
-          <div class="overlay-kills">6</div>
-          <div class="overlay-pts">11</div>
-        </div>
-
-        <!-- Row 7: TALON -->
-        <div class="overlay-row">
-          <div class="overlay-rank">7</div>
-          <span class="overlay-bar" style="background-color: #FACC15;"></span>
-          <div class="overlay-name">TALON</div>
-          <div class="overlay-kills">5</div>
-          <div class="overlay-pts">9</div>
-        </div>
-
-        <!-- Row 8: OBSIDIAN -->
-        <div class="overlay-row">
-          <div class="overlay-rank">8</div>
-          <span class="overlay-bar" style="background-color: #94A3B8;"></span>
-          <div class="overlay-name">OBSIDIAN</div>
-          <div class="overlay-kills">4</div>
-          <div class="overlay-pts">7</div>
-        </div>
-      </div>
-
-      <!-- Kill-Feed Region Box -->
-      <div class="killfeed-box">
-        <div class="killfeed-label">KILL-FEED REGION</div>
-
-        <div class="killfeed-item" style="top: 20px;">
-          <span><strong>KRAIT</strong> Ravi <span style="color: #8B95A3; margin: 0 4px;">›</span> <strong>ZENITH</strong> Sam</span>
-          <span class="killfeed-weapon">M416</span>
-        </div>
-
-        <div class="killfeed-item" style="top: 66px;">
-          <span><strong>NOVA</strong> Aarav <span style="color: #8B95A3; margin: 0 4px;">›</span> <strong>ASHEN</strong> Kabir</span>
-          <span class="killfeed-weapon">AWM</span>
-        </div>
-
-        <div class="killfeed-item" style="top: 112px;">
-          <span><strong>VORTEX</strong> Isha <span style="color: #8B95A3; margin: 0 4px;">›</span> <strong>TALON</strong> Dev</span>
-          <span class="killfeed-weapon">SCAR-L</span>
-        </div>
-
-        <div class="killfeed-item" style="top: 158px;">
-          <span><strong>MIRAGE</strong> Rohan <span style="color: #8B95A3; margin: 0 4px;">›</span> <strong>OBSIDIAN</strong> Neel</span>
-          <span class="killfeed-weapon">Grenade</span>
-        </div>
-      </div>
-
-      <!-- Bottom Caption -->
-      <div class="overlay-caption">
-        Stream canvas placeholder · the overlay is a transparent OBS browser source
+        <!-- rows injected here by renderOverlay() -->
+        <div id="overlay-rows"></div>
       </div>
     </div>
   </div>
+
+  <div id="ws-indicator">⬤ connecting…</div>
+
+  <script>
+    (function initOverlay() {
+      const params = new URLSearchParams(window.location.search);
+      const isPreview = params.get('preview') === 'true' || params.get('bg') === 'solid';
+      if (isPreview) document.body.classList.add('preview-mode');
+
+      const titleEl  = document.getElementById('overlay-title');
+      const rowsEl   = document.getElementById('overlay-rows');
+      const wsInd    = document.getElementById('ws-indicator');
+
+      // ── Render ────────────────────────────────────────────────
+      function renderOverlay(snapshot) {
+        if (!snapshot) return;
+
+        const teams = snapshot.teams || [];
+        if (teams.length === 0) {
+          rowsEl.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:12px;padding:12px 16px;">Waiting for team data…</div>';
+          return;
+        }
+
+        // Update header title
+        const matchNum = snapshot.match_number || 1;
+        const statusLabel = snapshot.status === 'FINISHED' ? 'FINAL'
+                          : snapshot.status === 'PAUSED'   ? 'PAUSED'
+                          : 'LIVE';
+        titleEl.textContent = `MATCH ${matchNum} · ${statusLabel}`;
+
+        // Sort by total descending (already sorted from backend, but ensure)
+        const sorted = [...teams].sort((a, b) =>
+          ((b.total ?? ((b.kills || 0) + (b.place || 0))) -
+           (a.total ?? ((a.kills || 0) + (a.place || 0)))));
+
+        rowsEl.innerHTML = sorted.slice(0, 16).map((t, idx) => {
+          const rank   = idx + 1;
+          const kills  = t.kills  ?? 0;
+          const total  = t.total  ?? (kills + (t.place ?? 0));
+          const color  = t.color  || '#94A3B8';
+          const isTop  = rank === 1;
+          const isElim = Boolean(t.eliminated);
+
+          return `
+            <div class="overlay-row${isElim ? ' eliminated' : ''}">
+              <div class="overlay-rank">${rank}</div>
+              <span class="overlay-bar" style="background-color:${color};"></span>
+              <div class="overlay-name">${t.team || 'TEAM'}</div>
+              <div class="overlay-kills">${kills}</div>
+              <div class="overlay-pts${isTop ? ' amber' : ''}">${total}</div>
+            </div>`;
+        }).join('');
+      }
+
+      // ── Initial REST fetch ─────────────────────────────────────
+      fetch('/scoreboard')
+        .then(r => r.json())
+        .then(data => renderOverlay(data))
+        .catch(() => {}); // WS will handle it anyway
+
+      // ── WebSocket with auto-reconnect ─────────────────────────
+      const wsBase = (location.protocol === 'https:' ? 'wss://' : 'ws://')
+                   + (location.host || '127.0.0.1:8000');
+      let ws;
+
+      function connect() {
+        try {
+          ws = new WebSocket(wsBase + '/scoreboard');
+
+          ws.onopen = () => {
+            wsInd.textContent = '⬤ live';
+            wsInd.className = 'connected';
+          };
+
+          ws.onmessage = (event) => {
+            try {
+              renderOverlay(JSON.parse(event.data));
+            } catch (e) { console.error('overlay WS parse error:', e); }
+          };
+
+          ws.onclose = () => {
+            wsInd.textContent = '⬤ reconnecting…';
+            wsInd.className = 'disconnected';
+            setTimeout(connect, 3000);
+          };
+
+          ws.onerror = () => ws.close();
+
+        } catch (e) { setTimeout(connect, 3000); }
+      }
+
+      connect();
+    })();
+  </script>
 </body>
 </html>

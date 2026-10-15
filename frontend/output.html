@@ -20,10 +20,10 @@
         </a>
         <nav class="nav-tabs" aria-label="Main Navigation">
           <a href="console.html" class="nav-tab-link">Live</a>
-          <a href="calibrate.html" class="nav-tab-link">Calibrate</a>
           <a href="setup.html" class="nav-tab-link">Setup</a>
           <a href="history.html" class="nav-tab-link">History</a>
           <a href="output.html" class="nav-tab-link active">Output</a>
+          <a href="manual.html" class="nav-tab-link">Manual</a>
         </nav>
       </div>
       <div class="top-bar-right">
@@ -76,7 +76,7 @@
           </div>
 
           <div class="copy-url-bar">
-            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8080/overlay.html?top=8&theme=dark" id="url-overlay">
+            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8000/frontend/overlay.html" id="url-overlay">
             <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('url-overlay').value); alert('Copied to clipboard!')">Copy OBS URL</button>
           </div>
 
@@ -90,13 +90,13 @@
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
               <h2 style="font-size: 16px; font-weight: 700; color: var(--amber); letter-spacing: 0.05em;">2. MATCH MVP SPOTLIGHT OVERLAY</h2>
-              <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Broadcast showcase card for match MVP, total frags, damage, and weapon</p>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">Broadcast showcase card for match MVP, total frags, knocks, and squad kill share</p>
             </div>
             <a href="mvp-overlay.html" target="_blank" class="btn btn-primary btn-sm">Open Direct Source ↗</a>
           </div>
 
           <div class="copy-url-bar">
-            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8080/mvp-overlay.html" id="url-mvp">
+            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8000/frontend/mvp-overlay.html" id="url-mvp">
             <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('url-mvp').value); alert('Copied to clipboard!')">Copy OBS URL</button>
           </div>
 
@@ -116,7 +116,7 @@
           </div>
 
           <div class="copy-url-bar">
-            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8080/top-fraggers-overlay.html" id="url-fraggers">
+            <input type="text" readonly class="copy-url-input" value="http://127.0.0.1:8000/frontend/top-fraggers-overlay.html" id="url-fraggers">
             <button type="button" class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('url-fraggers').value); alert('Copied to clipboard!')">Copy OBS URL</button>
           </div>
 
@@ -127,5 +127,19 @@
       </div>
     </main>
   </div>
+
+  <script>
+    (function setupOverlayUrls() {
+      const origin = window.location.origin;
+      const isMountedFrontend = window.location.pathname.includes('/frontend/');
+      const pathPrefix = isMountedFrontend ? origin + '/frontend/' : origin + '/';
+      const overlayInput = document.getElementById('url-overlay');
+      const mvpInput = document.getElementById('url-mvp');
+      const fraggersInput = document.getElementById('url-fraggers');
+      if (overlayInput) overlayInput.value = pathPrefix + 'overlay.html';
+      if (mvpInput) mvpInput.value = pathPrefix + 'mvp-overlay.html';
+      if (fraggersInput) fraggersInput.value = pathPrefix + 'top-fraggers-overlay.html';
+    })();
+  </script>
 </body>
 </html>
