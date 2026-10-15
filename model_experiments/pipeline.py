@@ -5,8 +5,7 @@ import numpy as np
 from ultralytics import YOLO
 
 # Import preprocessing & OCR engine directly from your existing ocr.py
-from ocr import SingleRowKillfeedOCR
-
+from .ocr import SingleRowKillfeedOCR
 
 class KillfeedPipeline:
     def __init__(
