@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Allow direct execution: `python teamManager.py` from inside backend/ or `python -m backend.teamManager` from root
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import pandas as pd
 from backend.teams import Team, Player, PlayerStatus
 from backend.events import Event, Icon
