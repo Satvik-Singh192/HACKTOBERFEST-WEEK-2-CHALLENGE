@@ -38,13 +38,13 @@
       padding: 0 !important;
     }
 
-    /* Solid Opaque Chassis: ONLY the scoreboard card is solid opaque */
+    /* Solid Opaque Chassis: Sleek, compact width to fit 16+ teams */
     #overlay-wrap {
-      width: 290px;
+      width: 240px;
       background: #0B0E14 !important; /* ONLY the scoreboard box is opaque */
       opacity: 1 !important;
-      border: 2px solid #232B38;
-      border-top: 4px solid #F97316; /* BGMI Orange accent bar */
+      border: 1.5px solid #232B38;
+      border-top: 3px solid #F97316; /* BGMI Orange accent bar */
       border-radius: 4px;
       box-shadow: none !important; /* No shadow halo bleeding onto gameplay */
       overflow: hidden;
@@ -56,26 +56,26 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 9px 12px 8px;
+      padding: 6px 10px 5px;
       background: #121721; /* Solid dark header */
-      border-bottom: 2px solid #1C2330;
+      border-bottom: 1.5px solid #1C2330;
     }
 
     .ov-brand {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
     }
 
     .ov-brand-bar {
-      width: 4px;
-      height: 16px;
+      width: 3px;
+      height: 13px;
       background: #F97316;
       border-radius: 2px;
     }
 
     .ov-title {
-      font-size: 13px;
+      font-size: 11.5px;
       font-weight: 800;
       letter-spacing: .08em;
       text-transform: uppercase;
@@ -85,39 +85,39 @@
     .ov-match-tag {
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-size: 10.5px;
+      gap: 4px;
+      font-size: 9.5px;
       font-weight: 700;
       letter-spacing: .06em;
       text-transform: uppercase;
       color: #94A3B8;
       background: #19202D;
-      padding: 3px 8px;
+      padding: 2px 6px;
       border-radius: 3px;
       border: 1px solid #283344;
     }
 
     .live-dot {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       background: #EF4444; /* red until connected */
       transition: background 0.3s;
     }
     .live-dot.connected {
       background: #22C55E; /* green when live */
-      box-shadow: 0 0 6px #22C55E;
+      box-shadow: 0 0 5px #22C55E;
     }
 
     /* Column Headers */
     .ov-col-hdr {
       display: grid;
-      grid-template-columns: 32px 1fr 42px 48px;
+      grid-template-columns: 24px 1fr 30px 36px;
       align-items: center;
-      padding: 5px 12px;
+      padding: 3px 8px;
       background: #0E121A;
       border-bottom: 1px solid #1C2433;
-      font-size: 10px;
+      font-size: 8.5px;
       font-weight: 800;
       letter-spacing: .12em;
       text-transform: uppercase;
@@ -133,11 +133,11 @@
 
     .ov-row {
       display: grid;
-      grid-template-columns: 32px 1fr 42px 48px;
+      grid-template-columns: 24px 1fr 30px 36px;
       align-items: center;
-      padding: 7px 12px;
+      padding: 3.5px 8px;
       background: #0D1118;
-      border-bottom: 1px solid #171E2B;
+      border-bottom: 1px solid #151B27;
       transition: background 0.25s;
     }
 
@@ -152,20 +152,20 @@
     /* Top Rank Highlights */
     .ov-row.rank-1 {
       background: #17181F;
-      border-left: 3px solid #F59E0B;
+      border-left: 2.5px solid #F59E0B;
     }
     .ov-row.rank-2 {
       background: #111624;
-      border-left: 3px solid #38BDF8;
+      border-left: 2.5px solid #38BDF8;
     }
     .ov-row.rank-3 {
       background: #14161C;
-      border-left: 3px solid #D97706;
+      border-left: 2.5px solid #D97706;
     }
 
     /* Rank Number Badge */
     .ov-rank {
-      font-size: 13px;
+      font-size: 11.5px;
       font-weight: 800;
       color: #64748B;
       line-height: 1;
@@ -179,22 +179,22 @@
     .ov-team {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       overflow: hidden;
-      padding-right: 4px;
+      padding-right: 3px;
     }
 
     .ov-bar {
-      width: 4px;
-      height: 17px;
+      width: 3px;
+      height: 13px;
       border-radius: 2px;
       flex-shrink: 0;
     }
 
     .ov-name {
-      font-size: 13.5px;
+      font-size: 12px;
       font-weight: 800;
-      letter-spacing: .04em;
+      letter-spacing: .03em;
       text-transform: uppercase;
       color: #F1F5F9;
       white-space: nowrap;
@@ -212,29 +212,29 @@
       color: #94A3B8;
     }
     .ov-elim-pill {
-      font-size: 8.5px;
+      font-size: 7.5px;
       font-weight: 800;
       letter-spacing: .06em;
       color: #EF4444;
       background: rgba(239, 68, 68, 0.15);
       border: 1px solid rgba(239, 68, 68, 0.35);
       border-radius: 2px;
-      padding: 1px 4px;
-      margin-left: 4px;
+      padding: 0 3px;
+      margin-left: 3px;
     }
 
     /* Kills & Points Columns */
     .ov-kills {
-      font-size: 13px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #94A3B8;
       text-align: right;
-      padding-right: 6px;
+      padding-right: 4px;
       font-variant-numeric: tabular-nums;
     }
 
     .ov-pts {
-      font-size: 15px;
+      font-size: 12.5px;
       font-weight: 800;
       color: #F97316;
       text-align: right;
@@ -330,7 +330,7 @@
 
     // Build Rows
     let html = '';
-    sorted.slice(0, 16).forEach((t, index) => {
+    sorted.forEach((t, index) => {
       const rank  = index + 1;
       const teamName = (t.team || 'TEAM').toUpperCase();
       const kills = t.kills ?? 0;
