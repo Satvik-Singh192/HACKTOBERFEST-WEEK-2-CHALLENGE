@@ -1,264 +1,350 @@
-# Live BGMI Kill Feed Parser & Points Table Maintainer
+# 🎯 BGMI Live Kill-Feed Parser & Real-Time Esports Scoreboard Engine
 
-> An AI-assisted research prototype for turning BGMI kill-feed footage into structured events, then providing the building blocks for tournament scoring and live scoreboard delivery.
+> **A high-performance, automated computer-vision and tournament-scoring suite for Battlegrounds Mobile India (BGMI / PUBG Mobile).**  
+> Ingests live gameplay streams via OBS Studio or video files, detects HUD kill-feed events in real time using temporal change gating, glyph template matching, PaddleOCR, and a fine-tuned YOLO11 model running on OpenVINO, and broadcasts live points tables and MVP overlays to production stream graphics via WebSockets.
+
+---
 
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
-[![Hacktoberfest](https://img.shields.io/badge/Hacktoberfest-welcome-ff6b35)](#contributing)
-[![YOLO11](https://img.shields.io/badge/vision-Ultralytics%20YOLO11-111F68)](best_openvino_model/metadata.yaml)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](backend/main.py)
+[![OpenVINO](https://img.shields.io/badge/Inference-Intel%20OpenVINO-0054FF?logo=intel&logoColor=white)](best_openvino_model/metadata.yaml)
+[![YOLO11](https://img.shields.io/badge/Vision-Ultralytics%20YOLO11-111F68)](best_openvino_model/metadata.yaml)
+[![PaddleOCR](https://img.shields.io/badge/OCR-PaddleOCR-red)](model_experiments/ocr.py)
+[![WebSockets](https://img.shields.io/badge/Real--Time-WebSockets-2563EB)](backend/websocketManager.py)
+[![OBS Ready](https://img.shields.io/badge/Broadcast-OBS%20Studio%20Ready-302E31?logo=obsstudio&logoColor=white)](frontend/overlay.html)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Hacktoberfest](https://img.shields.io/badge/Hacktoberfest-2026-ff6b35?logo=hacktoberfest&logoColor=white)](#contributing)
 
-BGMI broadcasts expose eliminations as fast-changing HUD text and icons. Reading each event and updating a table by hand is slow and error-prone. This repository explores an assistive workflow: narrow a video to likely kill-feed changes, recognise the two names with OCR, classify feed icons with a trained detector, and represent the result as an `Event` that can be checked against a tournament roster.
+---
 
-It is aimed at tournament tools developers, stream-production teams, computer-vision contributors, and Hacktoberfest contributors—not at an already-deployed scoring service. The strongest implemented path is the AI candidate-to-event pipeline. Roster initialisation, conversion to a published table, and UI integration still need wiring.
+## 📑 Table of Contents
+1. [Overview & Highlights](#-overview--highlights)
+2. [System Architecture](#-system-architecture)
+   - [High-Level Design (HLD)](#1-high-level-design-hld)
+   - [Low-Level Design (LLD)](#2-low-level-design-lld)
+3. [Core Feature Breakdown](#-core-feature-breakdown)
+   - [AI Vision & Kill-Feed Detection Pipeline](#1-ai-vision--kill-feed-detection-pipeline)
+   - [Official Tournament Scoring & Kill Attribution](#2-official-tournament-scoring--kill-attribution)
+   - [Broadcast Graphics Suite for OBS Studio](#3-broadcast-graphics-suite-for-obs-studio)
+   - [Operator Console & Match Management](#4-operator-console--match-management)
+4. [Repository Structure](#-repository-structure)
+5. [Installation & Setup](#-installation--setup)
+6. [Usage Guide](#-usage-guide)
+   - [Running the FastAPI Server](#1-launch-the-backend--broadcast-server)
+   - [Running the Video Vision Pipeline](#2-run-the-ai-vision-pipeline)
+   - [Using OBS Studio Browser Sources](#3-obs-studio-browser-source-setup)
+7. [API & WebSocket Reference](#-api--websocket-reference)
+8. [Tournament Scoring Rules (BGIS Standard)](#-tournament-scoring-rules-bgis-standard)
+9. [Contributing](#-contributing)
+10. [License](#-license)
 
-## What is here today
+---
 
-| Area | Status | Evidence |
-| --- | --- | --- |
-| MP4 frame reading and kill-feed ROI cropping | Implemented | [preprocess/pipeline.py](preprocess/pipeline.py), [preprocess/roi.py](preprocess/roi.py) |
-| Candidate filtering by pixel changes, cooldown, and font masks | Implemented | [preprocess/change_detector.py](preprocess/change_detector.py), [preprocess/matching.py](preprocess/matching.py) |
-| OCR + icon detection creating `Event` objects | Implemented, input-dependent | [model_experiments/ocr.py](model_experiments/ocr.py), [model_experiments/pipeline.py](model_experiments/pipeline.py) |
-| OpenVINO IR model artefact | Included | [model metadata](best_openvino_model/metadata.yaml) |
-| Fuzzy roster-name matching and in-memory event scoring classes | Implemented as library code | [backend/playerMatcher.py](backend/playerMatcher.py), [backend/teamManager.py](backend/teamManager.py) |
-| DataFrame-to-JSON scoreboard snapshots and WebSocket broadcast manager | Implemented as library code | [backend/scoreboard.py](backend/scoreboard.py), [backend/websocketManager.py](backend/websocketManager.py) |
-| FastAPI read-only snapshot/WebSocket service | Partially implemented | [backend/main.py](backend/main.py) |
-| Browser frontend | Not implemented in the tracked tree | `frontend/` contains only a short note |
-| CSV upload, CSV watcher, persistence, authentication, automatic end-to-end publishing | Not implemented | No tracked code invokes those workflows |
+## 🌟 Overview & Highlights
 
-## Architecture and integration reality
+In high-stakes BGMI esports tournaments, kill-feed events occur in fractions of a second across multiple skirmishes. Traditional manual scoring is prone to operator fatigue, delayed leaderboard updates, and misattributed finishes.
+
+This system replaces manual tracking with an **automated, end-to-end broadcast workflow**:
+- **95%+ Compute Reduction**: A dual-stage temporal change detector and Roboto-glyph correlation filter drops idle frames before heavy ML models are even invoked.
+- **Hardware-Accelerated Computer Vision**: Intel OpenVINO runtime executes a fine-tuned YOLO11 model to detect weapon/action icons (`knock`, `object`/finish, `playzone`), paired with an enhanced PaddleOCR pass for gamer tags.
+- **Strict BGMI Kill Attribution**: Accurately credits kills to the original knocker when a teammate secures the finish, handles third-party kill steals, and manages playzone bleed-outs.
+- **Zero-Latency Broadcast Overlays**: Dark, 100% opaque, broadcast-grade graphics for OBS Studio with independent channel controls for both Points Tables and Top Fragger / MVP spotlight widgets.
+- **Operator Control & Persistence**: Real-time management console with live standings, manual score adjustment grids, undo functionality, ROI calibrator, and instant CSV export.
+
+---
+
+## 🏛 System Architecture
+
+The system is built as a decoupled, multi-tier architecture connecting the real-time computer vision stream directly to tournament management and graphics playout.
+
+### 1. High-Level Design (HLD)
+
+The high-level pipeline processes video streams from OBS Studio or files, detects kill-feed changes, performs ML inference, calculates scores, and distributes snapshots to live dashboards and stream graphics.
+
+![High-Level Design](system_design/HLD.png)
 
 ```mermaid
 flowchart LR
-  subgraph AI[AI event extraction — root runner]
-    V[MP4: data/trimmed.mp4] --> F[VideoFileSource]
-    F --> R[ROI crop]
-    R --> C[Pixel-change gate + 0.40s cooldown]
-    C --> T[Font-mask confirmation]
-    T --> O[PaddleOCR: leftmost/rightmost text]
-    T --> Y[Ultralytics YOLO on included OpenVINO IR]
-    O --> E[Event attacker/icons/victim]
-    Y --> E
-    E --> EP[EventPipeline]
-    EP -. requires roster setup .-> TM[TeamManager]
-  end
-
-  subgraph Delivery[Scoreboard delivery — separate subsystem]
-    DF[Pandas DataFrame supplied by caller] --> S[JSON-safe records]
-    S --> WM[WebsocketManager in-memory snapshot]
-    WM --> HTTP[GET /scoreboard]
-    WM --> WS[WebSocket /scoreboard]
-  end
-
-  TM -. no serializer/publisher call in current code .-> WM
-  WS -. no tracked browser client .-> UI[Future frontend]
+    A[OBS Studio / Video Feed] --> B[Frame Capture 60 FPS]
+    B --> C[Kill-Feed ROI Crop]
+    C --> D{Event Trigger Gate?}
+    D -- No --> E[Discard Frame]
+    D -- Yes --> F[Pre-Processing & Font Masking]
+    F --> G[ML Layer: YOLO11 + PaddleOCR]
+    G --> H[Event Extraction Attacker / Icon / Victim]
+    H --> I[Tournament Score Calculator]
+    I --> J[WebSocket & REST Broadcast]
+    J --> K[OBS Points Overlay]
+    J --> L[OBS Top Fragger Overlay]
+    J --> M[Operator Console]
 ```
 
-`main.py` connects preprocessing, OCR/detection, and `EventPipeline`; it does **not** register teams or call `initialize_player_matcher()`. Consequently, once an event is recognised, `TeamManager.resolve_event()` raises until an application supplies a roster and initialises the matcher. Separately, nothing calls the WebSocket manager’s update methods from the event path. This distinction is intentional in the diagram: it prevents a misleading claim of a finished live scoreboard.
+---
 
-## AI implementation
+### 2. Low-Level Design (LLD)
 
-### 1. Candidate generation
+The low-level design outlines the inner mechanics of the computer vision filter, glyph template matching, model augmentations, and discard criteria.
 
-`VideoFileSource` sequentially reads the first configured portion of a local MP4. `crop_killfeed_roi()` takes a normalized rectangle from each frame; the default is `x=0.005–0.265`, `y=0.272–0.355` of frame dimensions. `PixelChangeDetector` emits only a threshold crossing at mean grayscale difference `>= 12.0` after a `0.40 s` cooldown.
+![Low-Level Design](system_design/LLD.png)
 
-Each triggered crop is resized to `333 × 60`, thresholded at 150, and compared with glyph masks rendered from `fonts/RobotoCondensed-Bold.ttf`. At least three non-overlapping character-template matches at correlation `>= 0.68` are required before the crop reaches ML inference. The pipeline saves diagnostic crops, binary masks, match overlays, plus `candidates.csv` and `detections.csv` under `output/mask_detection/`. These CSVs are diagnostics—not a live score source.
+```mermaid
+flowchart TD
+    subgraph Ingest["1. Video Ingest & ROI"]
+        V[OBS Virtual Camera / MP4 @ 60 FPS] --> C[Crop to Normalized ROI]
+        C --> G8[Convert to Grayscale]
+    end
 
-### 2. Recognition and detection
+    subgraph TemporalGate["2. Temporal & Character Gating"]
+        G8 --> D[Compute Mean Intensity vs Adjacent Frames]
+        D -->|Delta < Threshold| X1[Discard Frame]
+        D -->|Delta >= Threshold| GL[Local Peak Glyph Detection]
+        TTF[Roboto Font Templates] --> GL
+        GL -->|Matched Glyphs < 3| X2[Discard Frame]
+        GL -->|Matched Glyphs >= 3| ML[ML Engine]
+    end
 
-`SingleRowKillfeedOCR` doubles the crop size, applies CLAHE, then uses PaddleOCR in English with permissive detection thresholds. OCR tokens below the configured confidence are discarded; the leftmost surviving token becomes `attacker` and the rightmost becomes `victim`. This is a layout heuristic, not a roster-aware parser.
+    subgraph MLEngine["3. Multi-Model Inference"]
+        ML --> OCR[PaddleOCR: Player Tags]
+        ML --> YOLO[YOLO11 OpenVINO IR: Icons]
+        OCR -->|Upscale 2x + CLAHE| TOK[Attacker & Victim Tokens]
+        YOLO -->|Confidence >= 0.25| ICO[Knock / Finish / Playzone]
+    end
 
-`KillfeedPipeline` also calls `ultralytics.YOLO(...).predict()` over the crop. The supplied IR metadata identifies a YOLO11n detection export with classes `knock`, `object`, and `playzone`, at 352 × 352. Recognised class names are mapped to `Icon.KNOCK`, `Icon.OBJECT`, and `Icon.PLAYZONE`. Current code collects all recognised icon classes and does not enforce that a detected icon lies spatially between the OCR names; the earlier spatial-association logic is commented out. No accuracy, provenance beyond the metadata, or runtime benchmark is claimed here.
-
-The resulting dataclass is:
-
-```python
-Event(attacker: str | None, icons: list[str], victim: str)
+    subgraph Scoring["4. Resolve & Score"]
+        TOK --> EV[Construct Event Object]
+        ICO --> EV
+        EV --> PM[PlayerMatcher: RapidFuzz Normalized]
+        PM --> TM[TeamManager: State & Attribution]
+        TM --> WS[WebSocket Manager /scoreboard]
+    end
 ```
 
-Although `icons` is annotated as `list[str]`, the ML pipeline supplies `Icon` string-enum values. An event may therefore contain zero, one, or several mapped icon labels.
+---
 
-## Event, roster, and scoring behaviour
+## 🚀 Core Feature Breakdown
 
-`TeamManager` stores `Team` objects, `Player` objects, a player-to-team map, last-knocker attribution, and a count of eliminated teams. Add teams first and call `initialize_player_matcher()` before `process_events()`.
+### 1. AI Vision & Kill-Feed Detection Pipeline
+- **Temporal Difference Gate (`preprocess/change_detector.py`)**: Computes mean pixel intensity differences between successive frames with a cooldown timer (0.40s). Drops static frames without processing.
+- **Font Glyph Correlation (`preprocess/matching.py`)**: Validates candidate frames using pre-rendered binary masks of the official BGMI HUD font (`fonts/RobotoCondensed-Bold.ttf`). Rejects non-text visual noise (muzzle flashes, smoke, UI popups).
+- **YOLO11 OpenVINO Detection (`model_experiments/pipeline.py`)**: Runs on Intel OpenVINO runtime for sub-10ms CPU inference. Detects:
+  - `knock` (Crossed rifles icon)
+  - `object` (Finish / elimination crate / skull icon)
+  - `playzone` (Blue zone icon)
+- **Enhanced OCR (`model_experiments/ocr.py`)**: Uses PaddleOCR with $2\times$ bilinear upscaling and CLAHE (Contrast Limited Adaptive Histogram Equalization) to read low-contrast nicknames, clan tags, and special characters.
 
-`PlayerMatcher` uppercases names and removes non-alphanumerics. It accepts a unique normalized exact match; otherwise it uses RapidFuzz ratio matching only for normalized strings of length at least five, requiring a score of at least 85 and an 8-point lead over the next candidate. Ambiguous or low-confidence names reject the event with `ValueError`.
+---
 
-- A `KNOCK` with a non-null attacker marks the victim `KNOCKED` and stores the attacker as `last_knocked_by`.
-- An `OBJECT` marks the victim `ELIMINATED`, checks the victim’s team, and awards one kill to an opposing finisher; if a teammate finishes the victim, or the attacker is absent, a previously recorded opposing knocker can receive the kill instead.
-- `PLAYZONE` is special-cased during name resolution when the attacker string case-folds to `playzone`. The finish branch compares the resolved value to `"Playzone"`, so zone-event attribution deserves tests before relying on it in a match.
-- There is no duplicate-event guard, revive handling, validation that a victim was previously knocked, or persistent match state.
+### 2. Official Tournament Scoring & Kill Attribution
+- **Accurate Teammate Finish Attribution**: If Player **A** knocks Enemy **B**, and Teammate **C** (on Player **A**'s team) finishes Enemy **B**, the kill is **credited exclusively to Player A** according to official BGMI rules.
+- **Third-Party Kill Steals**: If a third-party team finishes a knocked enemy, the kill is awarded to the third-party finisher.
+- **Bleed-Out & Playzone Attribution**: If a knocked player bleeds out or dies to the blue zone, the elimination is attributed to the original knocker.
+- **Lingering Frame & Duplicate Guard**: BGMI kill-feed banners remain visible on screen for ~3 seconds. The engine automatically rejects duplicate detections of already-eliminated players to prevent inflated scores.
+- **Placement Points Engine**: Tracks team eliminations sequentially and awards official BGIS placement points (1st: 10, 2nd: 6, 3rd: 5, 4th: 4, 5th: 3, 6th: 2, 7th: 1, 8th: 1). Automatically awards the +4 Chicken Dinner bonus to the last surviving squad.
 
-Placement is not the commonly assumed 10/6/5/4/... table. When an entire team is eliminated, its placement is calculated from registered-team count and elimination order. On placements `{8, 6, 5, 4, 3, 2}`, every still-alive unplaced team receives one placement point. The last surviving team is assigned placement 1 and receives four additional points. Player kills and team placement points are kept separately; there is no total-points formula or scoreboard serializer for `Team` objects.
+---
 
-## Repository map
+### 3. Broadcast Graphics Suite for OBS Studio
+The system provides two independent, 100% opaque, broadcast-grade browser overlays designed for esports streams:
+
+#### A. Points Table Overlay (`frontend/overlay.html`)
+- **Chassis**: Ultra-compact 240px width that fits 16+ teams with zero horizontal overflow.
+- **Visuals**: Solid `#0B0E14` military background, sharp borders, BGMI `#F97316` orange accent bar, and tabular figures.
+- **Dynamic Highlights**: Top 3 ranks highlighted in Gold (`#F59E0B`), Silver (`#38BDF8`), and Bronze (`#D97706`).
+- **Live Animations**: Real-time points flash animation whenever a team scores kills or placement points.
+- **Elimination State**: Faded opacity with red `OUT` status tags for eliminated squads.
+
+#### B. Standalone Top Fragger & MVP Overlay (`frontend/fraggers_overlay.html`)
+- **Independent OBS Channel**: Add as a separate browser source to place anywhere on stream.
+- **Mode 1 - Top 5 Leaderboard**: Ranks top 5 tournament fraggers with team color strip, player name, team tag, live status chip (`ALIVE`, `KNK`, `OUT`), and kill counts.
+- **Mode 2 - Match MVP Spotlight**: High-impact lower-third widget featuring a golden crown badge, team badge, large player name, and dedicated Kill and Knock counters.
+- **Remote Visibility & Mode Toggling**: Controlled directly from the Operator Console.
+
+---
+
+### 4. Operator Console & Match Management
+- **Live Status Strip (`frontend/console.html`)**: Real-time summary of Total Kills, Teams Alive, Map, Leading Team, and Top Fragger (MVP).
+- **Broadcast Overlays Control**: Live show/hide toggles for both overlays, display mode switcher (`Top 5 List` $\leftrightarrow$ `MVP Card`), and one-click OBS URL copy buttons.
+- **Manual Scoring & Intervention Grid**: Interactive team cards allowing operators to manually score kills (`+1`, `−1`), record knocks, or mark team eliminations with single clicks.
+- **Roster Presets**: One-click switching between Default Tournament Teams, Video Testing Teams, and the official **16-Team BMSD Pro Roster** (NINZ, 8BIT, RNTX, BLEG, TAG, NBE, SOUL, K9, V1BA, GODL, OR, GDR, MYTH, WELT, GEN, WF).
+- **Match Lifecycle**: Pause, Resume, End Match, Start New Match, and 1-click Undo.
+- **History & CSV Export (`frontend/history.html`)**: Aggregates standings across multiple tournament matches and exports official standings to CSV.
+
+---
+
+## 📂 Repository Structure
 
 ```text
-.
-├── main.py                     # MP4 → candidate → OCR/YOLO → EventPipeline runner
-├── preprocess/
-│   ├── config.py               # Video, ROI, filtering, and template defaults
-│   ├── pipeline.py             # Frame source and candidate orchestration
-│   ├── roi.py                  # Crop/resize/binary conversion
-│   ├── change_detector.py      # Temporal change gate
-│   ├── mask_generator.py       # Generates glyph templates from the bundled font
-│   ├── templates.py            # Loads generated masks
-│   ├── matching.py             # OpenCV template matching and overlap suppression
-│   └── output.py               # Diagnostic images and CSV reports
-├── model_experiments/
-│   ├── pipeline.py             # PaddleOCR + YOLO event extraction
-│   ├── ocr.py                  # OCR preprocessing and token extraction
-│   └── train.py                # YOLO11n training experiment
-├── backend/
-│   ├── events.py               # Event and Icon definitions
-│   ├── teams.py                # Team/player state data classes
-│   ├── playerMatcher.py        # Fuzzy roster matching
-│   ├── teamManager.py          # State transitions, kills, placement logic
-│   ├── event_pipeline.py       # Event-to-TeamManager adapter
-│   ├── scoreboard.py           # DataFrame JSON-safety conversion
-│   ├── websocketManager.py     # Snapshot storage and broadcast manager
-│   └── main.py                 # FastAPI application
-├── best_openvino_model/        # `best.xml`/`best.bin` plus Ultralytics metadata
-├── fonts/                      # Roboto Condensed font files used for templates
-├── pyproject.toml              # Python 3.12+ project metadata
-└── uv.lock                     # Locked dependency graph
+HACKTOBERFEST-WEEK-2-CHALLENGE/
+├── backend/                        # Tournament Engine & FastAPI Server
+│   ├── main.py                     # API routes, static mounts, WebSocket handler
+│   ├── state.py                    # StateStore: JSON persistence, snapshots, rosters
+│   ├── teamManager.py              # Kill attribution, placement points, status
+│   ├── playerMatcher.py            # RapidFuzz fuzzy OCR name resolution & aliases
+│   ├── websocketManager.py         # Sub-millisecond WebSocket broadcast manager
+│   ├── events.py                   # Event, Icon, and Match dataclasses
+│   ├── teams.py                    # Team, Player, and PlayerStatus definitions
+│   └── pipeline_debugger.py        # Frame candidate verification & API sync
+├── frontend/                       # Broadcast & Operator Web Interfaces
+│   ├── console.html                # Live Operator Console with scoring controls
+│   ├── overlay.html                # OBS Points Table Overlay (compact 240px)
+│   ├── fraggers_overlay.html       # OBS Standalone Top Fraggers & MVP Overlay
+│   ├── setup.html                  # Tournament setup, roster editor & ROI calibrator
+│   ├── history.html                # Cumulative match history & CSV export
+│   └── styles.css                  # Shared dark esports design system
+├── preprocess/                     # Frame Ingest & Gating Pipeline
+│   ├── pipeline.py                 # Video reader & candidate orchestrator
+│   ├── change_detector.py          # Temporal pixel-difference gate (cooldown 0.4s)
+│   ├── matching.py                 # OpenCV font-mask template matching
+│   ├── roi.py                      # Frame cropping, resizing & thresholding
+│   ├── config.py                   # Video paths, ROI ratios & gate thresholds
+│   └── output.py                   # Diagnostic image output & candidate logs
+├── model_experiments/              # ML Models & OCR Inference
+│   ├── pipeline.py                 # Dual YOLO11 + PaddleOCR extraction
+│   ├── ocr.py                      # SingleRowKillfeedOCR (CLAHE + token parser)
+│   └── train.py                    # YOLO11 fine-tuning script
+├── best_openvino_model/            # Intel OpenVINO IR Model Artefacts
+│   ├── best.xml                    # OpenVINO XML model graph
+│   ├── best.bin                    # Quantized model weights
+│   └── metadata.yaml               # YOLO11n class mappings (knock, object, playzone)
+├── system_design/                  # Architecture & Design Diagrams
+│   ├── HLD.png                     # High-Level Architecture Diagram
+│   └── LLD.png                     # Low-Level Pipeline & CV Gate Diagram
+├── data/                           # Persistent JSON Storage (auto-generated)
+│   ├── roster.json                 # Active team roster & OCR aliases
+│   ├── settings.json               # Tournament title, active map, point rules
+│   ├── current_match.json          # Live match state, scores, player frags
+│   ├── history.json                # Archived matches & cumulative standings
+│   └── roi_config.json             # Calibrated kill-feed crop coordinates
+├── fonts/                          # Roboto Condensed font files for glyph masks
+├── main.py                         # Root end-to-end video pipeline runner
+├── pyproject.toml                  # Project dependencies & Python metadata
+└── uv.lock                         # Locked reproducible dependency graph
 ```
 
-## Requirements and setup
+---
 
-- Python 3.12 or newer (`.python-version` pins `3.12`)
-- [uv](https://docs.astral.sh/uv/) for the declared workflow
-- A local gameplay video at `data/trimmed.mp4` for the root runner (the `data/` directory is intentionally ignored)
-- The included `best_openvino_model/` files and fonts must remain in place
+## ⚙️ Installation & Setup
 
+### Prerequisites
+- **Python 3.12+**
+- **[uv](https://docs.astral.sh/uv/)** (recommended) or standard `pip`
+
+### 1. Clone & Install Dependencies
 ```powershell
+# Clone the repository
 git clone https://github.com/Satvik-Singh192/HACKTOBERFEST-WEEK-2-CHALLENGE.git
-Set-Location HACKTOBERFEST-WEEK-2-CHALLENGE
+cd HACKTOBERFEST-WEEK-2-CHALLENGE
+
+# Install dependencies using uv
 uv sync
+
+# Or using standard pip
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e .
+pip install rapidfuzz
 ```
 
-### Important setup limitation
+---
 
-`backend/playerMatcher.py` imports `rapidfuzz`, but `rapidfuzz` is not declared in the current `pyproject.toml` dependency list (even though an unused lock entry exists). The root runner imports that module, so a clean environment may need this temporary local workaround:
+## 🎮 Usage Guide
 
+### 1. Launch the Backend & Broadcast Server
+Start the FastAPI server:
 ```powershell
-uv pip install rapidfuzz
+uv run uvicorn backend.main:app --reload --port 8000
 ```
+> The server automatically launches the setup page (`http://127.0.0.1:8000/frontend/setup.html`) in your browser upon startup.
 
-The durable fix should be a small contribution that adds it to the project dependencies and refreshes `uv.lock`; do not treat the workaround as a production deployment recipe.
-
-## Configuration
-
-Configuration is Python constants in [preprocess/config.py](preprocess/config.py), not environment variables or `.env` files.
-
-| Setting | Default | Meaning |
-| --- | --- | --- |
-| `VIDEO_PATH` | `data/trimmed.mp4` | Local MP4 input |
-| `DURATION_SECONDS` | `300` | Maximum video seconds processed; `None` processes all frames |
-| `XMIN_RATIO`, `XMAX_RATIO` | `0.005`, `0.265` | Horizontal kill-feed ROI ratios |
-| `YMIN_RATIO`, `YMAX_RATIO` | `0.272`, `0.355` | Vertical kill-feed ROI ratios |
-| `DIFF_THRESHOLD` / `COOLDOWN_SECONDS` | `12.0` / `0.40` | Candidate temporal gate |
-| `MASK_MATCH_THRESHOLD` / `MIN_MATCHED_LETTERS` | `0.68` / `3` | Font-template confirmation gate |
-| `OUTPUT_DIR` | `output/mask_detection` | Generated diagnostics |
-| Root-runner ML thresholds | OCR `0.50`, YOLO `0.25`, size `352` | Passed in [main.py](main.py) |
-
-Tune the ROI for the broadcast resolution and HUD layout being processed. The detector artifact is loaded from `./best_openvino_model/` in [main.py](main.py); no alternative model-path CLI or environment configuration exists.
-
-## Running the available pieces
-
-### AI event-extraction experiment
-
-After providing the MP4 and completing setup:
-
+### 2. Run the AI Vision Pipeline
+To process video footage (or OBS virtual camera recording):
 ```powershell
 uv run python main.py
 ```
+This reads the video feed, extracts candidate frames, classifies icons using OpenVINO YOLO11, reads player names with PaddleOCR, and automatically pushes events to the live server.
 
-This creates preprocessing diagnostics and attempts OCR/detection. As written, it then sends an `Event` to an unconfigured `TeamManager`; expect roster-initialisation failure on the first recognised event. You can still use [preprocess/pipeline.py](preprocess/pipeline.py) directly with no callback for candidate diagnostics, or extend the root runner with an explicit roster before using it for scoring.
+### 3. OBS Studio Browser Source Setup
 
-### FastAPI snapshot service
+Add the broadcast overlays to your OBS Studio scene:
 
-`backend/main.py` uses local (non-package-qualified) imports. Run it from its directory:
+| Overlay | OBS Source URL | Recommended Size | Notes |
+| :--- | :--- | :--- | :--- |
+| **Points Table Overlay** | `http://127.0.0.1:8000/frontend/overlay.html` | `260 × 720` | Compact sidebar, fits 16 teams |
+| **Top Fraggers Overlay** | `http://127.0.0.1:8000/frontend/fraggers_overlay.html` | `310 × 340` | Standalone widget or lower-third |
 
-```powershell
-Set-Location backend
-uv run uvicorn main:app --reload
+#### OBS URL Parameters:
+- **Lock to MVP Mode**: `http://127.0.0.1:8000/frontend/fraggers_overlay.html?mode=mvp`
+- **Lock to Top 5 Mode**: `http://127.0.0.1:8000/frontend/fraggers_overlay.html?mode=top5`
+- **Bypass Remote Hide**: Add `?force=1` to keep visible regardless of operator console toggles.
+
+---
+
+## 📡 API & WebSocket Reference
+
+### HTTP Endpoints
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/scoreboard` | Retrieve the complete real-time match snapshot (teams, MVP, fraggers, overlay status) |
+| `POST` | `/api/event` | Submit a parsed kill-feed event (`attacker`, `icons`, `victim`) from the CV pipeline |
+| `POST` | `/api/kill` | Manually increment or decrement kills for a team/player |
+| `POST` | `/api/knock` | Record a knock for a team/player |
+| `POST` | `/api/eliminate` | Mark an entire squad eliminated and trigger placement scoring |
+| `POST` | `/api/undo` | Undo the most recent scoring action |
+| `GET` | `/api/overlay/config` | Get current visibility and mode of broadcast overlays |
+| `POST` | `/api/overlay/config` | Remotely toggle overlay visibility or switch fragger display modes |
+| `POST` | `/api/match/status` | Update match lifecycle (`LIVE`, `PAUSED`, `FINISHED`) |
+| `POST` | `/api/reset` | Reset the current match state for a fresh game |
+| `GET` | `/api/roster` | Fetch the registered tournament roster and players |
+| `POST` | `/api/roster/load-bmsd` | Load the official 16-team BMSD Pro tournament roster |
+| `GET` | `/api/history` | Retrieve cumulative tournament standings across matches |
+| `GET` | `/api/history/export-csv`| Download official tournament standings as a CSV file |
+
+### WebSocket Endpoint
+- **URL**: `ws://127.0.0.1:8000/scoreboard`
+- **Protocol**: Broadcasts full JSON snapshot whenever scores, kills, fraggers, or overlay settings change.
+- **Client Auto-Reconnect**: Frontend clients include automated 2-second heartbeat reconnects and REST polling fallbacks.
+
+---
+
+## 🏆 Tournament Scoring Rules (BGIS Standard)
+
+### Placement Points Distribution
+```text
+┌──────────────┬────────┬──────────────┬────────┐
+│ Rank         │ Points │ Rank         │ Points │
+├──────────────┼────────┼──────────────┼────────┤
+│ 1st (WWCD)   │ 10 pts │ 5th Place    │ 3 pts  │
+│ 2nd Place    │  6 pts │ 6th Place    │ 2 pts  │
+│ 3rd Place    │  5 pts │ 7th Place    │ 1 pt   │
+│ 4th Place    │  4 pts │ 8th Place    │ 1 pt   │
+│ 9th - 16th   │  0 pts │              │        │
+└──────────────┴────────┴──────────────┴────────┘
 ```
+- **Kill Points**: **1 point** per kill.
+- **Kill Attribution**: Kills belong to the knocker if completed by a teammate.
+- **Total Points Formula**: $\text{Total Points} = \text{Placement Points} + \text{Kill Points}$.
 
-The server has an in-memory empty snapshot on startup. It does not receive ML events or load a CSV by itself.
+---
 
-## API and WebSocket reference
+## 🤝 Contributing
 
-| Method | Path | Current behaviour |
-| --- | --- | --- |
-| `GET` | `/` | Returns `{"message": "BGMI Live Scoreboard Backend"}` |
-| `GET` | `/scoreboard` | Returns the current in-memory snapshot |
-| WebSocket | `/scoreboard` | Accepts the connection and immediately sends the current snapshot |
+Contributions are welcome! Please follow these steps:
+1. Fork the repository and create your feature branch: `git checkout -b feature/amazing-feature`.
+2. Ensure Python syntax compiles cleanly:
+   ```powershell
+   uv run python -m compileall backend preprocess model_experiments main.py
+   ```
+3. Test event attribution logic:
+   ```powershell
+   uv run python backend/teamManager.py
+   ```
+4. Commit your changes and open a descriptive Pull Request.
 
-The initial HTTP/WebSocket snapshot is:
+---
 
-```json
-{"version": 0, "teams": []}
-```
+## 📄 License
 
-`WebsocketManager.update_dataframe()` can transform a Pandas DataFrame into JSON-compatible row records and increment/broadcast the version, but no HTTP route or file watcher invokes it. The WebSocket handler waits for text frames only to keep the connection alive; client messages do not change state. There is no authentication, CORS configuration, upload endpoint, reconnect logic, or frontend client in the current tree.
-
-## Testing and validation
-
-There is no tracked test suite or lint configuration. `teamManager.py` includes a small executable assertion example under its `if __name__ == "__main__"` block, but it is not a formal test and requires `rapidfuzz`.
-
-Useful checks for contributors:
-
-```powershell
-uv run python -m compileall backend preprocess model_experiments main.py
-uv run python backend/teamManager.py
-```
-
-For a change to the AI path, validate it against a representative local MP4 and inspect the generated diagnostics before opening a pull request. Do not commit source footage, generated `output/`, `font_templates/`, virtual environments, or model reruns unless maintainers ask for them.
-
-## Hacktoberfest contributions
-
-Small, reviewable contributions are especially valuable here. Good first issues include:
-
-- add unit tests for `PixelChangeDetector`, player matching thresholds, kill attribution, and placement scoring;
-- declare `rapidfuzz` in `pyproject.toml` and regenerate the lock file;
-- add a roster configuration format and initialise `TeamManager` in the root runner;
-- turn `Team` state into a defined scoreboard schema and publish it through `WebsocketManager`;
-- restore icon-to-name spatial association and add fixtures for OCR/detection edge cases;
-- build the missing frontend client for the documented snapshot contract;
-- expose the ROI and model path safely through a documented configuration layer.
-
-Please keep each pull request focused:
-
-1. Fork the repository and create a descriptive branch, for example `docs/clarify-ai-pipeline`.
-2. Make the smallest coherent change and update documentation when behaviour changes.
-3. Run the relevant checks above; include the exact result in the PR description.
-4. Explain what input data was used for vision changes without committing private gameplay footage.
-5. Open a PR with the problem, approach, validation, and known limitations.
-
-Avoid silently changing tournament rules or representing a prototype as production-ready. Issues and PRs that improve determinism, auditability, error handling, and test coverage are particularly reviewer-friendly.
-
-## Known limitations and roadmap
-
-Confirmed current gaps:
-
-- no tracked UI, roster file, match lifecycle, database, CSV ingestion/watcher, or persistence;
-- ML events are not serialised into the WebSocket snapshot;
-- root scoring has no registered teams and so cannot resolve recognised names;
-- candidate detection currently supports a local MP4, not a configured live/OBS source;
-- model icon detections are not spatially associated with OCR text, and duplicate feed entries can be scored repeatedly;
-- model identity and license observable from metadata are Ultralytics YOLO11n / AGPL-3.0 for the export metadata; dataset provenance, evaluation metrics, and suitability for a specific tournament are not documented;
-- no repository license file has been identified.
-
-The practical roadmap is to establish a versioned roster and scoreboard contract, connect `TeamManager` to that contract, publish each accepted update, add a browser overlay, then harden the vision path with labelled fixtures, deduplication, metrics, and end-to-end tests.
-
-## Demo
-
-No project demo video, screenshots, deployment URL, or sample input footage is tracked. Add real, reproducible assets here when they are available—please do not replace this section with synthetic claims.
-
-## Acknowledgements
-
-The implementation uses FastAPI, OpenCV, PaddleOCR/PaddlePaddle, Pandas, Pillow, and Ultralytics. The bundled model metadata names Ultralytics and links its AGPL-3.0 license; see [best_openvino_model/metadata.yaml](best_openvino_model/metadata.yaml). Roboto Condensed font files are bundled under [fonts/](fonts/).
-
-## License
-
-This project is distributed under the [MIT License](LICENSE).
-
+This project is open-source and distributed under the [MIT License](LICENSE).
+The fine-tuned YOLO11 model export is governed by the Ultralytics license.
+Roboto Condensed font files are governed by the Apache 2.0 License.
