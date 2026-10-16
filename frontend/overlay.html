@@ -2,158 +2,234 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overlay - Live Points Table</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <title>BGMI Live Points Table – OBS Overlay</title>
   <style>
-    /* OBS transparent mode — default when loaded without ?preview=true */
-    body {
+    /* ── Transparent OBS overlay – no shared CSS needed ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
       background: transparent;
-      margin: 0;
-      padding: 0;
+      font-family: 'Rajdhani', 'Impact', 'Arial Narrow', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      width: 220px;
     }
-    body.preview-mode {
-      background: #0A0D11;
+
+    #overlay-wrap {
+      width: 220px;
+      padding: 0 0 4px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: rgba(8, 10, 14, 0.88);
+      border: 1px solid rgba(249,115,22,.35);
+      border-top: 3px solid #f97316;
+      box-shadow: 0 4px 24px rgba(0,0,0,.7);
     }
-    .overlay-stage-wrapper {
-      background: transparent;
-    }
-    body.preview-mode .overlay-stage-wrapper {
-      background: #0A0D11;
-      min-height: 100vh;
+
+    /* header */
+    .ov-header {
       display: flex;
-      align-items: flex-start;
-      justify-content: flex-start;
-      padding: 24px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px 5px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
     }
-    /* Connection indicator */
-    #ws-indicator {
-      position: fixed;
-      bottom: 8px;
-      right: 10px;
+    .ov-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #f97316;
+    }
+    .ov-match {
       font-size: 10px;
-      font-family: 'IBM Plex Sans', sans-serif;
-      color: rgba(255,255,255,0.25);
-      display: none;
+      color: rgba(255,255,255,.45);
+      font-weight: 600;
+      letter-spacing: .06em;
     }
-    body.preview-mode #ws-indicator { display: block; }
-    #ws-indicator.connected { color: #2DD4BF; }
-    #ws-indicator.disconnected { color: #F43F5E; }
+
+    /* column headers */
+    .ov-col-hdr {
+      display: grid;
+      grid-template-columns: 28px 1fr 32px 38px;
+      padding: 4px 10px 3px;
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.3);
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+
+    /* team rows */
+    .ov-rows { display: flex; flex-direction: column; }
+
+    .ov-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 32px 38px;
+      align-items: center;
+      padding: 5px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      transition: background .4s;
+    }
+    .ov-row:last-child { border-bottom: none; }
+    .ov-row.eliminated { opacity: .28; }
+    .ov-row.rank-1 { background: rgba(249,115,22,.07); }
+
+    .ov-rank {
+      font-size: 11px;
+      font-weight: 800;
+      color: rgba(255,255,255,.35);
+      line-height: 1;
+    }
+    .ov-row.rank-1 .ov-rank { color: #fbbf24; }
+    .ov-row.rank-2 .ov-rank { color: #93c5fd; }
+    .ov-row.rank-3 .ov-rank { color: #d97706; }
+
+    .ov-team {
+      display: flex; align-items: center; gap: 6px;
+      overflow: hidden;
+    }
+    .ov-bar {
+      width: 3px; height: 16px; border-radius: 2px; flex-shrink: 0;
+    }
+    .ov-name {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ov-row.eliminated .ov-name { text-decoration: line-through; }
+
+    .ov-kills {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,.55);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .ov-pts {
+      font-size: 14px;
+      font-weight: 800;
+      color: #f97316;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .ov-row.rank-1 .ov-pts { color: #fbbf24; }
+
+    /* flash on update */
+    @keyframes row-flash {
+      0%   { background: rgba(249,115,22,.22); }
+      100% { background: transparent; }
+    }
+    .flash { animation: row-flash .7s ease; }
+
+    /* ws indicator dot – bottom right */
+    #ws-dot {
+      position: fixed; bottom: 6px; right: 8px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #ef4444;
+      transition: background .4s;
+    }
+    #ws-dot.live { background: #22c55e; }
   </style>
 </head>
 <body>
-  <div class="overlay-stage-wrapper">
-    <div class="overlay-stage">
-      <!-- Dynamic table — populated entirely by JS -->
-      <div class="overlay-table" id="overlay-table">
-        <div class="overlay-header" id="overlay-header">
-          <span class="overlay-title" id="overlay-title">MATCH 1 · LIVE</span>
-          <div class="overlay-header-cols">
-            <span style="width: 56px; text-align: right;">KILLS</span>
-            <span style="width: 64px; text-align: right;">PTS</span>
-          </div>
-        </div>
-        <!-- rows injected here by renderOverlay() -->
-        <div id="overlay-rows"></div>
-      </div>
-    </div>
+
+<div id="overlay-wrap">
+  <div class="ov-header">
+    <span class="ov-title" id="ov-title">POINTS TABLE</span>
+    <span class="ov-match" id="ov-match">MATCH 1</span>
   </div>
+  <div class="ov-col-hdr">
+    <span>#</span>
+    <span>TEAM</span>
+    <span style="text-align:right">K</span>
+    <span style="text-align:right">PTS</span>
+  </div>
+  <div class="ov-rows" id="ov-rows">
+    <!-- rendered by JS -->
+  </div>
+</div>
 
-  <div id="ws-indicator">⬤ connecting…</div>
+<div id="ws-dot"></div>
 
-  <script>
-    (function initOverlay() {
-      const params = new URLSearchParams(window.location.search);
-      const isPreview = params.get('preview') === 'true' || params.get('bg') === 'solid';
-      if (isPreview) document.body.classList.add('preview-mode');
+<script>
+  const rowsEl  = document.getElementById('ov-rows');
+  const titleEl = document.getElementById('ov-title');
+  const matchEl = document.getElementById('ov-match');
+  const wsDot   = document.getElementById('ws-dot');
 
-      const titleEl  = document.getElementById('overlay-title');
-      const rowsEl   = document.getElementById('overlay-rows');
-      const wsInd    = document.getElementById('ws-indicator');
+  // Track previous totals to flash changed rows
+  const prevTotals = {};
 
-      // ── Render ────────────────────────────────────────────────
-      function renderOverlay(snapshot) {
-        if (!snapshot) return;
+  function render(snap) {
+    const teams  = (snap.teams || []).slice().sort(
+      (a, b) => (b.total ?? 0) - (a.total ?? 0)
+    );
+    const mapName   = snap.map   || '';
+    const matchNum  = snap.match_number || 1;
+    const status    = snap.status || 'LIVE';
 
-        const teams = snapshot.teams || [];
-        if (teams.length === 0) {
-          rowsEl.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:12px;padding:12px 16px;">Waiting for team data…</div>';
-          return;
-        }
+    titleEl.textContent = status === 'FINISHED' ? 'FINAL STANDINGS' : 'POINTS TABLE';
+    matchEl.textContent = `MATCH ${matchNum}${mapName ? ' · ' + mapName.toUpperCase() : ''}`;
 
-        // Update header title
-        const matchNum = snapshot.match_number || 1;
-        const statusLabel = snapshot.status === 'FINISHED' ? 'FINAL'
-                          : snapshot.status === 'PAUSED'   ? 'PAUSED'
-                          : 'LIVE';
-        titleEl.textContent = `MATCH ${matchNum} · ${statusLabel}`;
+    rowsEl.innerHTML = '';
+    teams.slice(0, 16).forEach((t, i) => {
+      const rank    = i + 1;
+      const kills   = t.kills  ?? 0;
+      const pts     = t.total  ?? kills;
+      const color   = t.color  || '#94a3b8';
+      const isElim  = Boolean(t.eliminated);
+      const changed = prevTotals[t.team] !== undefined && prevTotals[t.team] !== pts;
+      prevTotals[t.team] = pts;
 
-        // Sort by total descending (already sorted from backend, but ensure)
-        const sorted = [...teams].sort((a, b) =>
-          ((b.total ?? ((b.kills || 0) + (b.place || 0))) -
-           (a.total ?? ((a.kills || 0) + (a.place || 0)))));
+      const row = document.createElement('div');
+      row.className = [
+        'ov-row',
+        rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '',
+        isElim ? 'eliminated' : '',
+        changed ? 'flash' : '',
+      ].filter(Boolean).join(' ');
 
-        rowsEl.innerHTML = sorted.slice(0, 16).map((t, idx) => {
-          const rank   = idx + 1;
-          const kills  = t.kills  ?? 0;
-          const total  = t.total  ?? (kills + (t.place ?? 0));
-          const color  = t.color  || '#94A3B8';
-          const isTop  = rank === 1;
-          const isElim = Boolean(t.eliminated);
+      row.innerHTML = `
+        <div class="ov-rank">${rank}</div>
+        <div class="ov-team">
+          <span class="ov-bar" style="background:${color}"></span>
+          <span class="ov-name">${t.team || '—'}</span>
+        </div>
+        <div class="ov-kills">${kills}</div>
+        <div class="ov-pts">${pts}</div>
+      `;
+      rowsEl.appendChild(row);
+    });
+  }
 
-          return `
-            <div class="overlay-row${isElim ? ' eliminated' : ''}">
-              <div class="overlay-rank">${rank}</div>
-              <span class="overlay-bar" style="background-color:${color};"></span>
-              <div class="overlay-name">${t.team || 'TEAM'}</div>
-              <div class="overlay-kills">${kills}</div>
-              <div class="overlay-pts${isTop ? ' amber' : ''}">${total}</div>
-            </div>`;
-        }).join('');
-      }
+  // ── Initial fetch ──────────────────────────────
+  fetch('/scoreboard')
+    .then(r => r.json())
+    .then(render)
+    .catch(() => {});
 
-      // ── Initial REST fetch ─────────────────────────────────────
-      fetch('/scoreboard')
-        .then(r => r.json())
-        .then(data => renderOverlay(data))
-        .catch(() => {}); // WS will handle it anyway
+  // ── WebSocket with auto-reconnect ──────────────
+  const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://')
+               + (location.host || '127.0.0.1:8000')
+               + '/scoreboard';
+  let ws;
 
-      // ── WebSocket with auto-reconnect ─────────────────────────
-      const wsBase = (location.protocol === 'https:' ? 'wss://' : 'ws://')
-                   + (location.host || '127.0.0.1:8000');
-      let ws;
+  function connect() {
+    try {
+      ws = new WebSocket(WS_URL);
+      ws.onopen    = () => wsDot.className = 'live';
+      ws.onmessage = e => { try { render(JSON.parse(e.data)); } catch {} };
+      ws.onclose   = () => { wsDot.className = ''; setTimeout(connect, 3000); };
+      ws.onerror   = () => ws.close();
+    } catch { setTimeout(connect, 3000); }
+  }
 
-      function connect() {
-        try {
-          ws = new WebSocket(wsBase + '/scoreboard');
-
-          ws.onopen = () => {
-            wsInd.textContent = '⬤ live';
-            wsInd.className = 'connected';
-          };
-
-          ws.onmessage = (event) => {
-            try {
-              renderOverlay(JSON.parse(event.data));
-            } catch (e) { console.error('overlay WS parse error:', e); }
-          };
-
-          ws.onclose = () => {
-            wsInd.textContent = '⬤ reconnecting…';
-            wsInd.className = 'disconnected';
-            setTimeout(connect, 3000);
-          };
-
-          ws.onerror = () => ws.close();
-
-        } catch (e) { setTimeout(connect, 3000); }
-      }
-
-      connect();
-    })();
-  </script>
+  connect();
+</script>
 </body>
 </html>

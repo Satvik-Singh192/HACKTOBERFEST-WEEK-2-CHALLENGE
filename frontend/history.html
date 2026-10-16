@@ -3,263 +3,255 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scoreboard - Tournament History & Overall Standings</title>
+  <title>BGMI Scoreboard – Match History</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="console-page">
-    <!-- Top bar -->
-    <header class="top-bar">
-      <div class="brand-and-tabs">
-        <a href="console.html" class="brand" aria-label="Scoreboard Home">
-          <span class="brand-bar" aria-hidden="true"></span>
-          <span>SCOREBOARD</span>
-        </a>
-        <nav class="nav-tabs" aria-label="Main Navigation">
-          <a href="console.html" class="nav-tab-link">Live</a>
-          <a href="setup.html" class="nav-tab-link">Setup</a>
-          <a href="history.html" class="nav-tab-link active">History</a>
-          <a href="output.html" class="nav-tab-link">Output</a>
-          <a href="manual.html" class="nav-tab-link">Manual</a>
-        </nav>
-      </div>
-      <div class="top-bar-right">
-        <span class="live-dot" aria-hidden="true"></span>
-        <span class="live-match-text" id="top-bar-history-text">TOURNAMENT STANDINGS</span>
-      </div>
-    </header>
+<div class="page">
 
-    <!-- Status strip -->
-    <div class="status-strip-wrapper">
-      <div class="status-panel">
-        <div class="stat-item">
-          <div class="stat-value" id="strip-matches-played">0</div>
-          <div class="stat-label">MATCHES ARCHIVED</div>
+  <!-- ── Topbar ── -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="brand-pip"></span>
+      BGMI SCOREBOARD
+    </div>
+    <nav class="topbar-nav">
+      <a class="nav-link" href="console.html">Console</a>
+      <a class="nav-link" href="setup.html">Setup</a>
+      <a class="nav-link active" href="history.html">History</a>
+    </nav>
+    <div class="topbar-right">
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">↓ Export CSV</button>
+      <button class="btn btn-danger btn-sm" onclick="clearHistory()">✕ Clear History</button>
+    </div>
+  </header>
+
+  <!-- ── Tabs ── -->
+  <div style="display:flex; border-bottom:1px solid var(--border); background:var(--surface); padding:0 20px; gap:0;">
+    <button class="nav-link active" id="tab-overall" onclick="switchTab('overall')" style="border:none; background:none; height:48px; cursor:pointer;">Overall Standings</button>
+    <button class="nav-link" id="tab-matches" onclick="switchTab('matches')" style="border:none; background:none; height:48px; cursor:pointer;">Per-Match Results</button>
+  </div>
+
+  <!-- ── Status Strip ── -->
+  <div class="status-strip">
+    <div class="stat-box">
+      <div class="stat-val accent" id="h-matches">0</div>
+      <div class="stat-lbl">Matches Played</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="h-leader">—</div>
+      <div class="stat-lbl">Overall Leader</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="h-total-kills">0</div>
+      <div class="stat-lbl">Total Kills</div>
+    </div>
+    <div class="stat-box" style="border-right:none;">
+      <div class="stat-val" id="h-wwcd">—</div>
+      <div class="stat-lbl">Most WWCD</div>
+    </div>
+  </div>
+
+  <!-- ── Tab Contents ── -->
+  <div style="padding:16px; flex:1; overflow:auto;">
+
+    <!-- OVERALL TAB -->
+    <div id="view-overall">
+      <div class="card">
+        <div class="card-header">
+          Overall Tournament Standings
+          <span style="font-size:11px; color:var(--muted); font-weight:500; text-transform:none; letter-spacing:0;" id="last-updated">—</span>
         </div>
-        <div class="stat-item">
-          <div class="stat-value" id="strip-total-frags">0</div>
-          <div class="stat-label">TOTAL TOURNAMENT FRAGS</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value amber" id="strip-overall-leader">NONE</div>
-          <div class="stat-label">OVERALL LEADER</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="strip-most-wwcd">NONE</div>
-          <div class="stat-label">MOST CHICKEN DINNERS</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="strip-active-teams">8</div>
-          <div class="stat-label">COMPETING TEAMS</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value amber">PERSISTED</div>
-          <div class="stat-label">DATA STORAGE</div>
-        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:42px;">#</th>
+              <th>Team</th>
+              <th class="text-right" style="width:80px;">Matches</th>
+              <th class="text-right" style="width:60px;">WWCD</th>
+              <th class="text-right" style="width:60px;">Kills</th>
+              <th class="text-right" style="width:70px;">Place Pts</th>
+              <th class="text-right" style="width:70px; color:var(--accent);">Total</th>
+            </tr>
+          </thead>
+          <tbody id="overall-body">
+            <tr><td colspan="7" style="text-align:center; color:var(--muted); padding:40px;">No match history yet.</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <div style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
-        <!-- Esports Highlights Cards -->
-        <div class="history-stats-bar">
-          <div class="panel" style="padding: 18px 20px;">
-            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Highest Total Team</div>
-            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: #FF7A45; margin-top: 4px;" id="card-top-team">NONE</div>
-            <div style="font-size: 13px; color: var(--text); margin-top: 2px;" id="card-top-team-sub">0 Total Pts · 0 WWCD</div>
-          </div>
-          <div class="panel" style="padding: 18px 20px;">
-            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Highest Kill Team</div>
-            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--amber); margin-top: 4px;" id="card-kill-team">NONE</div>
-            <div style="font-size: 13px; color: var(--text); margin-top: 2px;" id="card-kill-team-sub">0 Total Frags</div>
-          </div>
-          <div class="panel" style="padding: 18px 20px;">
-            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Most WWCDs</div>
-            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--teal-chip-text); margin-top: 4px;" id="card-wwcd-team">NONE</div>
-            <div style="font-size: 13px; color: var(--text); margin-top: 2px;" id="card-wwcd-sub">0 Chicken Dinners</div>
-          </div>
-          <div class="panel" style="padding: 18px 20px;">
-            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.1em;">Tournament Avg Frags</div>
-            <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--text); margin-top: 4px;" id="card-avg-frags">0</div>
-            <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">Average frags per match</div>
-          </div>
-        </div>
-
-        <!-- Overall Standings Table -->
-        <section class="panel" style="display: flex; flex-direction: column;">
-          <div class="panel-header">
-            <div style="display: flex; align-items: center; gap: 16px;">
-              <span class="panel-title">CUMULATIVE TOURNAMENT STANDINGS</span>
-              <span class="chip chip-amber" id="standings-match-badge">0 Matches Concluded</span>
-            </div>
-            <div style="display: flex; gap: 10px;">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="downloadCsv()">📥 Download CSV</button>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="clearTournamentHistory()" style="color: var(--danger-text);">Clear History</button>
-              <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">Print Standings</button>
-            </div>
-          </div>
-
-          <!-- Standings Table Header -->
-          <div class="table-col-header" style="grid-template-columns: 50px 1.5fr 100px 90px 110px 100px 100px;">
-            <span>RANK</span>
-            <span>TEAM</span>
-            <span class="col-num">MATCHES</span>
-            <span class="col-num">WWCD</span>
-            <span class="col-num">PLACE PTS</span>
-            <span class="col-num">KILL PTS</span>
-            <span class="col-num">TOTAL PTS</span>
-          </div>
-
-          <!-- Dynamic Standings Rows -->
-          <div id="standings-rows-container">
-            <!-- Dynamically populated -->
-          </div>
-        </section>
-
-        <!-- Past Matches Breakdown -->
-        <section class="panel" style="padding: 20px;">
-          <div class="panel-header" style="height: auto; padding: 0 0 16px 0;">
-            <span class="panel-title">ARCHIVED MATCHES LOG</span>
-            <span class="chip chip-teal" id="archived-count-badge">0 Matches</span>
-          </div>
-
-          <div id="matches-log-container" style="display: flex; flex-direction: column; gap: 12px;">
-            <!-- Dynamically populated -->
-          </div>
-        </section>
+    <!-- PER-MATCH TAB -->
+    <div id="view-matches" style="display:none;">
+      <div style="display:flex; flex-direction:column; gap:12px;" id="matches-list">
+        <div style="text-align:center; color:var(--muted); padding:40px;">No completed matches yet.</div>
       </div>
-    </main>
+    </div>
+
   </div>
+</div>
 
-  <script>
-    async function fetchHistory() {
-      try {
-        const res = await fetch('/api/history');
-        const data = await res.json();
-        renderHistory(data);
-      } catch (e) {
-        console.error('fetchHistory error:', e);
-      }
-    }
+<div id="toast-container"></div>
 
-    function renderHistory(data) {
-      if (!data) return;
-      const matches = data.matches || [];
-      const standings = data.overall_standings || [];
+<script>
+  // ── Utility ───────────────────────────────────────────────
+  function toast(msg, type = 'info') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
 
-      // Top Status Strip
-      const totalMatches = matches.length;
-      document.getElementById('strip-matches-played').textContent = totalMatches;
-      document.getElementById('archived-count-badge').textContent = `${totalMatches} Match${totalMatches !== 1 ? 'es' : ''}`;
-      document.getElementById('standings-match-badge').textContent = `${totalMatches} Match${totalMatches !== 1 ? 'es' : ''} Concluded`;
+  async function api(path, method = 'GET', body) {
+    try {
+      const r = await fetch(path, {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      return r.json();
+    } catch (e) { toast('Network error', 'error'); }
+  }
 
-      const totalKills = standings.reduce((acc, s) => acc + (s.kills || 0), 0);
-      document.getElementById('strip-total-frags').textContent = totalKills;
+  // ── Tabs ─────────────────────────────────────────────────
+  function switchTab(tab) {
+    const isOverall = tab === 'overall';
+    document.getElementById('view-overall').style.display  = isOverall ? '' : 'none';
+    document.getElementById('view-matches').style.display  = isOverall ? 'none' : '';
+    document.getElementById('tab-overall').className  = 'nav-link' + (isOverall ? ' active' : '');
+    document.getElementById('tab-matches').className  = 'nav-link' + (!isOverall ? ' active' : '');
+  }
 
+  // ── Load ─────────────────────────────────────────────────
+  async function loadHistory() {
+    const data = await api('/api/history') || {};
+    const standings = data.overall_standings || [];
+    const matches   = data.matches || [];
+
+    // Status strip
+    document.getElementById('h-matches').textContent  = matches.length;
+
+    if (standings.length) {
       const leader = standings[0];
-      if (leader && leader.total > 0) {
-        document.getElementById('strip-overall-leader').textContent = `${leader.team} (${leader.total} PTS)`;
-        document.getElementById('card-top-team').textContent = leader.team;
-        document.getElementById('card-top-team-sub').textContent = `${leader.total} Total Pts · ${leader.wwcd || 0} WWCD · ${leader.kills || 0} Kills`;
-      } else {
-        document.getElementById('strip-overall-leader').textContent = 'NONE';
-        document.getElementById('card-top-team').textContent = 'NONE';
-        document.getElementById('card-top-team-sub').textContent = '0 Matches Completed';
-      }
+      document.getElementById('h-leader').textContent     = leader.team || '—';
+      document.getElementById('h-total-kills').textContent = standings.reduce((s, t) => s + (t.kills || 0), 0);
 
       // Most WWCD
-      const topWwcd = [...standings].sort((a, b) => (b.wwcd || 0) - (a.wwcd || 0))[0];
-      if (topWwcd && topWwcd.wwcd > 0) {
-        document.getElementById('strip-most-wwcd').textContent = `${topWwcd.team} (${topWwcd.wwcd} WWCD)`;
-        document.getElementById('card-wwcd-team').textContent = topWwcd.team;
-        document.getElementById('card-wwcd-sub').textContent = `${topWwcd.wwcd} Chicken Dinners`;
-      }
-
-      // Highest Kill Team
-      const topKillTeam = [...standings].sort((a, b) => (b.kills || 0) - (a.kills || 0))[0];
-      if (topKillTeam && topKillTeam.kills > 0) {
-        document.getElementById('card-kill-team').textContent = topKillTeam.team;
-        document.getElementById('card-kill-team-sub').textContent = `${topKillTeam.kills} Total Frags`;
-      }
-
-      // Average frags
-      const avgFrags = totalMatches > 0 ? (totalKills / totalMatches).toFixed(1) : '0';
-      document.getElementById('card-avg-frags').textContent = avgFrags;
-
-      // Standings Rows
-      const container = document.getElementById('standings-rows-container');
-      if (standings.length === 0 || totalMatches === 0) {
-        container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--muted); font-size: 14px;">No matches completed yet. Finish a match from the Operator Console to populate tournament history.</div>';
-      } else {
-        container.innerHTML = standings.map((s, idx) => {
-          const rank = idx + 1;
-          const isTop = rank === 1;
-          return `
-            <div class="table-row ${isTop ? 'highlighted' : ''}" style="grid-template-columns: 50px 1.5fr 100px 90px 110px 100px 100px;">
-              <div class="row-rank" style="font-weight: 700; color: ${isTop ? 'var(--amber)' : 'var(--muted)'};">#${rank}</div>
-              <div class="row-team">
-                <span class="team-color-bar" style="background-color: ${s.color || '#94A3B8'};"></span>
-                <span class="team-name" style="font-weight: 700;">${s.team}</span>
-                ${isTop ? '<span class="chip chip-amber" style="font-size: 10px; margin-left: 8px;">Leader</span>' : ''}
-              </div>
-              <div class="row-num">${s.matches_played || 0}</div>
-              <div class="row-num" style="color: ${s.wwcd > 0 ? 'var(--teal-chip-text)' : 'inherit'}; font-weight: 700;">${s.wwcd || 0}</div>
-              <div class="row-num">${s.place || 0}</div>
-              <div class="row-num">${s.kills || 0}</div>
-              <div class="row-total" style="font-weight: 800; font-size: 16px; color: ${isTop ? 'var(--amber)' : 'var(--text)'};">${s.total || 0}</div>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // Archived Matches Log
-      const logContainer = document.getElementById('matches-log-container');
-      if (matches.length === 0) {
-        logContainer.innerHTML = '<div style="padding: 16px; color: var(--muted); font-size: 13px;">No archived match reports.</div>';
-      } else {
-        logContainer.innerHTML = matches.map(m => {
-          const mWinner = m.winner || 'None';
-          const matchTeams = m.teams || [];
-          const top3 = matchTeams.slice(0, 3).map(t => `${t.team} (${t.total} pts)`).join(' · ');
-
-          return `
-            <div style="background: #0B0E12; border: 1px solid var(--divider); border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap: 12px;">
-              <div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-weight: 700; font-size: 15px; color: var(--text);">MATCH ${m.match_number}</span>
-                  <span class="chip chip-teal" style="font-size: 11px;">WWCD: ${mWinner}</span>
-                  <span style="font-size: 12px; color: var(--muted);">${m.map || 'Erangel'}</span>
-                </div>
-                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Top 3: <strong style="color: var(--text);">${top3}</strong></div>
-              </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span class="chip chip-amber" style="font-size: 11px;">Completed</span>
-              </div>
-            </div>
-          `;
-        }).reverse().join('');
-      }
+      const mostWwcd = standings.reduce((a, b) => (b.wwcd || 0) > (a.wwcd || 0) ? b : a, standings[0] || {});
+      document.getElementById('h-wwcd').textContent = mostWwcd?.team || '—';
     }
 
-    function downloadCsv() {
-      window.location.href = '/api/history/export-csv';
+    renderOverall(standings);
+    renderMatches(matches);
+    document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+  }
+
+  function renderOverall(standings) {
+    const tbody = document.getElementById('overall-body');
+    if (!standings.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:40px;">No match history yet.</td></tr>';
+      return;
     }
 
-    async function clearTournamentHistory() {
-      if (!confirm('Are you sure you want to permanently clear all completed match history?')) return;
-      try {
-        await fetch('/api/history/clear', { method: 'POST' });
-        fetchHistory();
-      } catch (e) {
-        alert('Failed to clear history: ' + e);
-      }
+    tbody.innerHTML = '';
+    standings.forEach((t, i) => {
+      const rank   = i + 1;
+      const rankClass = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
+      const tr = document.createElement('tr');
+      if (rank === 1) tr.classList.add('rank-1');
+      tr.innerHTML = `
+        <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+        <td>
+          <div class="flex items-center gap-8">
+            <span class="team-bar" style="background:${t.color || '#94a3b8'}"></span>
+            <span class="fw-700">${t.team}</span>
+            ${rank === 1 ? '<span style="font-size:10px;color:var(--amber);margin-left:4px;">👑 LEADER</span>' : ''}
+          </div>
+        </td>
+        <td class="text-right text-muted">${t.matches_played ?? 0}</td>
+        <td class="text-right" style="color:var(--accent); font-weight:700;">${t.wwcd ?? 0}</td>
+        <td class="text-right">${t.kills ?? 0}</td>
+        <td class="text-right text-muted">${t.place ?? 0}</td>
+        <td class="text-right fw-800" style="font-size:16px; color:${rank===1?'var(--amber)':'var(--accent)'};">${t.total ?? 0}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderMatches(matches) {
+    const list = document.getElementById('matches-list');
+    if (!matches.length) {
+      list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">No completed matches yet.</div>';
+      return;
     }
 
-    fetchHistory();
-  </script>
+    list.innerHTML = '';
+    [...matches].reverse().forEach(m => {
+      const teams = (m.teams || []).slice().sort((a, b) => (b.total ?? 0) - (a.total ?? 0));
+      const winner = teams[0];
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-header">
+          Match ${m.match_number} · ${m.map || ''}
+          <span style="font-size:11px; color:var(--muted); font-weight:500; text-transform:none; letter-spacing:0;">
+            Winner: <strong style="color:var(--amber);">${winner?.team || '—'}</strong>
+            · ${m.timestamp ? new Date(m.timestamp).toLocaleString() : ''}
+          </span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:42px;">#</th>
+              <th>Team</th>
+              <th class="text-right" style="width:60px;">Kills</th>
+              <th class="text-right" style="width:70px;">Place Pts</th>
+              <th class="text-right" style="width:70px;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${teams.map((t, i) => {
+              const rank = i + 1;
+              const rankClass = rank===1?'r1':rank===2?'r2':rank===3?'r3':'';
+              return `
+                <tr class="${rank===1?'rank-1':''}">
+                  <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+                  <td>
+                    <div class="flex items-center gap-8">
+                      <span class="team-bar" style="background:${t.color||'#94a3b8'}"></span>
+                      <span class="fw-700">${t.team}</span>
+                    </div>
+                  </td>
+                  <td class="text-right text-accent fw-700">${t.kills??0}</td>
+                  <td class="text-right text-muted">${t.place??0}</td>
+                  <td class="text-right fw-800" style="color:${rank===1?'var(--amber)':'var(--text)'};">${t.total??0}</td>
+                </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  // ── Actions ───────────────────────────────────────────────
+  async function exportCSV() {
+    window.open('/api/history/export-csv', '_blank');
+  }
+
+  async function clearHistory() {
+    if (!confirm('Clear all match history? This cannot be undone.')) return;
+    await api('/api/history/clear', 'POST');
+    toast('History cleared', 'info');
+    loadHistory();
+  }
+
+  // Init
+  loadHistory();
+</script>
 </body>
 </html>
