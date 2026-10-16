@@ -77,14 +77,14 @@ DEFAULT_ROSTER: List[Dict[str, Any]] = [
             {"name": "Isha", "aliases": ["lsha", "V0RT3X_lsha"]},
             {"name": "Ron", "aliases": []},
             {"name": "Karan", "aliases": []},
-            {"name": "Dev", "aliases": []},
+            {"name": "Neil", "aliases": []},
         ],
     },
     {
         "team": "ASHEN",
         "color": "#F472B6",
         "players": [
-            {"name": "Kabir", "aliases": ["K4bir"]},
+            {"name": "Rudra", "aliases": ["Rud"]},
             {"name": "Rishi", "aliases": []},
             {"name": "Aman", "aliases": []},
             {"name": "Sahil", "aliases": []},

@@ -1,6 +1,45 @@
+import os
+import sys
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
+
+# Pre-load PyTorch DLLs on Windows to avoid DLL load conflicts with PaddlePaddle
+try:
+    venv_site = Path(sys.executable).parent.parent / "Lib" / "site-packages"
+    torch_lib = venv_site / "torch" / "lib"
+    if torch_lib.is_dir() and hasattr(os, "add_dll_directory"):
+        os.add_dll_directory(str(torch_lib))
+    import torch
+except Exception:
+    pass
+
+os.environ["FLAGS_use_mkldnn"] = "0"
+os.environ["FLAGS_onednn_fuse_conv_bn"] = "0"
+
 import cv2
 import numpy as np
+import paddle
+import paddle.inference
+
+try:
+    paddle.set_flags({"FLAGS_use_mkldnn": False})
+except Exception:
+    pass
+
+# Paddle 3.0+ enables OneDNN by default on CPU, which has a known bug with fused_conv2d in MobileNetV3.
+# Wrapping create_predictor ensures OneDNN and MKLDNN are always disabled for crash-free execution.
+_orig_create_predictor = paddle.inference.create_predictor
+
+def _safe_create_predictor(config):
+    try:
+        config.disable_onednn()
+        config.disable_mkldnn()
+    except Exception:
+        pass
+    return _orig_create_predictor(config)
+
+paddle.inference.create_predictor = _safe_create_predictor
+
 from paddleocr import PaddleOCR
 
 
@@ -8,11 +47,13 @@ class SingleRowKillfeedOCR:
     def __init__(self, min_ocr_conf: float = 0.75):
         self.min_ocr_conf = min_ocr_conf
 
-        # PaddleOCR configured for sensitive extraction of small HUD fonts
+        # PaddleOCR configured for sensitive extraction of small HUD fonts with OneDNN disabled to avoid fused_conv2d crash on Windows
         self.ocr = PaddleOCR(
             use_angle_cls=False,
             lang="en",
             show_log=False,
+            enable_mkldnn=False,
+            use_gpu=False,
             det_db_thresh=0.2,       # Catches low-contrast text edges
             det_db_box_thresh=0.3,   # Preserves smaller character bounding boxes
             det_db_unclip_ratio=1.8  # Avoids clipping thin letter edges

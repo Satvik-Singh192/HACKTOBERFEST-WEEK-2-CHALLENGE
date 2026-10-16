@@ -8,6 +8,10 @@ Supports:
 
 from __future__ import annotations
 
+import os
+os.environ["FLAGS_use_mkldnn"] = "0"
+os.environ["FLAGS_onednn_fuse_conv_bn"] = "0"
+
 import argparse
 from pathlib import Path
 
