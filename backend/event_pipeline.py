@@ -48,19 +48,17 @@ class EventPipeline:
                 f"Expected Event, received {type(event).__name__}"
             )
 
-        resolved_event = event
-        # Let TeamManager resolve fuzzy matching and own all scoring & player-state transitions.
-        try:
-            resolved_event = self.team_manager.resolve_event(event)
-            self.team_manager.process_events(resolved_event)
-        except Exception as e:
-            print(f"[EventPipeline] TeamManager: {e}")
-
         self.processed_events += 1
 
-        # Sync with Scoreboard store and WebSocket broadcast
+        # Sync with authoritative Scoreboard store and WebSocket broadcast
         if self.sync_scoreboard:
-            self._sync_event_to_scoreboard(resolved_event)
+            self._sync_event_to_scoreboard(event)
+        else:
+            try:
+                resolved_event = self.team_manager.resolve_event(event)
+                self.team_manager.process_events(resolved_event)
+            except Exception as e:
+                print(f"[EventPipeline] TeamManager: {e}")
 
     def _sync_event_to_scoreboard(self, event: Event) -> None:
         try:
@@ -68,51 +66,18 @@ class EventPipeline:
             import urllib.request
             import urllib.error
 
-            # In BGMI, a knock feed contains [WeaponIcon, KnockIcon].
-            # If Icon.KNOCK is present, it is ALWAYS a knock, NEVER a kill finish.
-            is_knock = Icon.KNOCK in event.icons
-            is_kill = not is_knock and (
-                Icon.OBJECT in event.icons or (event.attacker and event.attacker != "Playzone")
-            )
-
-            attacker_name = event.attacker
-            victim_name = event.victim
-
-            attacker_team = None
-            if attacker_name and attacker_name != "Playzone":
-                try:
-                    attacker_team = self.team_manager.get_team(attacker_name).name
-                except Exception:
-                    attacker_team = attacker_name
-
-            if is_knock and attacker_team:
-                payload = json.dumps({
-                    "team": attacker_team,
-                    "player": attacker_name,
-                    "delta": 1,
-                }).encode("utf-8")
-                url = "http://127.0.0.1:8000/api/knock"
-                req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-                try:
-                    with urllib.request.urlopen(req, timeout=0.8) as resp:
-                        pass
-                except Exception:
-                    from backend.state import store
-                    store.add_knock(team_name=attacker_team, player_name=attacker_name, delta=1)
-
-            elif is_kill and attacker_team:
-                payload = json.dumps({
-                    "team": attacker_team,
-                    "player": attacker_name,
-                    "delta": 1,
-                }).encode("utf-8")
-                url = "http://127.0.0.1:8000/api/kill"
-                req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-                try:
-                    with urllib.request.urlopen(req, timeout=0.8) as resp:
-                        pass
-                except Exception:
-                    from backend.state import store
-                    store.add_kill(team_name=attacker_team, player_name=attacker_name, delta=1)
+            payload = json.dumps({
+                "attacker": event.attacker,
+                "icons": [i.value if hasattr(i, "value") else str(i) for i in event.icons],
+                "victim": event.victim,
+            }).encode("utf-8")
+            url = "http://127.0.0.1:8000/api/event"
+            req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=1.0) as resp:
+                    pass
+            except Exception:
+                from backend.state import store
+                store.process_event(event)
         except Exception as e:
             print(f"[EventPipeline] Scoreboard sync notice: {e}")

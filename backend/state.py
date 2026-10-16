@@ -14,6 +14,15 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+try:
+    from backend.teamManager import TeamManager
+    from backend.teams import Team, Player, PlayerStatus
+    from backend.events import Event, Icon
+except ImportError:
+    from teamManager import TeamManager
+    from teams import Team, Player, PlayerStatus
+    from events import Event, Icon
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 ROSTER_FILE = DATA_DIR / "roster.json"
 SETTINGS_FILE = DATA_DIR / "settings.json"
@@ -200,42 +209,104 @@ class StateStore:
         self.roster: List[Dict[str, Any]] = _load_json(ROSTER_FILE, DEFAULT_ROSTER)
         self.history: List[Dict[str, Any]] = _load_json(HISTORY_FILE, [])
 
+        self.team_manager = TeamManager()
+        self._init_team_manager_from_roster()
+
         # Initialize or load current match
         current = _load_json(MATCH_FILE, None)
-        if not current or "teams" not in current or not current["teams"]:
+        if current and "team_manager_state" in current:
+            try:
+                self.team_manager.load_from_dict(current["team_manager_state"])
+                self.current_match = current
+                self.current_match["teams"] = self._build_teams_list()
+            except Exception as e:
+                print(f"[StateStore] Warning loading team_manager_state: {e}")
+                self.current_match = self._create_initial_match(
+                    match_number=self.settings.get("current_match_number", 1),
+                    map_name=self.settings.get("active_map", "Erangel (Classic)")
+                )
+                self._save_match()
+        else:
             self.current_match = self._create_initial_match(
                 match_number=self.settings.get("current_match_number", 1),
                 map_name=self.settings.get("active_map", "Erangel (Classic)")
             )
             self._save_match()
-        else:
-            self.current_match = current
 
-    def _create_initial_match(self, match_number: int, map_name: str) -> Dict[str, Any]:
-        teams: List[Dict[str, Any]] = []
-        for idx, entry in enumerate(self.roster):
-            teams.append({
-                "rank": idx + 1,
-                "team": entry["team"],
-                "color": entry.get("color", "#94A3B8"),
-                "kills": 0,
-                "place": 0,
-                "total": 0,
-                "knocks": 0,
-                "eliminated": False,
+    def _init_team_manager_from_roster(self) -> None:
+        self.team_manager.teams.clear()
+        self.team_manager.player_team_map.clear()
+        self.team_manager.alias_to_canonical.clear()
+        self.team_manager.last_knocked_by.clear()
+        self.team_manager.eliminatedTeams = 0
+
+        for entry in self.roster:
+            team_name = entry.get("team", "").strip()
+            if not team_name:
+                continue
+            players = []
+            for p in entry.get("players", []):
+                p_name = p.get("name", "").strip()
+                if p_name:
+                    aliases = p.get("aliases", [])
+                    players.append(Player(name=p_name, aliases=aliases))
+            if players and team_name not in self.team_manager.teams:
+                self.team_manager.add_team(Team(name=team_name, players=players))
+
+        self.team_manager.initialize_player_matcher()
+
+    def _build_teams_list(self) -> List[Dict[str, Any]]:
+        teams_list: List[Dict[str, Any]] = []
+        for team in self.team_manager.teams.values():
+            color = self.get_team_color(team.name)
+            kills = sum(p.kills for p in team.players)
+            place = team.placement_points
+            total = kills + place
+            eliminated = bool(
+                team.placement is not None
+                or (team.players and all(p.status == PlayerStatus.ELIMINATED for p in team.players))
+            )
+            alive_count = sum(1 for p in team.players if p.status != PlayerStatus.ELIMINATED)
+            players_info = [
+                {
+                    "name": p.name,
+                    "kills": p.kills,
+                    "status": p.status.value,
+                }
+                for p in team.players
+            ]
+            teams_list.append({
+                "team": team.name,
+                "color": color,
+                "kills": kills,
+                "place": place,
+                "placement": team.placement,
+                "total": total,
+                "eliminated": eliminated,
+                "alive_count": alive_count,
+                "total_players": len(team.players),
+                "players": players_info,
             })
 
+        teams_list.sort(key=lambda t: (t["total"], t["kills"]), reverse=True)
+        for idx, t in enumerate(teams_list):
+            t["rank"] = idx + 1
+        return teams_list
+
+    def _create_initial_match(self, match_number: int, map_name: str) -> Dict[str, Any]:
+        self._init_team_manager_from_roster()
         return {
             "status": "LIVE",  # "LIVE", "PAUSED", "FINISHED"
             "match_number": match_number,
             "map": map_name,
-            "teams": teams,
-            "player_kills": {},
-            "player_knocks": {},
+            "teams": self._build_teams_list(),
+            "team_manager_state": self.team_manager.to_dict(),
             "events_log": [],
         }
 
     def _save_match(self) -> None:
+        self.current_match["team_manager_state"] = self.team_manager.to_dict()
+        self.current_match["teams"] = self._build_teams_list()
         _save_json(MATCH_FILE, self.current_match)
 
     def _save_roster(self) -> None:
@@ -269,168 +340,155 @@ class StateStore:
         self._save_match()
         return self.get_match_snapshot()
 
+    def reset_current_match(self) -> Dict[str, Any]:
+        cur_num = self.current_match.get("match_number", 1)
+        cur_map = self.current_match.get("map", "Erangel")
+        self.current_match = self._create_initial_match(cur_num, cur_map)
+        self._save_match()
+        return self.get_match_snapshot()
+
     def end_match(self) -> Dict[str, Any]:
         """Finalize scores, assign placement points according to BGIS matrix, and save to history."""
-        teams = self.current_match.get("teams", [])
-        alive = [t for t in teams if not t.get("eliminated")]
-
-        # Winner gets WWCD (1st place)
-        placement_matrix = self.settings.get("placement_points", DEFAULT_SETTINGS["placement_points"])
-
-        # Sort remaining alive teams by kills as tiebreaker, assign top spots
-        alive.sort(key=lambda t: t.get("kills", 0), reverse=True)
-        assigned_rank = 1
-        for t in alive:
-            t["place"] = int(placement_matrix.get(str(assigned_rank), 0))
-            t["total"] = t["kills"] + t["place"]
-            assigned_rank += 1
-
-        # Re-sort all teams by total points
-        teams.sort(key=lambda t: t.get("total", 0), reverse=True)
-        for idx, t in enumerate(teams):
-            t["rank"] = idx + 1
+        # Find remaining alive teams
+        alive_teams = [
+            t for t in self.team_manager.teams.values()
+            if t.placement is None and any(p.status != PlayerStatus.ELIMINATED for p in t.players)
+        ]
+        if len(alive_teams) == 1:
+            winner = alive_teams[0]
+            winner.placement = 1
+            winner.placement_points += 4
+        elif len(alive_teams) > 1:
+            alive_teams.sort(key=lambda t: sum(p.kills for p in t.players), reverse=True)
+            placement_matrix = self.settings.get("placement_points", DEFAULT_SETTINGS["placement_points"])
+            for rank_idx, t in enumerate(alive_teams, start=1):
+                t.placement = rank_idx
+                t.placement_points = int(placement_matrix.get(str(rank_idx), 0))
 
         self.current_match["status"] = "FINISHED"
         self._save_match()
+
+        teams_list = self._build_teams_list()
+        winner_name = teams_list[0]["team"] if teams_list else "None"
 
         # Archive to tournament history
         history_entry = {
             "match_number": self.current_match.get("match_number", 1),
             "map": self.current_match.get("map", "Erangel"),
             "timestamp": self.current_match.get("finished_at", None),
-            "winner": teams[0]["team"] if teams else "None",
-            "teams": deepcopy(teams),
-            "player_kills": deepcopy(self.current_match.get("player_kills", {})),
+            "winner": winner_name,
+            "teams": deepcopy(teams_list),
+            "player_kills": {
+                p.name: p.kills
+                for t in self.team_manager.teams.values()
+                for p in t.players
+            },
         }
         self.history.append(history_entry)
         self._save_history()
 
         return self.get_match_snapshot()
 
-    # ------------------ Kill & Knock Actions ------------------
+    # ------------------ Model Ingestion & Actions ------------------
+    def process_event(self, event: Event) -> Dict[str, Any]:
+        """Process authoritative kill-feed Event through TeamManager."""
+        if self.get_status() in ["PAUSED", "FINISHED"]:
+            return self.get_match_snapshot()
+
+        self.team_manager.process_events(event)
+        self.current_match.setdefault("events_log", []).append({
+            "type": "event",
+            "attacker": event.attacker,
+            "icons": [i.value if hasattr(i, "value") else str(i) for i in event.icons],
+            "victim": event.victim,
+        })
+        self._save_match()
+        return self.get_match_snapshot()
+
     def add_kill(self, team_name: str, player_name: Optional[str] = None, delta: int = 1) -> Optional[Dict[str, Any]]:
-        # If match is stopped or paused, refuse new kills!
         if self.get_status() in ["PAUSED", "FINISHED"]:
             return None
 
-        teams = self.current_match.get("teams", [])
-        normalized_team = team_name.strip().upper()
-        team_names_set = {t.get("team", "").upper(): t for t in teams}
-        target_team = team_names_set.get(normalized_team)
-
-        # If team_name not found, check if it's a player name or alias in roster
-        if not target_team:
-            for r in self.roster:
-                r_team = r.get("team", "").upper()
-                for p in r.get("players", []):
-                    p_name = p.get("name", "").upper()
-                    aliases = [a.upper() for a in p.get("aliases", [])]
-                    if normalized_team == p_name or normalized_team in aliases:
-                        if not player_name:
-                            player_name = p.get("name")
-                        target_team = team_names_set.get(r_team)
-                        normalized_team = r_team
-                        break
-                if target_team:
-                    break
-
-        # If still not found, check if it's a team in roster not yet in current_match
-        if not target_team:
-            for r in self.roster:
-                if r.get("team", "").upper() == normalized_team:
-                    color = r.get("color", "#94A3B8")
-                    target_team = {
-                        "rank": len(teams) + 1,
-                        "team": normalized_team,
-                        "color": color,
-                        "kills": 0,
-                        "place": 0,
-                        "total": 0,
-                        "knocks": 0,
-                        "eliminated": False,
-                    }
-                    teams.append(target_team)
-                    break
-
-        # Ignore completely unknown entities so fake teams never pollute the scoreboard
-        if not target_team:
-            print(f"[Notice] Scoreboard ignored unregistered entity: '{team_name}'")
-            return self.get_match_snapshot()
-
-        target_team["kills"] = max(0, target_team.get("kills", 0) + delta)
-        target_team["total"] = target_team["kills"] + target_team.get("place", 0)
-
-        # Update player kill counter
+        matched_player = None
+        # 1. Try finding player by player_name
         if player_name:
-            p_kills = self.current_match.setdefault("player_kills", {})
-            p_kills[player_name] = max(0, p_kills.get(player_name, 0) + delta)
+            try:
+                matched_player = self.team_manager.get_player(player_name)
+            except KeyError:
+                pass
 
-        # Log event
-        self.current_match.setdefault("events_log", []).append({
-            "type": "kill",
-            "team": normalized_team,
-            "player": player_name,
-            "delta": delta,
-        })
+        # 2. If no player found, check if team_name itself is a player name
+        if not matched_player:
+            try:
+                matched_player = self.team_manager.get_player(team_name)
+            except KeyError:
+                pass
 
-        # Re-sort teams by total points descending
-        teams.sort(key=lambda t: t.get("total", 0), reverse=True)
-        for idx, t in enumerate(teams):
-            t["rank"] = idx + 1
+        # 3. If still not found, check if team_name is a team
+        if not matched_player:
+            for t in self.team_manager.teams.values():
+                if t.name.upper() == team_name.strip().upper():
+                    if t.players:
+                        matched_player = t.players[0]
+                    break
 
-        self._save_match()
+        if matched_player:
+            matched_player.kills = max(0, matched_player.kills + delta)
+            self.current_match.setdefault("events_log", []).append({
+                "type": "kill",
+                "team": team_name,
+                "player": matched_player.name,
+                "delta": delta,
+            })
+            self._save_match()
+        else:
+            print(f"[Notice] add_kill could not match entity: '{team_name}' / '{player_name}'")
+
         return self.get_match_snapshot()
 
     def add_knock(self, team_name: str, player_name: Optional[str] = None, delta: int = 1) -> Optional[Dict[str, Any]]:
         if self.get_status() in ["PAUSED", "FINISHED"]:
             return None
 
-        teams = self.current_match.get("teams", [])
-        normalized_team = team_name.strip().upper()
-        team_names_set = {t.get("team", "").upper(): t for t in teams}
-        target_team = team_names_set.get(normalized_team)
+        target = player_name or team_name
+        try:
+            player = self.team_manager.get_player(target)
+            player.status = PlayerStatus.KNOCKED
+            self.current_match.setdefault("events_log", []).append({
+                "type": "knock",
+                "team": team_name,
+                "player": player.name,
+                "delta": delta,
+            })
+            self._save_match()
+        except KeyError:
+            pass
 
-        if not target_team:
-            for r in self.roster:
-                r_team = r.get("team", "").upper()
-                for p in r.get("players", []):
-                    p_name = p.get("name", "").upper()
-                    aliases = [a.upper() for a in p.get("aliases", [])]
-                    if normalized_team == p_name or normalized_team in aliases:
-                        target_team = team_names_set.get(r_team)
-                        break
-                if target_team:
-                    break
-
-        if target_team:
-            target_team["knocks"] = max(0, target_team.get("knocks", 0) + delta)
-
-        if player_name:
-            p_knocks = self.current_match.setdefault("player_knocks", {})
-            p_knocks[player_name] = max(0, p_knocks.get(player_name, 0) + delta)
-
-        self._save_match()
         return self.get_match_snapshot()
 
     def eliminate_team(self, team_name: str) -> Dict[str, Any]:
-        teams = self.current_match.get("teams", [])
-        placement_matrix = self.settings.get("placement_points", DEFAULT_SETTINGS["placement_points"])
-
-        alive = [t for t in teams if not t.get("eliminated")]
-        finish_rank = len(alive)  # e.g., if 8 alive, first out gets 8th place
-
-        for t in teams:
-            if t.get("team", "").upper() == team_name.upper() and not t.get("eliminated"):
-                t["eliminated"] = True
-                t["place"] = int(placement_matrix.get(str(finish_rank), 1))
-                t["total"] = t["kills"] + t["place"]
+        target_team = None
+        for t in self.team_manager.teams.values():
+            if t.name.upper() == team_name.strip().upper():
+                target_team = t
                 break
 
-        teams.sort(key=lambda t: t.get("total", 0), reverse=True)
-        for idx, t in enumerate(teams):
-            t["rank"] = idx + 1
+        if not target_team:
+            try:
+                target_team = self.team_manager.get_team(team_name)
+            except KeyError:
+                pass
 
-        self._save_match()
+        if target_team and target_team.placement is None:
+            for p in target_team.players:
+                p.status = PlayerStatus.ELIMINATED
+            self.team_manager.awardPlacementPoints(target_team)
+            self.current_match.setdefault("events_log", []).append({
+                "type": "eliminate",
+                "team": target_team.name,
+            })
+            self._save_match()
+
         return self.get_match_snapshot()
 
     def undo_last_action(self) -> Optional[Dict[str, Any]]:
@@ -439,24 +497,14 @@ class StateStore:
             return None
         last = events.pop()
         if last.get("type") == "kill":
-            team = last.get("team", "")
-            player = last.get("player")
+            pname = last.get("player")
             delta = last.get("delta", 1)
-            # Reverse delta
-            teams = self.current_match.get("teams", [])
-            for t in teams:
-                if t.get("team", "").upper() == team.upper():
-                    t["kills"] = max(0, t.get("kills", 0) - delta)
-                    t["total"] = t["kills"] + t.get("place", 0)
-                    break
-            if player:
-                p_kills = self.current_match.setdefault("player_kills", {})
-                p_kills[player] = max(0, p_kills.get(player, 0) - delta)
-
-            teams.sort(key=lambda t: t.get("total", 0), reverse=True)
-            for idx, t in enumerate(teams):
-                t["rank"] = idx + 1
-
+            if pname:
+                try:
+                    p = self.team_manager.get_player(pname)
+                    p.kills = max(0, p.kills - delta)
+                except KeyError:
+                    pass
             self._save_match()
             return self.get_match_snapshot()
         return None
@@ -555,34 +603,19 @@ class StateStore:
         return self.roster
 
     def _sync_match_with_roster(self) -> None:
-        """Keep current match team list in sync with updated roster."""
-        match_teams = self.current_match.setdefault("teams", [])
-        existing_names = {t.get("team", "").upper(): t for t in match_teams}
+        """Keep TeamManager and current match in sync with updated roster."""
+        existing_players: Dict[str, Any] = {}
+        for team in self.team_manager.teams.values():
+            for p in team.players:
+                existing_players[p.name] = (p.kills, p.status)
 
-        new_teams = []
-        for r in self.roster:
-            name = r.get("team", "").upper()
-            if name in existing_names:
-                t = existing_names[name]
-                t["color"] = r.get("color", "#94A3B8")
-                new_teams.append(t)
-            else:
-                new_teams.append({
-                    "rank": len(new_teams) + 1,
-                    "team": name,
-                    "color": r.get("color", "#94A3B8"),
-                    "kills": 0,
-                    "place": 0,
-                    "total": 0,
-                    "knocks": 0,
-                    "eliminated": False,
-                })
+        self._init_team_manager_from_roster()
 
-        new_teams.sort(key=lambda t: t.get("total", 0), reverse=True)
-        for idx, t in enumerate(new_teams):
-            t["rank"] = idx + 1
+        for team in self.team_manager.teams.values():
+            for p in team.players:
+                if p.name in existing_players:
+                    p.kills, p.status = existing_players[p.name]
 
-        self.current_match["teams"] = new_teams
         self._save_match()
 
     def get_ocr_roster_lookup(self) -> Dict[str, List[str]]:
@@ -612,6 +645,7 @@ class StateStore:
     # ------------------ Snapshots & Queries ------------------
     def get_match_snapshot(self) -> Dict[str, Any]:
         """Full data snapshot broadcast to WebSockets and returned by /scoreboard."""
+        teams = self._build_teams_list()
         top_fraggers = self.get_top_fraggers(limit=5)
         top_player = top_fraggers[0] if top_fraggers else {"player": "None", "team": "None", "kills": 0, "knocks": 0}
 
@@ -622,40 +656,25 @@ class StateStore:
             "total_matches": self.settings.get("total_matches", 6),
             "map": self.current_match.get("map", "Erangel"),
             "tournament_title": self.settings.get("tournament_title", "BGMI Tournament"),
-            "teams": deepcopy(self.current_match.get("teams", [])),
+            "teams": teams,
             "top_fraggers": top_fraggers,
             "mvp": top_player,
         }
 
     def get_top_fraggers(self, limit: int = 5) -> List[Dict[str, Any]]:
-        p_kills = self.current_match.get("player_kills", {})
-        p_knocks = self.current_match.get("player_knocks", {})
-
-        # Find team for each player
-        player_to_team = {}
-        for r in self.roster:
-            tname = r.get("team", "")
-            for p in r.get("players", []):
-                player_to_team[p.get("name", "")] = tname
-
         fraggers = []
-        # If no player kills logged yet, pull player names from roster with 0 kills
-        all_players = set(p_kills.keys()).union(player_to_team.keys())
-        for pname in all_players:
-            if not pname:
-                continue
-            kills = p_kills.get(pname, 0)
-            knocks = p_knocks.get(pname, 0)
-            team = player_to_team.get(pname, "Unknown")
-            fraggers.append({
-                "player": pname,
-                "team": team,
-                "kills": kills,
-                "knocks": knocks,
-                "gun": "M416",
-            })
+        for team in self.team_manager.teams.values():
+            for p in team.players:
+                fraggers.append({
+                    "player": p.name,
+                    "team": team.name,
+                    "kills": p.kills,
+                    "knocks": 1 if p.status == PlayerStatus.KNOCKED else 0,
+                    "status": p.status.value,
+                    "gun": "M416",
+                })
 
-        fraggers.sort(key=lambda x: (x["kills"], x["knocks"]), reverse=True)
+        fraggers.sort(key=lambda x: (x["kills"], 1 if x["status"] != "eliminated" else 0), reverse=True)
         for idx, f in enumerate(fraggers[:limit]):
             f["rank"] = idx + 1
         return fraggers[:limit]

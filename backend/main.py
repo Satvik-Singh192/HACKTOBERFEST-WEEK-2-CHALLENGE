@@ -88,6 +88,12 @@ class EliminateRequest(BaseModel):
     team: str
 
 
+class EventRequest(BaseModel):
+    attacker: Optional[str] = None
+    icons: List[str]
+    victim: str
+
+
 class MatchStatusRequest(BaseModel):
     status: str  # LIVE, PAUSED, FINISHED
 
@@ -183,6 +189,42 @@ async def update_settings(settings: Dict[str, Any]):
 
 
 # ------------------ Scoring & Kills ------------------
+@app.post("/api/event")
+async def handle_pipeline_event(req: EventRequest):
+    if store.get_status() in ["PAUSED", "FINISHED"]:
+        return {
+            "status": "blocked",
+            "message": f"Match is currently {store.get_status()}. Event was not registered.",
+            "current_status": store.get_status(),
+        }
+
+    from backend.events import Event, Icon
+
+    parsed_icons: List[str] = []
+    for ic in req.icons:
+        ic_str = str(ic).strip().lower()
+        if "knock" in ic_str:
+            parsed_icons.append(Icon.KNOCK)
+        elif any(k in ic_str for k in ["obj", "kill", "finish", "crate", "skull"]):
+            parsed_icons.append(Icon.OBJECT)
+        elif "zone" in ic_str or "playzone" in ic_str:
+            parsed_icons.append(Icon.PLAYZONE)
+        else:
+            try:
+                parsed_icons.append(Icon(ic))
+            except Exception:
+                parsed_icons.append(ic)
+
+    event = Event(attacker=req.attacker, icons=parsed_icons, victim=req.victim)
+    try:
+        snapshot = store.process_event(event)
+        await manager.broadcast_snapshot(snapshot)
+        return {"status": "ok", "snapshot": snapshot}
+    except Exception as e:
+        print(f"[API /api/event] Error processing event: {e}")
+        return {"status": "error", "message": str(e), "snapshot": store.get_match_snapshot()}
+
+
 @app.post("/api/kill")
 async def modify_kill(req: KillRequest):
     if store.get_status() in ["PAUSED", "FINISHED"]:
@@ -232,12 +274,7 @@ async def undo_action():
 
 @app.post("/api/reset")
 async def reset_current_match():
-    # Reset current match scores to 0
-    cur_num = store.current_match.get("match_number", 1)
-    cur_map = store.current_match.get("map", "Erangel")
-    store.current_match = store._create_initial_match(cur_num, cur_map)
-    store._save_match()
-    snapshot = store.get_match_snapshot()
+    snapshot = store.reset_current_match()
     await manager.broadcast_snapshot(snapshot)
     return {"status": "reset", "snapshot": snapshot}
 

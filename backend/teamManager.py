@@ -6,7 +6,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import pandas as pd
 from backend.teams import Team, Player, PlayerStatus
 from backend.events import Event, Icon
 from backend.playerMatcher import PlayerMatcher
@@ -79,20 +78,23 @@ class TeamManager:
 
         attacker = event.attacker
 
-        if attacker is not None and attacker.casefold() != "playzone":
-            attacker = self.player_matcher.match(attacker)
+        if attacker is not None:
+            if attacker.casefold() == "playzone":
+                attacker = "Playzone"
+            else:
+                attacker = self.player_matcher.match(attacker)
 
-            if attacker is None:
-                raise ValueError(
-                    f"Could not confidently match attacker: {event.attacker}"
-                )
+                if attacker is None:
+                    raise ValueError(
+                        f"Could not confidently match attacker: {event.attacker}"
+                    )
 
         from dataclasses import replace
 
         return replace(event, attacker=attacker, victim=victim)
 
     def process_events(self, event: Event) -> None:
-        event=self.resolve_event(event)
+        event = self.resolve_event(event)
         victim = self.get_player(event.victim)
         victim_team = self.get_team(event.victim)
 
@@ -102,43 +104,35 @@ class TeamManager:
                 return
 
             victim.status = PlayerStatus.KNOCKED
-
-        
             self.last_knocked_by[event.victim] = event.attacker
             return
 
-        #finish handler
+        # finish handler
         if Icon.OBJECT in event.icons:
             previous_knocker = self.last_knocked_by.get(event.victim)
 
             # Victim is eliminated regardless of who finished them.
-           
             victim.status = PlayerStatus.ELIMINATED
             self.check_team_elimination(victim_team)
 
-            if event.attacker is not None and event.attacker != "Playzone":
+            if event.attacker is not None and event.attacker.casefold() != "playzone":
                 # A known, actual player finished the victim.
                 finisher_team = self.get_team(event.attacker)
             
                 if finisher_team.name != victim_team.name:
-                  
-            
                     self.get_player(event.attacker).kills += 1
 
                 elif (
                     previous_knocker is not None
-                    and previous_knocker != "Playzone" 
+                    and previous_knocker.casefold() != "playzone"
                 ):
                     knocker_team = self.get_team(previous_knocker)
-                  
                     if knocker_team.name != victim_team.name:
                         self.get_player(previous_knocker).kills += 1
 
             elif previous_knocker is not None:
-            
-                if previous_knocker != "Playzone":
+                if previous_knocker.casefold() != "playzone":
                     knocker_team = self.get_team(previous_knocker)
-
                     if knocker_team.name != victim_team.name:
                         self.get_player(previous_knocker).kills += 1
 
@@ -161,17 +155,17 @@ class TeamManager:
         if team.placement in {8, 6, 5, 4, 3, 2}:
             for other_team in self.teams.values():
 
-                # Skip teams already eliminated
-                if other_team.placement is not None:
+                # Skip teams already eliminated prior to this elimination
+                if other_team.placement is not None and other_team is not team:
                     continue
 
-                # Award only to teams with at least one non-eliminated player
+                # Award only to teams with at least one non-eliminated player (or team itself finishing at this milestone)
                 is_alive = any(
                     player.status != PlayerStatus.ELIMINATED
                     for player in other_team.players
                 )
 
-                if is_alive:
+                if is_alive or other_team is team:
                     other_team.placement_points += 1
                     print(
                         f"{other_team.name}: +1 placement point "
@@ -217,6 +211,73 @@ class TeamManager:
 
         if is_eliminated:
             self.awardPlacementPoints(team)
+
+    def to_dict(self) -> dict:
+        return {
+            "teams": {
+                name: {
+                    "name": t.name,
+                    "placement": t.placement,
+                    "placement_points": t.placement_points,
+                    "players": [
+                        {
+                            "name": p.name,
+                            "kills": p.kills,
+                            "status": p.status.value,
+                            "placement": p.placement,
+                            "placementPoints": p.placementPoints,
+                        }
+                        for p in t.players
+                    ]
+                }
+                for name, t in self.teams.items()
+            },
+            "last_knocked_by": dict(self.last_knocked_by),
+            "eliminatedTeams": self.eliminatedTeams,
+        }
+
+    def load_from_dict(self, data: dict) -> None:
+        teams_data = data.get("teams", {})
+        for team_name, t_info in teams_data.items():
+            if team_name in self.teams:
+                team = self.teams[team_name]
+                team.placement = t_info.get("placement")
+                team.placement_points = t_info.get("placement_points", 0)
+                p_map = {p["name"]: p for p in t_info.get("players", [])}
+                for player in team.players:
+                    if player.name in p_map:
+                        p_data = p_map[player.name]
+                        player.kills = p_data.get("kills", 0)
+                        try:
+                            player.status = PlayerStatus(p_data.get("status", "alive"))
+                        except Exception:
+                            player.status = PlayerStatus.ALIVE
+            else:
+                players = []
+                for p_data in t_info.get("players", []):
+                    p_status = PlayerStatus.ALIVE
+                    try:
+                        p_status = PlayerStatus(p_data.get("status", "alive"))
+                    except Exception:
+                        pass
+                    players.append(Player(
+                        name=p_data["name"],
+                        kills=p_data.get("kills", 0),
+                        status=p_status,
+                    ))
+                team = Team(
+                    name=team_name,
+                    players=players,
+                    placement=t_info.get("placement"),
+                    placement_points=t_info.get("placement_points", 0),
+                )
+                self.teams[team_name] = team
+                for p in players:
+                    self.player_team_map[p.name] = team_name
+
+        self.last_knocked_by = dict(data.get("last_knocked_by", {}))
+        self.eliminatedTeams = data.get("eliminatedTeams", 0)
+        self.initialize_player_matcher()
 
     def load_video_testing_teams(self) -> None:
         """Register the exact teams and players present in the testing video."""
