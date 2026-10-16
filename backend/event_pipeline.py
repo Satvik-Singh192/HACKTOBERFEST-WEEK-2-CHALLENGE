@@ -68,8 +68,12 @@ class EventPipeline:
             import urllib.request
             import urllib.error
 
+            # In BGMI, a knock feed contains [WeaponIcon, KnockIcon].
+            # If Icon.KNOCK is present, it is ALWAYS a knock, NEVER a kill finish.
             is_knock = Icon.KNOCK in event.icons
-            is_kill = Icon.OBJECT in event.icons or (not is_knock and event.attacker and event.attacker != "Playzone")
+            is_kill = not is_knock and (
+                Icon.OBJECT in event.icons or (event.attacker and event.attacker != "Playzone")
+            )
 
             attacker_name = event.attacker
             victim_name = event.victim
@@ -81,22 +85,7 @@ class EventPipeline:
                 except Exception:
                     attacker_team = attacker_name
 
-            if is_kill and attacker_team:
-                payload = json.dumps({
-                    "team": attacker_team,
-                    "player": attacker_name,
-                    "delta": 1,
-                }).encode("utf-8")
-                url = "http://127.0.0.1:8000/api/kill"
-                req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-                try:
-                    with urllib.request.urlopen(req, timeout=0.8) as resp:
-                        pass
-                except Exception:
-                    from backend.state import store
-                    store.add_kill(team_name=attacker_team, player_name=attacker_name, delta=1)
-
-            elif is_knock and attacker_team:
+            if is_knock and attacker_team:
                 payload = json.dumps({
                     "team": attacker_team,
                     "player": attacker_name,
@@ -110,5 +99,20 @@ class EventPipeline:
                 except Exception:
                     from backend.state import store
                     store.add_knock(team_name=attacker_team, player_name=attacker_name, delta=1)
+
+            elif is_kill and attacker_team:
+                payload = json.dumps({
+                    "team": attacker_team,
+                    "player": attacker_name,
+                    "delta": 1,
+                }).encode("utf-8")
+                url = "http://127.0.0.1:8000/api/kill"
+                req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+                try:
+                    with urllib.request.urlopen(req, timeout=0.8) as resp:
+                        pass
+                except Exception:
+                    from backend.state import store
+                    store.add_kill(team_name=attacker_team, player_name=attacker_name, delta=1)
         except Exception as e:
             print(f"[EventPipeline] Scoreboard sync notice: {e}")
