@@ -225,12 +225,32 @@ class TeamManager:
         self.alias_to_canonical.clear()
 
         self.add_team(Team(
-            name="TS",
+            name="FLx",
             players=[
-                Player(name="TS_FRAGGER", aliases=["TS-FRAGGER", "TS卍FRAGGER", "TS FRAGGER", "TSPEFRAGGER", "TSALFRAGGER", "FRAGGER"]),
-                Player(name="SNIDE", aliases=["SNIDE.", "· SNIDE ·", "- SNIDE -", "SNIDE"]),
-                Player(name="TS_HARSH", aliases=["TS-HARSH", "TS卍HARSH", "TS HARSH", "TS HAR1H", "HARSH"]),
-                Player(name="TS_PRESENCE", aliases=["TS-PRESENCE", "TS卍PRESENCE", "TS PRESENCE", "PRESENCE"]),
+                Player(name="FLx_ELNoiX", aliases=["FLx • ELNoiX", "FLx ELNoiX", "ELNoiX", "FLx • ELNdiX", "FLx ELNdiX", "ELNdiX"]),
+                Player(name="OGxKRISH", aliases=["OGxKRISH", "KRISH", "OG KRISH", "FLx KRISH", "FLx_KRISH"]),
+                Player(name="LSxGBplayzYT", aliases=["LSxGBplayzYT", "LSxGBplayz", "GBplayzYT", "GBplayz"]),
+                Player(name="AyushShivam", aliases=["ÂyushShivâm", "AyushShivâm", "AyushShivam", "Ayush Shivam", "Ayush", "Shivam"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="SANDHU",
+            players=[
+                Player(name="SANDHU", aliases=["SANDHU", "SANDHU_OP", "SANDHU OP"]),
+                Player(name="KISHANKINGE", aliases=["KISHANKINGE", "KISHAN KINGE", "KISHANKING", "KISHAN"]),
+                Player(name="beastjokerrr", aliases=["beastjokerrr", "beast joker", "jokerrr", "beastjoker"]),
+                Player(name="AyushRaj5513", aliases=["AyushRaj5513", "AyushRaj", "Ayush Raj 5513", "Ayush Raj"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="TEAM 3",
+            players=[
+                Player(name="IMxVAISHNAV", aliases=["IMxVAISHNAV", "IMx VAISHNAV", "VAISHNAV"]),
+                Player(name="KALASHI", aliases=["『KÂKÂSHI』", "『KALASHI』", "KÂKÂSHI", "KAKASHI", "KALASHI"]),
+                Player(name="DarthPotato", aliases=["Darth么Potato", "Darth Potato", "DarthPotato", "Potato"]),
+                Player(name="JAYKISHAN", aliases=["जयंतशर", "जयंतार", "JAYKISHAN", "JAY"]),
             ],
         ))
 
@@ -239,28 +259,94 @@ class TeamManager:
             players=[
                 Player(name="NEMESIS", aliases=["NÈMÈSîS", "NEMES IS", "NEMESIS1"]),
                 Player(name="YADAV", aliases=["Y A D A V", "YADAV_", "「 YADAV 」"]),
+                Player(name="ALPHA_BEAST", aliases=["ALPHA文Beast", "ALPHA-Beast", "ALPHABeast", "BEASTJOKERRR"]),
                 Player(name="UNKN0WN", aliases=["UNKNOWN", "bUnkn0wn", "Unknown", "OUNKNDWN", "BUNKNWN"]),
-                Player(name="ALPHA_BEAST", aliases=["ALPHA-Beast", "ALPHA文Beast", "ALPHABeast", "BEASTJOKERRR"]),
             ],
         ))
 
         self.add_team(Team(
-            name="FLx",
+            name="DEVILS",
             players=[
-                Player(name="FLx_ELNdix", aliases=["FLx ELNdix", "ELNdix"]),
-                Player(name="FLx_KRISH", aliases=["FLx KRISH", "KRISH"]),
-                Player(name="SANDHU", aliases=["SANDHU", "SANDHU_OP"]),
-                Player(name="MPX_KING", aliases=["MPXKINGOP", "TMPXKINGOP"]),
+                Player(name="Devils_Empero", aliases=["Devils→Empero", "Devils Empero", "Devils-Empero", "Empero"]),
+                Player(name="JyotishmoyNar", aliases=["JyotishmoyNar", "Jyotishmoy Nar", "Jyotishmoy"]),
+                Player(name="tmkoc", aliases=["手tmkoc手", "tmkoc", "TMKOC"]),
+                Player(name="abHishekSingha", aliases=["abHishekSingha", "abHishek Singha", "Abhishek Singha", "Abhishek"]),
             ],
         ))
 
         self.add_team(Team(
-            name="TEAM 9",
+            name="TTx",
             players=[
-                Player(name="JAYKISHAN", aliases=["जयंतार", "JAY", "JAYKISHAN"]),
-                Player(name="KALASHI", aliases=["『KALASHI』", "KALASHI"]),
-                Player(name="VAISHNAV", aliases=["IMxVAISHNAV", "VAISHNAV"]),
-                Player(name="OP_PLAYER", aliases=["OP_PLAYER", "PLAYER9"]),
+                Player(name="SOHAMtheGR8", aliases=["SOHAMtheGR8", "SOHAM the GR8", "SOHAM", "SOHAMGR8"]),
+                Player(name="TTXAYUSH45", aliases=["TTXAYUSH45", "TTX AYUSH 45", "TTX AYUSH", "AYUSH45"]),
+                Player(name="TTxRex8", aliases=["TTxRex8", "TTx Rex 8", "TTx Rex", "Rex8"]),
+                Player(name="Suryawannshi", aliases=["Suryawannshi", "Suryawanshi", "Surya"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="CODESTROYER",
+            players=[
+                Player(name="codestroyer", aliases=["codestroyer", "code destroyer", "destroyer"]),
+                Player(name="kl0ishere", aliases=["kl0ishere", "kl0 is here", "kl0"]),
+                Player(name="vapouriser2918", aliases=["vapouriser2918", "vapouriser", "vapouriser 2918"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="REAPER",
+            players=[
+                Player(name="AmanXY", aliases=["AmanXY", "Aman XY", "Aman"]),
+                Player(name="Satlaw933", aliases=["Sατλαw933", "Satlaw933", "Satlaw 933", "Satlaw"]),
+                Player(name="barbadaadmi69", aliases=["barbadaadmi69", "barbad aadmi", "barbadaadmi"]),
+                Player(name="REAPERislive", aliases=["REAPERislive", "REAPER is live", "REAPER"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="TS",
+            players=[
+                Player(name="TS_PRESENCE", aliases=["TS卍PRESENCE", "TS-PRESENCE", "TS PRESENCE", "PRESENCE"]),
+                Player(name="TS_FRAGGER", aliases=["TS卍FRĀGGĒR", "TS-FRAGGER", "TS FRAGGER", "TSPEFRAGGER", "TSALFRAGGER", "FRAGGER", "TSFRAGGER"]),
+                Player(name="TS_HARSH", aliases=["TS卍HARSH", "TS-HARSH", "TS HARSH", "TS HAR1H", "HARSH"]),
+                Player(name="SNIDE", aliases=["· SNIDE ·", "SNIDE.", "- SNIDE -", "SNIDE"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="4DM",
+            players=[
+                Player(name="4DMxRevdiiiii", aliases=["4DMxRevdiiiii", "4DMxRevdi", "Revdi", "4DM Revdi"]),
+                Player(name="TMPxKiNGOP", aliases=["TMPxKiNGOP", "TMPx KiNG OP", "TMP KING OP", "KiNGOP", "MPXKINGOP"]),
+                Player(name="KGF_TONY", aliases=["『KGF』TØNÝ", "KGF TONY", "KGF_TONY", "TONY", "TØNÝ"]),
+                Player(name="realnikk", aliases=["realnikk", "real nikk", "nikk"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="EQX",
+            players=[
+                Player(name="EQX_SHUBH", aliases=["EQXxॐशुभ", "EQX SHUBH", "SHUBH", "EQX_SHUBH"]),
+                Player(name="AR_DYNAMIC", aliases=["AR丨DYNAMIC", "AR DYNAMIC", "DYNAMIC", "AR_DYNAMIC"]),
+                Player(name="rathouranurag", aliases=["rathouranurag", "rathour anurag", "rathour"]),
+                Player(name="EQX_SAHIL", aliases=["ॐEQXxSAHILॐ", "EQX SAHIL", "SAHIL", "EQX_SAHIL"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="IIIT",
+            players=[
+                Player(name="saxena_ji", aliases=["saxena • ji", "saxena ji", "saxena", "saxenaji"]),
+                Player(name="IIITianAman", aliases=["IIITianĀmān", "IIITian Aman", "IIITianAman", "IIITian"]),
+                Player(name="uv_is_Live", aliases=["• uv • is • Live", "uv is Live", "uv Live", "uv"]),
+                Player(name="alphadevil", aliases=["£alphadevil", "alphadevil", "alpha devil", "alpha"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="ANURAG",
+            players=[
+                Player(name="ANURAG", aliases=["【aNuRaG】", "aNuRaG", "ANURAG"]),
             ],
         ))
 

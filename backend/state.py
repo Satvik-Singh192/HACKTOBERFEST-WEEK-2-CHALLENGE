@@ -41,170 +41,135 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
 
 DEFAULT_ROSTER: List[Dict[str, Any]] = [
     {
-        "team": "KRAIT",
-        "color": "#FF7A45",
+        "team": "FLx",
+        "color": "#38BDF8",
         "players": [
-            {"name": "Ravi", "aliases": ["Rav1", "R4VI"]},
-            {"name": "Kabir", "aliases": ["K4bir"]},
-            {"name": "Arjun", "aliases": ["Arj"]},
-            {"name": "Yash", "aliases": []},
+            {"name": "FLx_ELNoiX", "aliases": ["FLx • ELNoiX", "FLx ELNoiX", "ELNoiX", "FLx • ELNdiX", "FLx ELNdiX", "ELNdiX"]},
+            {"name": "OGxKRISH", "aliases": ["OGxKRISH", "KRISH", "OG KRISH", "FLx KRISH", "FLx_KRISH"]},
+            {"name": "LSxGBplayzYT", "aliases": ["LSxGBplayzYT", "LSxGBplayz", "GBplayzYT", "GBplayz"]},
+            {"name": "AyushShivam", "aliases": ["ÂyushShivâm", "AyushShivâm", "AyushShivam", "Ayush Shivam", "Ayush", "Shivam"]},
         ],
     },
     {
-        "team": "NOVA",
-        "color": "#4DA3FF",
+        "team": "SANDHU",
+        "color": "#F59E0B",
         "players": [
-            {"name": "Aarav", "aliases": ["Aar4v", "NOVA_A"]},
-            {"name": "Rahul", "aliases": ["Rah"]},
-            {"name": "Vicky", "aliases": ["Vic"]},
-            {"name": "Punit", "aliases": []},
+            {"name": "SANDHU", "aliases": ["SANDHU", "SANDHU_OP", "SANDHU OP"]},
+            {"name": "KISHANKINGE", "aliases": ["KISHANKINGE", "KISHAN KINGE", "KISHANKING", "KISHAN"]},
+            {"name": "beastjokerrr", "aliases": ["beastjokerrr", "beast joker", "jokerrr", "beastjoker"]},
+            {"name": "AyushRaj5513", "aliases": ["AyushRaj5513", "AyushRaj", "Ayush Raj 5513", "Ayush Raj"]},
         ],
     },
     {
-        "team": "ZENITH",
-        "color": "#A78BFA",
+        "team": "TEAM 3",
+        "color": "#10B981",
         "players": [
-            {"name": "Sam", "aliases": ["5am", "Z3NlTH_Sam"]},
-            {"name": "Rex", "aliases": ["R3x"]},
-            {"name": "Max", "aliases": ["M4x"]},
-            {"name": "Leo", "aliases": []},
+            {"name": "IMxVAISHNAV", "aliases": ["IMxVAISHNAV", "IMx VAISHNAV", "VAISHNAV"]},
+            {"name": "KALASHI", "aliases": ["『KÂKÂSHI』", "『KALASHI』", "KÂKÂSHI", "KAKASHI", "KALASHI"]},
+            {"name": "DarthPotato", "aliases": ["Darth么Potato", "Darth Potato", "DarthPotato", "Potato"]},
+            {"name": "JAYKISHAN", "aliases": ["जयंतशर", "जयंतार", "JAYKISHAN", "JAY"]},
         ],
     },
     {
-        "team": "VORTEX",
-        "color": "#2DD4BF",
+        "team": "NEMESIS",
+        "color": "#EF4444",
         "players": [
-            {"name": "Isha", "aliases": ["lsha", "V0RT3X_lsha"]},
-            {"name": "Ron", "aliases": []},
-            {"name": "Karan", "aliases": []},
-            {"name": "Neil", "aliases": []},
+            {"name": "NEMESIS", "aliases": ["NÈMÈSîS", "NEMES IS", "NEMESIS1"]},
+            {"name": "YADAV", "aliases": ["「 YADAV 」", "Y A D A V", "YADAV_", "YADAV"]},
+            {"name": "ALPHA_BEAST", "aliases": ["ALPHA文Beast", "ALPHA-Beast", "ALPHABeast", "ALPHA Beast", "BEASTJOKERRR"]},
+            {"name": "UNKN0WN", "aliases": ["bUnkn0wn", "UNKNOWN", "Unknown", "OUNKNDWN", "BUNKNWN"]},
         ],
     },
     {
-        "team": "ASHEN",
-        "color": "#F472B6",
+        "team": "DEVILS",
+        "color": "#8B5CF6",
         "players": [
-            {"name": "Rudra", "aliases": ["Rud"]},
-            {"name": "Rishi", "aliases": []},
-            {"name": "Aman", "aliases": []},
-            {"name": "Sahil", "aliases": []},
+            {"name": "Devils_Empero", "aliases": ["Devils→Empero", "Devils Empero", "Devils-Empero", "Empero"]},
+            {"name": "JyotishmoyNar", "aliases": ["JyotishmoyNar", "Jyotishmoy Nar", "Jyotishmoy"]},
+            {"name": "tmkoc", "aliases": ["手tmkoc手", "tmkoc", "TMKOC"]},
+            {"name": "abHishekSingha", "aliases": ["abHishekSingha", "abHishek Singha", "Abhishek Singha", "Abhishek"]},
         ],
     },
     {
-        "team": "MIRAGE",
+        "team": "TTx",
+        "color": "#F97316",
+        "players": [
+            {"name": "SOHAMtheGR8", "aliases": ["SOHAMtheGR8", "SOHAM the GR8", "SOHAM", "SOHAMGR8"]},
+            {"name": "TTXAYUSH45", "aliases": ["TTXAYUSH45", "TTX AYUSH 45", "TTX AYUSH", "AYUSH45"]},
+            {"name": "TTxRex8", "aliases": ["TTxRex8", "TTx Rex 8", "TTx Rex", "Rex8"]},
+            {"name": "Suryawannshi", "aliases": ["Suryawannshi", "Suryawanshi", "Surya"]},
+        ],
+    },
+    {
+        "team": "CODESTROYER",
+        "color": "#06B6D4",
+        "players": [
+            {"name": "codestroyer", "aliases": ["codestroyer", "code destroyer", "destroyer"]},
+            {"name": "kl0ishere", "aliases": ["kl0ishere", "kl0 is here", "kl0"]},
+            {"name": "vapouriser2918", "aliases": ["vapouriser2918", "vapouriser", "vapouriser 2918"]},
+        ],
+    },
+    {
+        "team": "REAPER",
+        "color": "#EC4899",
+        "players": [
+            {"name": "AmanXY", "aliases": ["AmanXY", "Aman XY", "Aman"]},
+            {"name": "Satlaw933", "aliases": ["Sατλαw933", "Satlaw933", "Satlaw 933", "Satlaw"]},
+            {"name": "barbadaadmi69", "aliases": ["barbadaadmi69", "barbad aadmi", "barbadaadmi"]},
+            {"name": "REAPERislive", "aliases": ["REAPERislive", "REAPER is live", "REAPER"]},
+        ],
+    },
+    {
+        "team": "TS",
+        "color": "#EAB308",
+        "players": [
+            {"name": "TS_PRESENCE", "aliases": ["TS卍PRESENCE", "TS-PRESENCE", "TS PRESENCE", "PRESENCE"]},
+            {"name": "TS_FRAGGER", "aliases": ["TS卍FRĀGGĒR", "TS-FRAGGER", "TS FRAGGER", "TSPEFRAGGER", "TSALFRAGGER", "FRAGGER", "TSFRAGGER"]},
+            {"name": "TS_HARSH", "aliases": ["TS卍HARSH", "TS-HARSH", "TS HARSH", "TS HAR1H", "HARSH"]},
+            {"name": "SNIDE", "aliases": ["· SNIDE ·", "SNIDE.", "- SNIDE -", "SNIDE"]},
+        ],
+    },
+    {
+        "team": "4DM",
+        "color": "#14B8A6",
+        "players": [
+            {"name": "4DMxRevdiiiii", "aliases": ["4DMxRevdiiiii", "4DMxRevdi", "Revdi", "4DM Revdi"]},
+            {"name": "TMPxKiNGOP", "aliases": ["TMPxKiNGOP", "TMPx KiNG OP", "TMP KING OP", "KiNGOP", "MPXKINGOP"]},
+            {"name": "KGF_TONY", "aliases": ["『KGF』TØNÝ", "KGF TONY", "KGF_TONY", "TONY", "TØNÝ"]},
+            {"name": "realnikk", "aliases": ["realnikk", "real nikk", "nikk"]},
+        ],
+    },
+    {
+        "team": "EQX",
+        "color": "#6366F1",
+        "players": [
+            {"name": "EQX_SHUBH", "aliases": ["EQXxॐशुभ", "EQX SHUBH", "SHUBH", "EQX_SHUBH"]},
+            {"name": "AR_DYNAMIC", "aliases": ["AR丨DYNAMIC", "AR DYNAMIC", "DYNAMIC", "AR_DYNAMIC"]},
+            {"name": "rathouranurag", "aliases": ["rathouranurag", "rathour anurag", "rathour"]},
+            {"name": "EQX_SAHIL", "aliases": ["ॐEQXxSAHILॐ", "EQX SAHIL", "SAHIL", "EQX_SAHIL"]},
+        ],
+    },
+    {
+        "team": "IIIT",
         "color": "#84CC16",
         "players": [
-            {"name": "Rohan", "aliases": ["M1RAGE_Rohan"]},
-            {"name": "Tara", "aliases": []},
-            {"name": "Sid", "aliases": []},
-            {"name": "Nikhil", "aliases": []},
+            {"name": "saxena_ji", "aliases": ["saxena • ji", "saxena ji", "saxena", "saxenaji"]},
+            {"name": "IIITianAman", "aliases": ["IIITianĀmān", "IIITian Aman", "IIITianAman", "IIITian"]},
+            {"name": "uv_is_Live", "aliases": ["• uv • is • Live", "uv is Live", "uv Live", "uv"]},
+            {"name": "alphadevil", "aliases": ["£alphadevil", "alphadevil", "alpha devil", "alpha"]},
         ],
     },
     {
-        "team": "TALON",
-        "color": "#FACC15",
+        "team": "ANURAG",
+        "color": "#A855F7",
         "players": [
-            {"name": "Dev", "aliases": ["D3v"]},
-            {"name": "Rocky", "aliases": []},
-            {"name": "Sunny", "aliases": []},
-            {"name": "Ajay", "aliases": []},
-        ],
-    },
-    {
-        "team": "OBSIDIAN",
-        "color": "#94A3B8",
-        "players": [
-            {"name": "Neel", "aliases": ["N3el"]},
-            {"name": "Aryan", "aliases": []},
-            {"name": "Veer", "aliases": []},
-            {"name": "Rajat", "aliases": []},
+            {"name": "ANURAG", "aliases": ["【aNuRaG】", "aNuRaG", "ANURAG"]},
         ],
     },
 ]
 
 # Testing Roster matching the video and TeamManager definitions
-TESTING_VIDEO_ROSTER: List[Dict[str, Any]] = [
-    {
-        "team": "TS",
-        "color": "#38BDF8",
-        "players": [
-            {"name": "TS_FRAGGER", "aliases": ["TS-FRAGGER", "TS卍FRAGGER", "TS FRAGGER", "TSPEFRAGGER", "TSALFRAGGER", "FRAGGER"]},
-            {"name": "SNIDE", "aliases": ["SNIDE.", "· SNIDE ·", "- SNIDE -", "SNIDE"]},
-            {"name": "TS_HARSH", "aliases": ["TS-HARSH", "TS卍HARSH", "TS HARSH", "TS HAR1H", "HARSH"]},
-            {"name": "TS_PRESENCE", "aliases": ["TS-PRESENCE", "TS卍PRESENCE", "TS PRESENCE", "PRESENCE"]},
-        ],
-    },
-    {
-        "team": "NEMESIS",
-        "color": "#F43F5E",
-        "players": [
-            {"name": "NEMESIS", "aliases": ["NÈMÈSîS", "NEMES IS", "NEMESIS1"]},
-            {"name": "YADAV", "aliases": ["Y A D A V", "YADAV_", "「 YADAV 」"]},
-            {"name": "UNKN0WN", "aliases": ["UNKNOWN", "bUnkn0wn", "Unknown", "OUNKNDWN", "BUNKNWN"]},
-            {"name": "ALPHA_BEAST", "aliases": ["ALPHA-Beast", "ALPHA文Beast", "ALPHABeast", "BEASTJOKERRR"]},
-        ],
-    },
-    {
-        "team": "FLx",
-        "color": "#A855F7",
-        "players": [
-            {"name": "FLx_ELNdix", "aliases": ["FLx ELNdix", "ELNdix"]},
-            {"name": "FLx_KRISH", "aliases": ["FLx KRISH", "KRISH"]},
-            {"name": "SANDHU", "aliases": ["SANDHU", "SANDHU_OP"]},
-            {"name": "MPX_KING", "aliases": ["MPXKINGOP", "TMPXKINGOP"]},
-        ],
-    },
-    {
-        "team": "TEAM 9",
-        "color": "#EAB308",
-        "players": [
-            {"name": "JAYKISHAN", "aliases": ["जयंतार", "JAY", "JAYKISHAN"]},
-            {"name": "KALASHI", "aliases": ["『KALASHI』", "KALASHI"]},
-            {"name": "VAISHNAV", "aliases": ["IMxVAISHNAV", "VAISHNAV"]},
-            {"name": "OP_PLAYER", "aliases": ["OP_PLAYER", "PLAYER9"]},
-        ],
-    },
-    {
-        "team": "KRAIT",
-        "color": "#FF7A45",
-        "players": [
-            {"name": "Ravi", "aliases": ["Rav1", "R4VI"]},
-            {"name": "Kabir", "aliases": ["K4bir"]},
-            {"name": "Arjun", "aliases": ["Arj"]},
-            {"name": "Yash", "aliases": []},
-        ],
-    },
-    {
-        "team": "NOVA",
-        "color": "#4DA3FF",
-        "players": [
-            {"name": "Aarav", "aliases": ["Aar4v", "NOVA_A"]},
-            {"name": "Rahul", "aliases": ["Rah"]},
-            {"name": "Vicky", "aliases": ["Vic"]},
-            {"name": "Punit", "aliases": []},
-        ],
-    },
-    {
-        "team": "ZENITH",
-        "color": "#A78BFA",
-        "players": [
-            {"name": "Sam", "aliases": ["5am", "Z3NlTH_Sam"]},
-            {"name": "Rex", "aliases": ["R3x"]},
-            {"name": "Max", "aliases": ["M4x"]},
-            {"name": "Leo", "aliases": []},
-        ],
-    },
-    {
-        "team": "VORTEX",
-        "color": "#2DD4BF",
-        "players": [
-            {"name": "Isha", "aliases": ["lsha", "V0RT3X_lsha"]},
-            {"name": "Ron", "aliases": []},
-            {"name": "Karan", "aliases": []},
-            {"name": "Neil", "aliases": []},
-        ],
-    },
-]
+TESTING_VIDEO_ROSTER: List[Dict[str, Any]] = DEFAULT_ROSTER
 
 
 def _ensure_data_dir() -> None:
