@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay - Top 5 Fraggers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body.obs-mode {
+      background-color: transparent !important;
+      overflow: hidden;
+    }
+    body.obs-mode .overlay-caption {
+      display: none !important;
+    }
+  </style>
+</head>
+<body style="background-color: transparent; margin: 0; padding: 0;">
+  <div class="overlay-stage-wrapper">
+    <div class="overlay-stage" style="display: flex; align-items: center; justify-content: center;">
+      <div style="width: 640px; background: rgba(11, 14, 18, 0.95); border: 2px solid var(--border); border-radius: 12px; overflow: hidden;">
+        <!-- Header -->
+        <div style="height: 52px; background-color: var(--amber); color: var(--text-on-amber); padding: 0 20px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; letter-spacing: 0.1em;">TOP 5 FRAGGERS</span>
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 15px; letter-spacing: 0.05em;" id="fraggers-match-header">MATCH 1 · ERANGEL</span>
+        </div>
+
+        <!-- Table column headers -->
+        <div style="height: 38px; padding: 0 20px; display: grid; grid-template-columns: 40px 1fr 100px 70px 70px; align-items: center; border-bottom: 1px solid var(--divider); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);">
+          <span>#</span>
+          <span>PLAYER</span>
+          <span style="text-align: right;">KNOCKS</span>
+          <span style="text-align: right;">FRAGS</span>
+          <span style="text-align: right;">GUN</span>
+        </div>
+
+        <!-- Dynamic Fraggers List -->
+        <div id="fraggers-list-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Bottom Caption -->
+      <div class="overlay-caption">
+        OBS Transparent Browser Source Overlay
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function initTopFraggers() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('bg') !== 'solid') {
+        document.body.classList.add('obs-mode');
+      }
+
+      function updateFraggers(snapshot) {
+        if (!snapshot) return;
+        const fraggers = snapshot.top_fraggers || [];
+        const teams = snapshot.teams || [];
+
+        const matchNum = snapshot.match_number || 1;
+        const mapName = (snapshot.map || 'ERANGEL').split(' ')[0].toUpperCase();
+        document.getElementById('fraggers-match-header').textContent = `MATCH ${matchNum} · ${mapName}`;
+
+        const container = document.getElementById('fraggers-list-container');
+        if (fraggers.length === 0) {
+          container.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--muted); font-size: 13px;">Awaiting match eliminations...</div>';
+          return;
+        }
+
+        container.innerHTML = fraggers.slice(0, 5).map((f, idx) => {
+          const rank = idx + 1;
+          const isTop = rank === 1;
+          const teamObj = teams.find(t => t.team.toUpperCase() === (f.team || '').toUpperCase());
+          const teamColor = teamObj ? (teamObj.color || '#94A3B8') : '#94A3B8';
+
+          return `
+            <div style="height: 50px; padding: 0 20px; display: grid; grid-template-columns: 40px 1fr 100px 70px 70px; align-items: center; border-bottom: 1px solid var(--divider); ${isTop ? 'background: rgba(255, 176, 32, 0.06);' : ''}">
+              <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; color: ${isTop ? 'var(--amber)' : 'var(--muted)'};">#${rank}</span>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="team-color-bar" style="background-color: ${teamColor};"></span>
+                <div>
+                  <div style="font-weight: 700; font-size: 16px; color: var(--text);">${f.player}</div>
+                  <div style="font-size: 11px; color: var(--muted);">${f.team || 'TEAM'}</div>
+                </div>
+              </div>
+              <span style="font-family: var(--font-heading); font-weight: 600; font-size: 18px; color: ${isTop ? 'var(--teal-chip-text)' : 'var(--muted)'}; text-align: right;">${f.knocks || 0}</span>
+              <span style="font-family: var(--font-heading); font-weight: 700; font-size: 26px; color: ${isTop ? 'var(--amber)' : 'var(--text)'}; text-align: right;">${f.kills || 0}</span>
+              <div style="text-align: right;"><span class="chip ${isTop ? 'chip-amber' : 'chip-teal'}" style="font-size: 10px;">${f.gun || 'M416'}</span></div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      fetch('/scoreboard')
+        .then(res => res.json())
+        .then(data => updateFraggers(data))
+        .catch(e => console.log('Fraggers fetch error:', e));
+
+      const wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + (location.host || '127.0.0.1:8000') + '/scoreboard';
+      let ws;
+
+      function connect() {
+        try {
+          ws = new WebSocket(wsUrl);
+          ws.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              updateFraggers(data);
+            } catch (err) {
+              console.error('Error handling fraggers update:', err);
+            }
+          };
+          ws.onclose = () => setTimeout(connect, 3000);
+          ws.onerror = () => ws.close();
+        } catch (e) {
+          setTimeout(connect, 3000);
+        }
+      }
+
+      connect();
+    })();
+  </script>
+</body>
+</html>
