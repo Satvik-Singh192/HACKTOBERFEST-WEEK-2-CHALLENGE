@@ -75,6 +75,11 @@ def parse_args() -> argparse.Namespace:
         action="store_false",
         help="Disable OCR/ML inference and run candidate detection only",
     )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Simulate killfeed events on OBS candidate detection to test live overlay & console updates",
+    )
     return parser.parse_args()
 
 
@@ -149,16 +154,44 @@ def main() -> None:
                 yield packet
 
     on_candidate = None
-    if args.ocr:
+    event_pipeline = EventPipeline(sync_scoreboard=True)
+    demo_pairs = [
+        ("Ravi", "Rudra"),
+        ("Aarav", "Ron"),
+        ("Sam", "Rocky"),
+        ("Isha", "Neel"),
+        ("Dev", "Sam"),
+        ("Rohan", "Punit"),
+    ]
+    demo_idx = 0
+
+    if args.demo:
+        print("[DEMO MODE ACTIVE] Real candidates from OBS Virtual Camera will trigger live roster events & WebSocket broadcasts!\n")
+
+        def handle_demo_candidate(candidate) -> None:
+            nonlocal demo_idx
+            attacker, victim = demo_pairs[demo_idx % len(demo_pairs)]
+            demo_idx += 1
+            from backend.events import Event, Icon
+            event = Event(attacker=attacker, icons=[Icon.OBJECT], victim=victim)
+            event_pipeline.process_event(event)
+            print(
+                f">>> [OBS CANDIDATE -> DEMO EVENT] t={candidate.timestamp_seconds:.2f}s | "
+                f"{attacker} eliminated {victim} -> Live Scoreboard updated via WebSocket!"
+            )
+
+        on_candidate = handle_demo_candidate
+
+    elif args.ocr:
         try:
-            print("Initializing ML & OCR Pipeline (OpenVINO YOLO + PaddleOCR)...")
+            print("Initializing OCR & ML Pipeline...")
+            weights_path = str(YOLO_WEIGHTS) if YOLO_WEIGHTS.exists() else None
             ml_pipeline = KillfeedPipeline(
-                yolo_weights_path=str(YOLO_WEIGHTS),
-                min_ocr_conf=0.50,
+                yolo_weights_path=weights_path,
+                min_ocr_conf=0.45,
                 yolo_conf=0.25,
                 imgsz=352,
             )
-            event_pipeline = EventPipeline(sync_scoreboard=True)
             print("Pipeline ready. Recognized events will sync live to scoreboard & OBS overlay.\n")
 
             def handle_candidate(candidate) -> None:
@@ -168,7 +201,6 @@ def main() -> None:
                         return
 
                     event_pipeline.process_event(event)
-
                     print(
                         f">>> [EVENT DETECTED] t={candidate.timestamp_seconds:.2f}s | "
                         f"Attacker: {event.attacker} | "

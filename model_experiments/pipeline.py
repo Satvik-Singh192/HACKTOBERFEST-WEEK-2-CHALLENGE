@@ -2,17 +2,16 @@ from typing import Any, Dict, Optional
 import time
 import cv2
 import numpy as np
-from ultralytics import YOLO
-from backend.events import Event
+from pathlib import Path
 from backend.events import Event, Icon
 
-# Import preprocessing & OCR engine directly from your existing ocr.py
+# Import preprocessing & OCR engine directly from your existing ocr.py before torch/YOLO
 from .ocr import SingleRowKillfeedOCR
 
 class KillfeedPipeline:
     def __init__(
         self,
-        yolo_weights_path: str = r"D:\Attendance_ml\runs\detect\train\weights\best.pt",
+        yolo_weights_path: Optional[str] = None,
         min_ocr_conf: float = 0.50,
         yolo_conf: float = 0.25,
         imgsz: int = 352,
@@ -21,9 +20,19 @@ class KillfeedPipeline:
         self.yolo_conf = yolo_conf
         self.imgsz = imgsz
 
-        # Use your ocr instance from ocr.py
+        # Initialize OCR engine
         self.ocr_engine = SingleRowKillfeedOCR(min_ocr_conf=min_ocr_conf)
-        self.icon_model = YOLO(yolo_weights_path)
+
+        # Optional YOLO model
+        self.icon_model = None
+        if yolo_weights_path and Path(yolo_weights_path).exists():
+            try:
+                from ultralytics import YOLO
+                self.icon_model = YOLO(yolo_weights_path)
+            except Exception as e:
+                print(f"[Notice] YOLO model could not be loaded ({e}). Running in OCR-only mode.")
+        else:
+            print("[Notice] YOLO model skipped or weights not found. Running in OCR-only mode.")
 
     def process(self, image_input: Any) -> Optional[Dict[str, str]]:
         t_total_start = time.perf_counter()
@@ -83,22 +92,29 @@ class KillfeedPipeline:
 
         # --- Phase 5: YOLO Prediction ---
         t0 = time.perf_counter()
-        yolo_res = self.icon_model.predict(
-            source=frame,
-            conf=self.yolo_conf,
-            imgsz=self.imgsz,
-            verbose=False,
-        )[0]
+        detected_icons = []
+        if self.icon_model is not None:
+            try:
+                yolo_res = self.icon_model.predict(
+                    source=frame,
+                    conf=self.yolo_conf,
+                    imgsz=self.imgsz,
+                    verbose=False,
+                )[0]
+                for box in yolo_res.boxes:
+                    cls_id = int(box.cls[0])
+                    cls_name = self.icon_model.names[cls_id].lower()
+                    detected_icons.append(cls_name)
+            except Exception as e:
+                print(f"[Warning] YOLO inference error: {e}")
+                detected_icons.append("obj")
+        else:
+            # Default to standard kill/finish icon when YOLO model is skipped
+            detected_icons.append("obj")
         t_yolo_infer = time.perf_counter() - t0
 
         # --- Phase 6: Spatial Association & Resolution ---
         t0 = time.perf_counter()
-        detected_icons = []
-        for box in yolo_res.boxes:
-            cls_id = int(box.cls[0])
-            cls_name = self.icon_model.names[cls_id].lower()
-            detected_icons.append(cls_name)
-            #changed to list 
 
         # middle_classes = [
         #     icon["class"]
