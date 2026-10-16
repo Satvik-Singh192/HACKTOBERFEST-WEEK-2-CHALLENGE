@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 import time
 import cv2
 import numpy as np
@@ -34,65 +34,106 @@ class KillfeedPipeline:
         else:
             print("[Notice] YOLO model skipped or weights not found. Running in OCR-only mode.")
 
-    def process(self, image_input: Any) -> Optional[Dict[str, str]]:
+    def process_debug(self, image_input: Any) -> Tuple[Optional[Event], Dict[str, Any]]:
+        """Process candidate crop and return both the Event and complete intermediate debug artifacts."""
         t_total_start = time.perf_counter()
+        debug_info: Dict[str, Any] = {
+            "crop": None,
+            "ocr_input": None,
+            "scale": 2.0,
+            "ocr_raw": [],
+            "words": [],
+            "attacker_text": None,
+            "victim_text": None,
+            "yolo_detections": [],
+            "detected_icons": [],
+            "icons": [],
+            "event": None,
+            "status": "INIT",
+            "timings": {},
+        }
 
         # --- Phase 1: Image Load ---
         t0 = time.perf_counter()
-        if isinstance(image_input, str):
-            frame = cv2.imread(image_input)
+        if isinstance(image_input, (str, Path)):
+            frame = cv2.imread(str(image_input))
             if frame is None:
-                print(f"[ERROR] Could not load image from: {image_input}")
-                return None
+                debug_info["status"] = f"IMAGE_LOAD_FAILED: {image_input}"
+                return None, debug_info
         else:
             frame = image_input
-        t_load = time.perf_counter() - t0
+        debug_info["crop"] = frame.copy() if frame is not None else None
+        debug_info["timings"]["load"] = time.perf_counter() - t0
+
+        if frame is None or frame.size == 0:
+            debug_info["status"] = "EMPTY_FRAME"
+            return None, debug_info
 
         # --- Phase 2: OCR Preprocessing ---
         t0 = time.perf_counter()
         ocr_input, scale = self.ocr_engine.preprocess(frame, scale=2.0)
-        t_preprocess = time.perf_counter() - t0
+        debug_info["ocr_input"] = ocr_input.copy()
+        debug_info["scale"] = scale
+        debug_info["timings"]["preprocess"] = time.perf_counter() - t0
 
         # --- Phase 3: OCR Inference ---
         t0 = time.perf_counter()
         results = self.ocr_engine.ocr.ocr(ocr_input, cls=False)
-        t_ocr_infer = time.perf_counter() - t0
+        debug_info["timings"]["ocr_infer"] = time.perf_counter() - t0
+
+        if not results or not results[0]:
+            debug_info["status"] = "NO_TEXT_DETECTED"
+            debug_info["timings"]["total"] = time.perf_counter() - t_total_start
+            return None, debug_info
 
         # --- Phase 4: OCR Box Parsing & Entity Extraction ---
         t0 = time.perf_counter()
-        if not results or not results[0]:
-            print("[OCR] No text detected.")
-            return None
-
         words = []
+        raw_ocr = []
         for line in results[0]:
             box = line[0]
             text, conf = line[1]
             clean_text = text.strip()
+            raw_ocr.append({
+                "text": clean_text,
+                "confidence": round(float(conf), 3),
+                "box": box,
+            })
 
             if float(conf) >= self.min_ocr_conf and clean_text:
                 x_min = int(min(pt[0] for pt in box) / scale)
                 x_max = int(max(pt[0] for pt in box) / scale)
-                words.append(
-                    {"text": clean_text, "x_min": x_min, "x_max": x_max}
-                )
+                y_min = int(min(pt[1] for pt in box) / scale)
+                y_max = int(max(pt[1] for pt in box) / scale)
+                words.append({
+                    "text": clean_text,
+                    "confidence": round(float(conf), 3),
+                    "x_min": x_min,
+                    "x_max": x_max,
+                    "y_min": y_min,
+                    "y_max": y_max,
+                    "box": box,
+                })
+
+        debug_info["ocr_raw"] = raw_ocr
+        debug_info["words"] = words
 
         if len(words) < 2:
-            print(
-                f"[OCR] Only found {len(words)} word(s): {[w['text'] for w in words]}"
-            )
-            return None
+            debug_info["status"] = f"INSUFFICIENT_WORDS: found {len(words)} word(s)"
+            debug_info["timings"]["total"] = time.perf_counter() - t_total_start
+            return None, debug_info
 
         words.sort(key=lambda w: w["x_min"])
         attacker_text = words[0]["text"]
         victim_text = words[-1]["text"]
-        x_left = words[0]["x_max"]
-        x_right = words[-1]["x_min"]
-        t_ocr_parse = time.perf_counter() - t0
+        debug_info["attacker_text"] = attacker_text
+        debug_info["victim_text"] = victim_text
+        debug_info["timings"]["ocr_parse"] = time.perf_counter() - t0
 
         # --- Phase 5: YOLO Prediction ---
         t0 = time.perf_counter()
         detected_icons = []
+        yolo_detections = []
         if self.icon_model is not None:
             try:
                 yolo_res = self.icon_model.predict(
@@ -104,35 +145,31 @@ class KillfeedPipeline:
                 for box in yolo_res.boxes:
                     cls_id = int(box.cls[0])
                     cls_name = self.icon_model.names[cls_id].lower()
+                    conf = float(box.conf[0])
+                    xyxy = [int(v) for v in box.xyxy[0].tolist()]
                     detected_icons.append(cls_name)
+                    yolo_detections.append({
+                        "class": cls_name,
+                        "confidence": round(conf, 3),
+                        "box": xyxy,
+                    })
             except Exception as e:
                 print(f"[Warning] YOLO inference error: {e}")
                 detected_icons.append("obj")
         else:
-            # Default to standard kill/finish icon when YOLO model is skipped
             detected_icons.append("obj")
-        t_yolo_infer = time.perf_counter() - t0
+            yolo_detections.append({
+                "class": "obj",
+                "confidence": 1.0,
+                "box": None,
+                "source": "fallback_default",
+            })
 
-        # --- Phase 6: Spatial Association & Resolution ---
-        t0 = time.perf_counter()
+        debug_info["detected_icons"] = detected_icons
+        debug_info["yolo_detections"] = yolo_detections
+        debug_info["timings"]["yolo_infer"] = time.perf_counter() - t0
 
-        # middle_classes = [
-        #     icon["class"]
-        #     for icon in detected_icons
-        #     if x_left <= icon["x_center"] <= x_right
-        # ]
-
-        # if "knock" in middle_classes:
-        #     resolved_icon = "knock"
-        # elif "playzone" in middle_classes:
-        #     resolved_icon = "playzone"
-        # else:
-        #     resolved_icon = "object"
-        t_postprocess = time.perf_counter() - t0
-
-        t_total = time.perf_counter() - t_total_start
-
-
+        # --- Phase 6: Event Assembly ---
         icon_mapping = {
             "playzone": Icon.PLAYZONE,
             "knock": Icon.KNOCK,
@@ -146,11 +183,22 @@ class KillfeedPipeline:
             for name in detected_icons
             if name.lower() in icon_mapping
         ]
+        if not icons:
+            icons = [Icon.OBJECT]
+
+        debug_info["icons"] = [i.value for i in icons]
 
         eventobject = Event(
             attacker=attacker_text,
             icons=icons,
             victim=victim_text,
         )
+        debug_info["event"] = eventobject
+        debug_info["status"] = "SUCCESS"
+        debug_info["timings"]["total"] = time.perf_counter() - t_total_start
 
-        return eventobject
+        return eventobject, debug_info
+
+    def process(self, image_input: Any) -> Optional[Event]:
+        event, _ = self.process_debug(image_input)
+        return event

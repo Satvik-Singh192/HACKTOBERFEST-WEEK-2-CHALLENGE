@@ -108,7 +108,7 @@ class TeamManager:
             return
 
         # finish handler
-        if Icon.OBJECT in event.icons:
+        if Icon.KNOCK not in event.icons:
             previous_knocker = self.last_knocked_by.get(event.victim)
 
             # Victim is eliminated regardless of who finished them.

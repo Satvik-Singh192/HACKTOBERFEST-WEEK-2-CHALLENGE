@@ -47,17 +47,41 @@ class SingleRowKillfeedOCR:
     def __init__(self, min_ocr_conf: float = 0.75):
         self.min_ocr_conf = min_ocr_conf
 
+        # Check for local workspace model weights
+        local_paddle = Path(__file__).resolve().parent.parent / ".paddleocr"
+        det_dir = None
+        rec_dir = None
+        cls_dir = None
+        if local_paddle.is_dir():
+            d = local_paddle / "whl" / "det" / "en" / "en_PP-OCRv3_det_infer"
+            r = local_paddle / "whl" / "rec" / "en" / "en_PP-OCRv4_rec_infer"
+            c = local_paddle / "whl" / "cls" / "ch_ppocr_mobile_v2.0_cls_infer"
+            if d.is_dir():
+                det_dir = str(d)
+            if r.is_dir():
+                rec_dir = str(r)
+            if c.is_dir():
+                cls_dir = str(c)
+
         # PaddleOCR configured for sensitive extraction of small HUD fonts with OneDNN disabled to avoid fused_conv2d crash on Windows
-        self.ocr = PaddleOCR(
-            use_angle_cls=False,
-            lang="en",
-            show_log=False,
-            enable_mkldnn=False,
-            use_gpu=False,
-            det_db_thresh=0.2,       # Catches low-contrast text edges
-            det_db_box_thresh=0.3,   # Preserves smaller character bounding boxes
-            det_db_unclip_ratio=1.8  # Avoids clipping thin letter edges
-        )
+        ocr_kwargs = {
+            "use_angle_cls": False,
+            "lang": "en",
+            "show_log": False,
+            "enable_mkldnn": False,
+            "use_gpu": False,
+            "det_db_thresh": 0.2,       # Catches low-contrast text edges
+            "det_db_box_thresh": 0.3,   # Preserves smaller character bounding boxes
+            "det_db_unclip_ratio": 1.8, # Avoids clipping thin letter edges
+        }
+        if det_dir:
+            ocr_kwargs["det_model_dir"] = det_dir
+        if rec_dir:
+            ocr_kwargs["rec_model_dir"] = rec_dir
+        if cls_dir:
+            ocr_kwargs["cls_model_dir"] = cls_dir
+
+        self.ocr = PaddleOCR(**ocr_kwargs)
 
     def preprocess(self, img_bgr: np.ndarray, scale: float = 2.0) -> Tuple[np.ndarray, float]:
         h, w = img_bgr.shape[:2]

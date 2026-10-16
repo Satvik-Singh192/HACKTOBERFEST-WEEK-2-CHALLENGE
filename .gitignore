@@ -5,3 +5,5 @@ output/
 __pycache__/
 *.py[cod]
 font_templates/
+.paddleocr/
+.cache/

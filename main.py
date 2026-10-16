@@ -80,6 +80,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Simulate killfeed events on OBS candidate detection to test live overlay & console updates",
     )
+    parser.add_argument(
+        "--debug-pipeline",
+        action="store_true",
+        help="Debug mode: save OCR input frames, ML outputs, and score calculation triggers to output/pipeline_debug/",
+    )
     return parser.parse_args()
 
 
@@ -181,6 +186,36 @@ def main() -> None:
             )
 
         on_candidate = handle_demo_candidate
+
+    elif args.debug_pipeline:
+        try:
+            from backend.pipeline_debugger import PipelineDebugger
+            print("Initializing PIPELINE DEBUGGER (capturing frames, OCR inputs, ML outputs, and score calculations)...")
+            debugger = PipelineDebugger()
+            print("Pipeline Debugger ready. Artifacts will be saved to output/pipeline_debug/\n")
+
+            def handle_debug_candidate(candidate) -> None:
+                try:
+                    rec = debugger.process_frame(
+                        candidate.crop_bgr,
+                        frame_index=candidate.frame_index,
+                        timestamp_seconds=candidate.timestamp_seconds,
+                    )
+                    ml = rec["ml"]
+                    sc = rec["scoring"]
+                    print(
+                        f">>> [DEBUG TRACE] t={candidate.timestamp_seconds:.2f}s | "
+                        f"Attacker: '{ml['extracted_entities']['attacker_text']}' | "
+                        f"Victim: '{ml['extracted_entities']['victim_text']}' | "
+                        f"Action: {sc.get('action_taken')}"
+                    )
+                    debugger.generate_markdown_report()
+                except Exception as exc:
+                    print(f"Error handling debug candidate: {exc}")
+
+            on_candidate = handle_debug_candidate
+        except Exception as e:
+            print(f"Notice: Debugger could not be initialized ({e}). Running candidate detection only.")
 
     elif args.ocr:
         try:

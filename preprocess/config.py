@@ -53,7 +53,7 @@ XMAX_RATIO = 0.265
 # ---------------- CHANGE DETECTION ----------------
 
 DIFF_THRESHOLD = 12.0
-COOLDOWN_SECONDS = 0.40
+COOLDOWN_SECONDS = 0.20
 
 
 # ---------------- IMAGE PREPROCESSING ----------------
