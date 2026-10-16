@@ -33,17 +33,9 @@
       <div class="stat-val" id="s-teams">0</div>
       <div class="stat-lbl">Teams</div>
     </div>
-    <div class="stat-box">
+    <div class="stat-box" style="border-right:none;">
       <div class="stat-val" id="s-players">0</div>
       <div class="stat-lbl">Players</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-val accent" id="s-matchnum">1</div>
-      <div class="stat-lbl">Current Match</div>
-    </div>
-    <div class="stat-box" style="border-right:none;">
-      <div class="stat-val" id="s-totalm">6</div>
-      <div class="stat-lbl">Total Matches</div>
     </div>
   </div>
 
@@ -229,9 +221,6 @@
     for (const opt of mapSel.options) {
       if (opt.value === settings.active_map) { opt.selected = true; break; }
     }
-
-    document.getElementById('s-matchnum').textContent = settings.current_match_number || 1;
-    document.getElementById('s-totalm').textContent   = settings.total_matches || 6;
 
     renderPlacementGrid(settings.placement_points || {});
   }

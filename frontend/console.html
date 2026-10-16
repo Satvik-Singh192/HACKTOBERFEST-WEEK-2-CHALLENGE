@@ -39,10 +39,6 @@
       <div class="stat-lbl">Teams Alive</div>
     </div>
     <div class="stat-box">
-      <div class="stat-val" id="s-match">1 / 6</div>
-      <div class="stat-lbl">Match</div>
-    </div>
-    <div class="stat-box">
       <div class="stat-val" id="s-map">—</div>
       <div class="stat-lbl">Map</div>
     </div>
@@ -234,7 +230,6 @@
 
     document.getElementById('s-kills').textContent  = totalKills;
     document.getElementById('s-teams').textContent  = alive;
-    document.getElementById('s-match').textContent  = `${matchNum} / ${totalM}`;
     document.getElementById('s-map').textContent    = mapName.split(' ')[0];
     document.getElementById('s-leader').textContent = leader?.team || '—';
 
