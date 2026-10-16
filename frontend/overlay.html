@@ -2,234 +2,424 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>BGMI Live Points Table – OBS Overlay</title>
+  <title>BGMI Live Points Table – Opaque Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800&family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* ── Transparent OBS overlay – no shared CSS needed ── */
+    /* ============================================================
+       BGMI LIVE SCOREBOARD — 100% OPAQUE OBS OVERLAY
+       Designed to place over in-game BGMI spectator sections.
+       100% Solid background: ZERO transparency so HUD is fully covered.
+       ============================================================ */
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     html, body {
-      background: transparent;
-      font-family: 'Rajdhani', 'Impact', 'Arial Narrow', sans-serif;
+      background: #0B0E14 !important; /* 100% solid, fully opaque */
+      color: #E2E8F0;
+      font-family: 'Rajdhani', 'Inter', -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased;
-      width: 220px;
-    }
-
-    #overlay-wrap {
-      width: 220px;
-      padding: 0 0 4px;
-      border-radius: 6px;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      background: rgba(8, 10, 14, 0.88);
-      border: 1px solid rgba(249,115,22,.35);
-      border-top: 3px solid #f97316;
-      box-shadow: 0 4px 24px rgba(0,0,0,.7);
     }
 
-    /* header */
+    /* Solid Opaque Chassis */
+    #overlay-wrap {
+      width: 290px;
+      background: #0B0E14; /* 100% Opaque */
+      border: 2px solid #232B38;
+      border-top: 4px solid #F97316; /* BGMI Orange accent bar */
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95), 0 0 15px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+      margin: 2px;
+    }
+
+    /* Top Tournament Header */
     .ov-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 7px 10px 5px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-    .ov-title {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: #f97316;
-    }
-    .ov-match {
-      font-size: 10px;
-      color: rgba(255,255,255,.45);
-      font-weight: 600;
-      letter-spacing: .06em;
+      padding: 9px 12px 8px;
+      background: #121721; /* Solid dark header */
+      border-bottom: 2px solid #1C2330;
     }
 
-    /* column headers */
+    .ov-brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .ov-brand-bar {
+      width: 4px;
+      height: 16px;
+      background: #F97316;
+      border-radius: 2px;
+    }
+
+    .ov-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #FFFFFF;
+    }
+
+    .ov-match-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #94A3B8;
+      background: #19202D;
+      padding: 3px 8px;
+      border-radius: 3px;
+      border: 1px solid #283344;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #EF4444; /* red until connected */
+      transition: background 0.3s;
+    }
+    .live-dot.connected {
+      background: #22C55E; /* green when live */
+      box-shadow: 0 0 6px #22C55E;
+    }
+
+    /* Column Headers */
     .ov-col-hdr {
       display: grid;
-      grid-template-columns: 28px 1fr 32px 38px;
-      padding: 4px 10px 3px;
-      font-size: 8.5px;
-      font-weight: 700;
+      grid-template-columns: 32px 1fr 42px 48px;
+      align-items: center;
+      padding: 5px 12px;
+      background: #0E121A;
+      border-bottom: 1px solid #1C2433;
+      font-size: 10px;
+      font-weight: 800;
       letter-spacing: .12em;
       text-transform: uppercase;
-      color: rgba(255,255,255,.3);
-      border-bottom: 1px solid rgba(255,255,255,.05);
+      color: #64748B;
     }
 
-    /* team rows */
-    .ov-rows { display: flex; flex-direction: column; }
+    /* Team Rows List */
+    .ov-rows {
+      display: flex;
+      flex-direction: column;
+      background: #0B0E14;
+    }
 
     .ov-row {
       display: grid;
-      grid-template-columns: 28px 1fr 32px 38px;
+      grid-template-columns: 32px 1fr 42px 48px;
       align-items: center;
-      padding: 5px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.04);
-      transition: background .4s;
+      padding: 7px 12px;
+      background: #0D1118;
+      border-bottom: 1px solid #171E2B;
+      transition: background 0.25s;
     }
-    .ov-row:last-child { border-bottom: none; }
-    .ov-row.eliminated { opacity: .28; }
-    .ov-row.rank-1 { background: rgba(249,115,22,.07); }
 
+    .ov-row:nth-child(even) {
+      background: #101520; /* subtle zebra stripe for high visibility */
+    }
+
+    .ov-row:last-child {
+      border-bottom: none;
+    }
+
+    /* Top Rank Highlights */
+    .ov-row.rank-1 {
+      background: #17181F;
+      border-left: 3px solid #F59E0B;
+    }
+    .ov-row.rank-2 {
+      background: #111624;
+      border-left: 3px solid #38BDF8;
+    }
+    .ov-row.rank-3 {
+      background: #14161C;
+      border-left: 3px solid #D97706;
+    }
+
+    /* Rank Number Badge */
     .ov-rank {
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 800;
-      color: rgba(255,255,255,.35);
+      color: #64748B;
       line-height: 1;
+      font-variant-numeric: tabular-nums;
     }
-    .ov-row.rank-1 .ov-rank { color: #fbbf24; }
-    .ov-row.rank-2 .ov-rank { color: #93c5fd; }
-    .ov-row.rank-3 .ov-rank { color: #d97706; }
+    .ov-row.rank-1 .ov-rank { color: #FBBF24; }
+    .ov-row.rank-2 .ov-rank { color: #7DD3FC; }
+    .ov-row.rank-3 .ov-rank { color: #F59E0B; }
 
+    /* Team Name & Color Bar */
     .ov-team {
-      display: flex; align-items: center; gap: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       overflow: hidden;
+      padding-right: 4px;
     }
+
     .ov-bar {
-      width: 3px; height: 16px; border-radius: 2px; flex-shrink: 0;
+      width: 4px;
+      height: 17px;
+      border-radius: 2px;
+      flex-shrink: 0;
     }
+
     .ov-name {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .05em;
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: .04em;
       text-transform: uppercase;
-      color: #e2e8f0;
+      color: #F1F5F9;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .ov-row.eliminated .ov-name { text-decoration: line-through; }
 
-    .ov-kills {
-      font-size: 12px;
-      font-weight: 700;
-      color: rgba(255,255,255,.55);
-      text-align: right;
-      font-variant-numeric: tabular-nums;
+    /* Elimination state */
+    .ov-row.eliminated {
+      background: #0A0C10 !important;
+      opacity: 0.45;
     }
-    .ov-pts {
-      font-size: 14px;
+    .ov-row.eliminated .ov-name {
+      text-decoration: line-through;
+      color: #94A3B8;
+    }
+    .ov-elim-pill {
+      font-size: 8.5px;
       font-weight: 800;
-      color: #f97316;
+      letter-spacing: .06em;
+      color: #EF4444;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 2px;
+      padding: 1px 4px;
+      margin-left: 4px;
+    }
+
+    /* Kills & Points Columns */
+    .ov-kills {
+      font-size: 13px;
+      font-weight: 700;
+      color: #94A3B8;
+      text-align: right;
+      padding-right: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ov-pts {
+      font-size: 15px;
+      font-weight: 800;
+      color: #F97316;
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
-    .ov-row.rank-1 .ov-pts { color: #fbbf24; }
+    .ov-row.rank-1 .ov-pts { color: #FBBF24; }
 
-    /* flash on update */
-    @keyframes row-flash {
-      0%   { background: rgba(249,115,22,.22); }
-      100% { background: transparent; }
+    /* Flash highlight when points update */
+    @keyframes flash-change {
+      0%   { background-color: #372A1B !important; }
+      100% { background-color: inherit; }
     }
-    .flash { animation: row-flash .7s ease; }
-
-    /* ws indicator dot – bottom right */
-    #ws-dot {
-      position: fixed; bottom: 6px; right: 8px;
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #ef4444;
-      transition: background .4s;
+    .row-flash {
+      animation: flash-change 0.9s ease;
     }
-    #ws-dot.live { background: #22c55e; }
   </style>
 </head>
 <body>
 
 <div id="overlay-wrap">
+  <!-- Solid Header -->
   <div class="ov-header">
-    <span class="ov-title" id="ov-title">POINTS TABLE</span>
-    <span class="ov-match" id="ov-match">MATCH 1</span>
+    <div class="ov-brand">
+      <div class="ov-brand-bar"></div>
+      <span class="ov-title" id="ov-title">POINTS TABLE</span>
+    </div>
+    <div class="ov-match-tag">
+      <span class="live-dot" id="live-dot"></span>
+      <span id="ov-match-text">M1 · LIVE</span>
+    </div>
   </div>
+
+  <!-- Column Labels -->
   <div class="ov-col-hdr">
     <span>#</span>
     <span>TEAM</span>
-    <span style="text-align:right">K</span>
-    <span style="text-align:right">PTS</span>
+    <span style="text-align:right; padding-right:6px;">K</span>
+    <span style="text-align:right;">PTS</span>
   </div>
+
+  <!-- Team Rows -->
   <div class="ov-rows" id="ov-rows">
-    <!-- rendered by JS -->
+    <!-- Populated immediately by JS with default teams, updated live via WS & REST -->
   </div>
 </div>
 
-<div id="ws-dot"></div>
-
 <script>
-  const rowsEl  = document.getElementById('ov-rows');
-  const titleEl = document.getElementById('ov-title');
-  const matchEl = document.getElementById('ov-match');
-  const wsDot   = document.getElementById('ws-dot');
+  const rowsEl   = document.getElementById('ov-rows');
+  const titleEl  = document.getElementById('ov-title');
+  const matchEl  = document.getElementById('ov-match-text');
+  const liveDot  = document.getElementById('live-dot');
 
-  // Track previous totals to flash changed rows
-  const prevTotals = {};
+  // Track point totals to trigger orange flash animation on changes
+  const previousPoints = {};
 
-  function render(snap) {
-    const teams  = (snap.teams || []).slice().sort(
-      (a, b) => (b.total ?? 0) - (a.total ?? 0)
-    );
-    const mapName   = snap.map   || '';
-    const matchNum  = snap.match_number || 1;
-    const status    = snap.status || 'LIVE';
+  // Standard tournament teams shown instantly while live data connects
+  const defaultFallbackTeams = [
+    { rank: 1, team: "KRAIT",    color: "#FF7A45", kills: 0, total: 0, eliminated: false },
+    { rank: 2, team: "NOVA",     color: "#4DA3FF", kills: 0, total: 0, eliminated: false },
+    { rank: 3, team: "ZENITH",   color: "#A78BFA", kills: 0, total: 0, eliminated: false },
+    { rank: 4, team: "VORTEX",   color: "#2DD4BF", kills: 0, total: 0, eliminated: false },
+    { rank: 5, team: "ASHEN",    color: "#F472B6", kills: 0, total: 0, eliminated: false },
+    { rank: 6, team: "MIRAGE",   color: "#84CC16", kills: 0, total: 0, eliminated: false },
+    { rank: 7, team: "TALON",    color: "#FACC15", kills: 0, total: 0, eliminated: false },
+    { rank: 8, team: "OBSIDIAN", color: "#94A3B8", kills: 0, total: 0, eliminated: false }
+  ];
 
-    titleEl.textContent = status === 'FINISHED' ? 'FINAL STANDINGS' : 'POINTS TABLE';
-    matchEl.textContent = `MATCH ${matchNum}${mapName ? ' · ' + mapName.toUpperCase() : ''}`;
+  function renderScoreboard(snapshot) {
+    if (!snapshot) return;
 
-    rowsEl.innerHTML = '';
-    teams.slice(0, 16).forEach((t, i) => {
-      const rank    = i + 1;
-      const kills   = t.kills  ?? 0;
-      const pts     = t.total  ?? kills;
-      const color   = t.color  || '#94a3b8';
-      const isElim  = Boolean(t.eliminated);
-      const changed = prevTotals[t.team] !== undefined && prevTotals[t.team] !== pts;
-      prevTotals[t.team] = pts;
+    let teams = snapshot.teams;
+    if (!teams || teams.length === 0) {
+      teams = defaultFallbackTeams;
+    }
 
-      const row = document.createElement('div');
-      row.className = [
-        'ov-row',
-        rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '',
-        isElim ? 'eliminated' : '',
-        changed ? 'flash' : '',
-      ].filter(Boolean).join(' ');
-
-      row.innerHTML = `
-        <div class="ov-rank">${rank}</div>
-        <div class="ov-team">
-          <span class="ov-bar" style="background:${color}"></span>
-          <span class="ov-name">${t.team || '—'}</span>
-        </div>
-        <div class="ov-kills">${kills}</div>
-        <div class="ov-pts">${pts}</div>
-      `;
-      rowsEl.appendChild(row);
+    // Sort strictly by total points descending
+    const sorted = [...teams].sort((a, b) => {
+      const ptsA = a.total ?? ((a.kills || 0) + (a.place || 0));
+      const ptsB = b.total ?? ((b.kills || 0) + (b.place || 0));
+      return ptsB - ptsA;
     });
+
+    // Update Header
+    const matchNum = snapshot.match_number || 1;
+    const status   = snapshot.status || 'LIVE';
+    matchEl.textContent = `M${matchNum} · ${status}`;
+    titleEl.textContent = status === 'FINISHED' ? 'FINAL STANDINGS' : 'POINTS TABLE';
+
+    // Build Rows
+    let html = '';
+    sorted.slice(0, 16).forEach((t, index) => {
+      const rank  = index + 1;
+      const teamName = (t.team || 'TEAM').toUpperCase();
+      const kills = t.kills ?? 0;
+      const pts   = t.total ?? (kills + (t.place ?? 0));
+      const color = t.color || '#94A3B8';
+      const isElim = Boolean(t.eliminated);
+
+      // Check if points updated since last frame
+      const isUpdated = previousPoints[teamName] !== undefined && previousPoints[teamName] !== pts;
+      previousPoints[teamName] = pts;
+
+      let rankClass = '';
+      if (rank === 1) rankClass = 'rank-1';
+      else if (rank === 2) rankClass = 'rank-2';
+      else if (rank === 3) rankClass = 'rank-3';
+
+      html += `
+        <div class="ov-row ${rankClass} ${isElim ? 'eliminated' : ''} ${isUpdated ? 'row-flash' : ''}">
+          <div class="ov-rank">${rank}</div>
+          <div class="ov-team">
+            <span class="ov-bar" style="background:${color}"></span>
+            <span class="ov-name">${teamName}</span>
+            ${isElim ? '<span class="ov-elim-pill">OUT</span>' : ''}
+          </div>
+          <div class="ov-kills">${kills}</div>
+          <div class="ov-pts">${pts}</div>
+        </div>
+      `;
+    });
+
+    rowsEl.innerHTML = html;
   }
 
-  // ── Initial fetch ──────────────────────────────
-  fetch('/scoreboard')
-    .then(r => r.json())
-    .then(render)
-    .catch(() => {});
+  // Initial immediate render so OBS is never blank
+  renderScoreboard({ teams: defaultFallbackTeams });
 
-  // ── WebSocket with auto-reconnect ──────────────
-  const WS_URL = (location.protocol === 'https:' ? 'wss://' : 'ws://')
-               + (location.host || '127.0.0.1:8000')
-               + '/scoreboard';
-  let ws;
+  // ── Bulletproof REST Fetcher (Supports both web and local file in OBS) ──
+  const baseUrls = [
+    (location.origin && location.origin.startsWith('http')) ? location.origin : null,
+    'http://127.0.0.1:8000',
+    'http://localhost:8000'
+  ].filter(Boolean);
 
-  function connect() {
+  let activeApiBase = baseUrls[0];
+
+  async function fetchScoreboard() {
+    for (const base of baseUrls) {
+      try {
+        const res = await fetch(`${base}/scoreboard`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          activeApiBase = base;
+          renderScoreboard(data);
+          liveDot.classList.add('connected');
+          return;
+        }
+      } catch (err) {
+        // try next endpoint
+      }
+    }
+  }
+
+  // ── WebSocket Connection with 2-Second Auto-Reconnect ──
+  let ws = null;
+
+  function connectWebSocket() {
+    const wsHost = (location.host && !location.host.startsWith('file')) ? location.host : '127.0.0.1:8000';
+    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProto}//${wsHost}/scoreboard`;
+
     try {
-      ws = new WebSocket(WS_URL);
-      ws.onopen    = () => wsDot.className = 'live';
-      ws.onmessage = e => { try { render(JSON.parse(e.data)); } catch {} };
-      ws.onclose   = () => { wsDot.className = ''; setTimeout(connect, 3000); };
-      ws.onerror   = () => ws.close();
-    } catch { setTimeout(connect, 3000); }
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        liveDot.classList.add('connected');
+        fetchScoreboard();
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          renderScoreboard(data);
+          liveDot.classList.add('connected');
+        } catch (e) {
+          console.error("WS Parse error", e);
+        }
+      };
+
+      ws.onclose = () => {
+        liveDot.classList.remove('connected');
+        setTimeout(connectWebSocket, 2000);
+      };
+
+      ws.onerror = () => {
+        try { ws.close(); } catch(e) {}
+      };
+    } catch (e) {
+      setTimeout(connectWebSocket, 2000);
+    }
   }
 
-  connect();
+  // 1. Fetch immediately
+  fetchScoreboard();
+
+  // 2. Connect WebSocket for instant zero-latency events
+  connectWebSocket();
+
+  // 3. Fallback polling every 1.5 seconds (Guarantees OBS always updates even if WebSocket sleeps)
+  setInterval(fetchScoreboard, 1500);
 </script>
 </body>
 </html>

@@ -265,31 +265,51 @@ class StateStore:
             return None
 
         teams = self.current_match.get("teams", [])
-        found = False
-        target_team = None
+        normalized_team = team_name.strip().upper()
+        team_names_set = {t.get("team", "").upper(): t for t in teams}
+        target_team = team_names_set.get(normalized_team)
 
-        for t in teams:
-            if t.get("team", "").upper() == team_name.upper():
-                t["kills"] = max(0, t.get("kills", 0) + delta)
-                t["total"] = t["kills"] + t.get("place", 0)
-                found = True
-                target_team = t
-                break
+        # If team_name not found, check if it's a player name or alias in roster
+        if not target_team:
+            for r in self.roster:
+                r_team = r.get("team", "").upper()
+                for p in r.get("players", []):
+                    p_name = p.get("name", "").upper()
+                    aliases = [a.upper() for a in p.get("aliases", [])]
+                    if normalized_team == p_name or normalized_team in aliases:
+                        if not player_name:
+                            player_name = p.get("name")
+                        target_team = team_names_set.get(r_team)
+                        normalized_team = r_team
+                        break
+                if target_team:
+                    break
 
-        if not found:
-            # If team not in active teams, create it from roster or add dynamically
-            color = self.get_team_color(team_name)
-            target_team = {
-                "rank": len(teams) + 1,
-                "team": team_name.upper(),
-                "color": color,
-                "kills": max(0, delta),
-                "place": 0,
-                "total": max(0, delta),
-                "knocks": 0,
-                "eliminated": False,
-            }
-            teams.append(target_team)
+        # If still not found, check if it's a team in roster not yet in current_match
+        if not target_team:
+            for r in self.roster:
+                if r.get("team", "").upper() == normalized_team:
+                    color = r.get("color", "#94A3B8")
+                    target_team = {
+                        "rank": len(teams) + 1,
+                        "team": normalized_team,
+                        "color": color,
+                        "kills": 0,
+                        "place": 0,
+                        "total": 0,
+                        "knocks": 0,
+                        "eliminated": False,
+                    }
+                    teams.append(target_team)
+                    break
+
+        # Ignore completely unknown entities so fake teams never pollute the scoreboard
+        if not target_team:
+            print(f"[Notice] Scoreboard ignored unregistered entity: '{team_name}'")
+            return self.get_match_snapshot()
+
+        target_team["kills"] = max(0, target_team.get("kills", 0) + delta)
+        target_team["total"] = target_team["kills"] + target_team.get("place", 0)
 
         # Update player kill counter
         if player_name:
@@ -299,7 +319,7 @@ class StateStore:
         # Log event
         self.current_match.setdefault("events_log", []).append({
             "type": "kill",
-            "team": team_name.upper(),
+            "team": normalized_team,
             "player": player_name,
             "delta": delta,
         })
@@ -317,10 +337,24 @@ class StateStore:
             return None
 
         teams = self.current_match.get("teams", [])
-        for t in teams:
-            if t.get("team", "").upper() == team_name.upper():
-                t["knocks"] = max(0, t.get("knocks", 0) + delta)
-                break
+        normalized_team = team_name.strip().upper()
+        team_names_set = {t.get("team", "").upper(): t for t in teams}
+        target_team = team_names_set.get(normalized_team)
+
+        if not target_team:
+            for r in self.roster:
+                r_team = r.get("team", "").upper()
+                for p in r.get("players", []):
+                    p_name = p.get("name", "").upper()
+                    aliases = [a.upper() for a in p.get("aliases", [])]
+                    if normalized_team == p_name or normalized_team in aliases:
+                        target_team = team_names_set.get(r_team)
+                        break
+                if target_team:
+                    break
+
+        if target_team:
+            target_team["knocks"] = max(0, target_team.get("knocks", 0) + delta)
 
         if player_name:
             p_knocks = self.current_match.setdefault("player_knocks", {})

@@ -130,17 +130,30 @@
     setTimeout(() => el.remove(), 3500);
   }
 
+  const baseUrls = [
+    (location.origin && location.origin.startsWith('http')) ? location.origin : null,
+    'http://127.0.0.1:8000',
+    'http://localhost:8000'
+  ].filter(Boolean);
+  let activeApiBase = baseUrls[0] || 'http://127.0.0.1:8000';
+
   async function api(path, method = 'GET', body) {
-    try {
-      const res = await fetch(path, {
-        method,
-        headers: body ? { 'Content-Type': 'application/json' } : {},
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      return res.json();
-    } catch (e) {
-      toast('Network error: ' + e.message, 'error');
+    for (const base of baseUrls) {
+      try {
+        const res = await fetch(`${base}${path}`, {
+          method,
+          headers: body ? { 'Content-Type': 'application/json' } : {},
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        if (res.ok) {
+          activeApiBase = base;
+          return await res.json();
+        }
+      } catch (e) {
+        // try next endpoint
+      }
     }
+    toast('Network connection to backend failed', 'error');
   }
 
   // ── Match controls ───────────────────────────────────────
@@ -318,9 +331,25 @@
     } catch { setTimeout(connect, 2500); }
   }
 
-  // Initial load
-  fetch('/scoreboard').then(r => r.json()).then(renderConsole).catch(() => {});
+  async function refreshConsole() {
+    for (const base of baseUrls) {
+      try {
+        const res = await fetch(`${base}/scoreboard`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          renderConsole(data);
+          wsBadge.textContent = 'LIVE';
+          wsBadge.className   = 'ws-badge live';
+          return;
+        }
+      } catch (err) {}
+    }
+  }
+
+  // Initial load + periodic fallback poll
+  refreshConsole();
   connect();
+  setInterval(refreshConsole, 2000);
 </script>
 </body>
 </html>
