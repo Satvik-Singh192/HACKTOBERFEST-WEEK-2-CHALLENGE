@@ -26,7 +26,7 @@ class EventPipeline:
             for entry in store.roster:
                 team_name = entry.get("team", "")
                 players = [
-                    Player(name=p["name"])
+                    Player(name=p["name"], aliases=p.get("aliases", []))
                     for p in entry.get("players", [])
                     if p.get("name")
                 ]
@@ -44,9 +44,11 @@ class EventPipeline:
                 f"Expected Event, received {type(event).__name__}"
             )
 
-        # Let TeamManager own all scoring and player-state transitions.
+        resolved_event = event
+        # Let TeamManager resolve fuzzy matching and own all scoring & player-state transitions.
         try:
-            self.team_manager.process_events(event)
+            resolved_event = self.team_manager.resolve_event(event)
+            self.team_manager.process_events(resolved_event)
         except Exception as e:
             print(f"[EventPipeline] TeamManager: {e}")
 
@@ -54,7 +56,7 @@ class EventPipeline:
 
         # Sync with Scoreboard store and WebSocket broadcast
         if self.sync_scoreboard:
-            self._sync_event_to_scoreboard(event)
+            self._sync_event_to_scoreboard(resolved_event)
 
     def _sync_event_to_scoreboard(self, event: Event) -> None:
         try:

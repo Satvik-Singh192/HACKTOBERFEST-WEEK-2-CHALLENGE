@@ -11,10 +11,11 @@ class PlayerStatus(str, Enum):
 @dataclass
 class Player:
     name: str
+    aliases: list[str] = field(default_factory=list)
     kills: int = 0
-    status: PlayerStatus=PlayerStatus.ALIVE
-    placement: int | None=None
-    placementPoints: int=0
+    status: PlayerStatus = PlayerStatus.ALIVE
+    placement: int | None = None
+    placementPoints: int = 0
     
 
 

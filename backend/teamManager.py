@@ -5,12 +5,14 @@ from backend.playerMatcher import PlayerMatcher
 
 class TeamManager:
     def __init__(self):
-        self.teams:dict[str,Team]={}
-        self.player_team_map:dict[str,str]={}
-        self.last_knocked_by:dict[str,str]={}
-        self.eliminatedTeams=0
-        self.player_matcher=None
-    def add_team(self,team:Team)->None:
+        self.teams: dict[str, Team] = {}
+        self.player_team_map: dict[str, str] = {}
+        self.alias_to_canonical: dict[str, str] = {}
+        self.last_knocked_by: dict[str, str] = {}
+        self.eliminatedTeams = 0
+        self.player_matcher = None
+
+    def add_team(self, team: Team) -> None:
         if team.name in self.teams:
             raise ValueError(f"Team already exists: {team.name}")
         for player in team.players:
@@ -22,12 +24,16 @@ class TeamManager:
 
         for player in team.players:
             self.player_team_map[player.name] = team.name
-    # SHREYAS BHAU JAB manager.process_events(event) KRO TB ye fuzzy matching ko use kr lena
-    def initialize_player_matcher(self)->None:
-        self.player_matcher=PlayerMatcher(self.player_team_map)
+            for alias in getattr(player, "aliases", []):
+                self.alias_to_canonical[alias] = player.name
+                self.player_team_map[alias] = team.name
+
+    def initialize_player_matcher(self) -> None:
+        self.player_matcher = PlayerMatcher(self.player_team_map, self.alias_to_canonical)
 
     def get_player(self, player_name: str) -> Player:
-        team_name = self.player_team_map.get(player_name)
+        canonical_name = self.alias_to_canonical.get(player_name, player_name)
+        team_name = self.player_team_map.get(canonical_name)
 
         if team_name is None:
             raise KeyError(f"Unknown player: {player_name}")
@@ -35,12 +41,14 @@ class TeamManager:
         team = self.teams[team_name]
 
         for player in team.players:
-            if player.name == player_name:
+            if player.name == canonical_name:
                 return player
 
         raise RuntimeError("Player-team mapping is inconsistent")
+
     def get_team(self, player_name: str) -> Team:
-        team_name = self.player_team_map.get(player_name)
+        canonical_name = self.alias_to_canonical.get(player_name, player_name)
+        team_name = self.player_team_map.get(canonical_name)
 
         if team_name is None:
             raise KeyError(f"Unknown player: {player_name}")
