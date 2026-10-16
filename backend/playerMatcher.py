@@ -68,18 +68,27 @@ class PlayerMatcher:
             return None
 
         best_key, best_score, _ = candidates[0]
-        second_score = candidates[1][1] if len(candidates) > 1 else 0
+        best_player = self.normalized_to_names[best_key]
+
+        # Find the highest scoring candidate that points to a DIFFERENT player
+        second_diff_player_score = 0
+        for cand_key, cand_score, _ in candidates[1:]:
+            cand_player = self.normalized_to_names.get(cand_key)
+            if cand_player != best_player:
+                second_diff_player_score = cand_score
+                break
 
         # Dynamic threshold based on name length:
         # For short 3-4 letter tags, a 1-character typo gives ~75% ratio
-        min_threshold = 74 if len(normalized) <= 4 else 80
+        min_threshold = 70 if len(normalized) <= 4 else 80
 
-        if best_score < min_threshold or (best_score - second_score < 6 and second_score > 0):
+        if best_score < min_threshold or (
+            best_score - second_diff_player_score < 6 and second_diff_player_score > 0
+        ):
             self.cache[normalized] = None
             return None
 
-        result = self.normalized_to_names[best_key]
-        self.cache[normalized] = result
-        return result
+        self.cache[normalized] = best_player
+        return best_player
 
     

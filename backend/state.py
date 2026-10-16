@@ -46,6 +46,11 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
         "7": 1,
         "8": 1,
     },
+    "overlay_config": {
+        "scoreboard_visible": True,
+        "fraggers_visible": True,
+        "fraggers_mode": "top5",  # "top5" or "mvp"
+    },
 }
 
 DEFAULT_ROSTER: List[Dict[str, Any]] = [
@@ -180,6 +185,136 @@ DEFAULT_ROSTER: List[Dict[str, Any]] = [
 # Testing Roster matching the video and TeamManager definitions
 TESTING_VIDEO_ROSTER: List[Dict[str, Any]] = DEFAULT_ROSTER
 
+# Official BMSD Pro Testing Roster (16 teams, 76 players)
+BMSD_TEAMS: Dict[str, List[str]] = {
+    "NINZ": [
+        "NINZ Fierce",
+        "NINZ Apollo",
+        "NINZ Auxin",
+        "NINZ Shadow7",
+        "NINZ javin",
+    ],
+    "IQOO 8BIT": [
+        "IQOO 8BIT Sarang",
+        "IQOO 8BIT Juicy",
+        "IQOO 8BIT Shubh",
+        "IQOO 8BIT skipzz",
+        "IQOO 8BIT Shorty",
+    ],
+    "IQOO RNTX": [
+        "IQOO RNTX Tracegod",
+        "IQOO RNTX Pain",
+        "IQOO RNTX NinjaJod",
+        "IQOO RNTX ProToN",
+        "IQOO RNTX Sukuna",
+    ],
+    "BLEG": [
+        "BLEG Areeb",
+        "BLEG EGGY",
+        "BLEG Lobster",
+        "BLEG Ralphie",
+        "BLEG FanOP",
+    ],
+    "TAG": [
+        "TAG Jelly",
+        "TAG KioLmao",
+        "TAG JONATHAN",
+        "TAG Hydro",
+        "TAG Harsh",
+    ],
+    "NBE": [
+        "NBE Aadi",
+        "NBE Arjun",
+        "NBE KRATOS",
+        "NBE Phoenix",
+        "NBE KnowMe",
+    ],
+    "IQOO SOUL": [
+        "IQOO SOUL Goblin",
+        "IQOO SOUL NakuL",
+        "IQOO SOUL LEGIT",
+        "IQOO SOUL Thunder",
+        "IQOO SOUL Jokerr",
+    ],
+    "K9": [
+        "K9 Saumraj",
+        "K9 SnowJOD",
+        "K9 Smoker46",
+        "K9 Taurus",
+        "K9 Stranger",
+    ],
+    "V1BA": [
+        "V1BA Punkk",
+        "V1BA Omega",
+        "V1BA Termi",
+        "V1BA Shayaan",
+        "V1BA Achuk",
+    ],
+    "GODL": [
+        "GODL Manya",
+        "GODL ADMINO",
+        "GODL Spower",
+        "GODL Godz",
+        "GODL Saumay",
+    ],
+    "OR": [
+        "OR Omega",
+        "OR NinjaBoi",
+        "OR Slug",
+        "OR Knight",
+    ],
+    "GDR": [
+        "GDR Neyo",
+        "GDR AquaNox",
+        "GDR DeltaPG",
+        "GDR Justin",
+    ],
+    "MYTH": [
+        "MYTH Lucifer",
+        "MYTH Daddy",
+        "MYTH Detrox",
+        "MYTH Harshil",
+        "MYTH Aryton",
+    ],
+    "WELT": [
+        "WELT DragonOP",
+        "WELT PokoWNL",
+        "WELT Rico",
+        "WELT SHYAM",
+        "WELT GokulWNL",
+    ],
+    "GEN": [
+        "GEN HunterZ",
+        "GEN Zap",
+        "GEN GravityJOD",
+        "GEN FurY",
+        "GEN VipeR",
+    ],
+    "WF": [
+        "WF Kanha",
+        "WF SENSEI",
+        "WF Goten",
+        "WF SPRAYGOD",
+        "WF Sam999",
+    ],
+}
+
+BMSD_COLORS = [
+    "#E11D48", "#F59E0B", "#10B981", "#3B82F6",
+    "#8B5CF6", "#EC4899", "#06B6D4", "#14B8A6",
+    "#F97316", "#EAB308", "#6366F1", "#84CC16",
+    "#A855F7", "#D97706", "#0284C7", "#DC2626",
+]
+
+BMSD_TEST_ROSTER: List[Dict[str, Any]] = [
+    {
+        "team": tname,
+        "color": BMSD_COLORS[idx % len(BMSD_COLORS)],
+        "players": [{"name": p, "aliases": []} for p in players],
+    }
+    for idx, (tname, players) in enumerate(BMSD_TEAMS.items())
+]
+
 
 def _ensure_data_dir() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -233,6 +368,24 @@ class StateStore:
             )
             self._save_match()
 
+        self._last_match_mtime: float = MATCH_FILE.stat().st_mtime if MATCH_FILE.is_file() else 0.0
+
+    def reload_if_updated_externally(self) -> None:
+        """Reload from MATCH_FILE if updated on disk by an external process."""
+        if not MATCH_FILE.is_file():
+            return
+        try:
+            mtime = MATCH_FILE.stat().st_mtime
+            if mtime > getattr(self, "_last_match_mtime", 0.0) + 0.005:
+                current = _load_json(MATCH_FILE, None)
+                if current and "team_manager_state" in current:
+                    self.team_manager.load_from_dict(current["team_manager_state"])
+                    self.current_match = current
+                    self.current_match["teams"] = self._build_teams_list()
+                    self._last_match_mtime = mtime
+        except Exception:
+            pass
+
     def _init_team_manager_from_roster(self) -> None:
         self.team_manager.teams.clear()
         self.team_manager.player_team_map.clear()
@@ -260,6 +413,7 @@ class StateStore:
         for team in self.team_manager.teams.values():
             color = self.get_team_color(team.name)
             kills = sum(p.kills for p in team.players)
+            knocks = sum(1 for p in team.players if p.status == PlayerStatus.KNOCKED)
             place = team.placement_points
             total = kills + place
             eliminated = bool(
@@ -279,6 +433,7 @@ class StateStore:
                 "team": team.name,
                 "color": color,
                 "kills": kills,
+                "knocks": knocks,
                 "place": place,
                 "placement": team.placement,
                 "total": total,
@@ -308,6 +463,11 @@ class StateStore:
         self.current_match["team_manager_state"] = self.team_manager.to_dict()
         self.current_match["teams"] = self._build_teams_list()
         _save_json(MATCH_FILE, self.current_match)
+        if MATCH_FILE.is_file():
+            try:
+                self._last_match_mtime = MATCH_FILE.stat().st_mtime
+            except Exception:
+                pass
 
     def _save_roster(self) -> None:
         _save_json(ROSTER_FILE, self.roster)
@@ -570,6 +730,13 @@ class StateStore:
         self._sync_match_with_roster()
         return self.roster
 
+    def load_bmsd_roster(self) -> List[Dict[str, Any]]:
+        """Switch to official BMSD 16-team testing roster."""
+        self.roster = deepcopy(BMSD_TEST_ROSTER)
+        self._save_roster()
+        self._sync_match_with_roster()
+        return self.roster
+
     def sync_from_team_manager(self, team_manager: Any = None) -> List[Dict[str, Any]]:
         """Extract teams and players directly from a TeamManager instance."""
         if team_manager is None:
@@ -642,12 +809,35 @@ class StateStore:
         self._save_match()
         return self.settings
 
+    def get_overlay_config(self) -> Dict[str, Any]:
+        default_cfg = {
+            "scoreboard_visible": True,
+            "fraggers_visible": True,
+            "fraggers_mode": "top5",
+        }
+        cfg = self.settings.get("overlay_config", {})
+        merged = deepcopy(default_cfg)
+        merged.update(cfg)
+        return merged
+
+    def update_overlay_config(self, patch: Dict[str, Any]) -> Dict[str, Any]:
+        cfg = self.get_overlay_config()
+        cfg.update(patch)
+        self.settings["overlay_config"] = cfg
+        self._save_settings()
+        return cfg
+
     # ------------------ Snapshots & Queries ------------------
     def get_match_snapshot(self) -> Dict[str, Any]:
         """Full data snapshot broadcast to WebSockets and returned by /scoreboard."""
+        self.reload_if_updated_externally()
         teams = self._build_teams_list()
         top_fraggers = self.get_top_fraggers(limit=5)
-        top_player = top_fraggers[0] if top_fraggers else {"player": "None", "team": "None", "kills": 0, "knocks": 0}
+        top_player = (
+            top_fraggers[0]
+            if top_fraggers and top_fraggers[0]["kills"] > 0
+            else None
+        )
 
         return {
             "version": self.current_match.get("version", 1),
@@ -659,15 +849,18 @@ class StateStore:
             "teams": teams,
             "top_fraggers": top_fraggers,
             "mvp": top_player,
+            "overlay_config": self.get_overlay_config(),
         }
 
     def get_top_fraggers(self, limit: int = 5) -> List[Dict[str, Any]]:
         fraggers = []
         for team in self.team_manager.teams.values():
+            color = self.get_team_color(team.name)
             for p in team.players:
                 fraggers.append({
                     "player": p.name,
                     "team": team.name,
+                    "color": color,
                     "kills": p.kills,
                     "knocks": 1 if p.status == PlayerStatus.KNOCKED else 0,
                     "status": p.status.value,

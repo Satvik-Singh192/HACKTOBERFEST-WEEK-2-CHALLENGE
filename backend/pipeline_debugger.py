@@ -57,6 +57,7 @@ class PipelineDebugger:
 
         self._ensure_dirs()
 
+        self.store = store
         if reset_match_on_start:
             store.reset_current_match()
 
@@ -314,6 +315,7 @@ class PipelineDebugger:
 
                 # Execute scoring event through StateStore & TeamManager
                 snapshot = store.process_event(resolved_event)
+                self._sync_to_scoreboard(resolved_event)
 
                 # Compute state diffs
                 after_players = {
@@ -421,6 +423,24 @@ class PipelineDebugger:
         }
         self.history_records.append(combined_record)
         return combined_record
+
+    def _sync_to_scoreboard(self, event: Event) -> None:
+        """Forward event to live FastAPI server so WebSockets push updates to browser."""
+        try:
+            import urllib.request
+            payload = json.dumps({
+                "attacker": event.attacker,
+                "icons": [i.value if hasattr(i, "value") else str(i) for i in event.icons],
+                "victim": event.victim,
+            }).encode("utf-8")
+            url = "http://127.0.0.1:8000/api/event"
+            req = urllib.request.Request(
+                url, data=payload, headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=0.6) as resp:
+                pass
+        except Exception:
+            pass
 
     def generate_markdown_report(self) -> Path:
         """Generate human-readable PIPELINE_DEBUG_REPORT.md with full timeline & scores."""

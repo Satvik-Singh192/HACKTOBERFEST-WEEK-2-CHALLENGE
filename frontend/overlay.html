@@ -42,13 +42,20 @@
     #overlay-wrap {
       width: 240px;
       background: #0B0E14 !important; /* ONLY the scoreboard box is opaque */
-      opacity: 1 !important;
       border: 1.5px solid #232B38;
       border-top: 3px solid #F97316; /* BGMI Orange accent bar */
       border-radius: 4px;
       box-shadow: none !important; /* No shadow halo bleeding onto gameplay */
       overflow: hidden;
       margin: 0;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      opacity: 1;
+    }
+
+    #overlay-wrap.hidden {
+      opacity: 0 !important;
+      transform: translateY(-8px);
+      pointer-events: none;
     }
 
     /* Top Tournament Header */
@@ -250,6 +257,79 @@
     .row-flash {
       animation: flash-change 0.9s ease;
     }
+
+    /* Top Fragger / MVP Footer */
+    .ov-fragger-card {
+      background: #0E121A;
+      border-top: 1.5px solid #1E2738;
+      padding: 5px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .ov-fragger-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .ov-fragger-tag {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #F59E0B;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 2px;
+      padding: 1px 4px;
+      flex-shrink: 0;
+    }
+    .ov-fragger-details {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      line-height: 1.15;
+    }
+    .ov-fragger-name {
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFFFFF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ov-fragger-team {
+      font-size: 8px;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ov-fragger-stat {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .ov-fragger-kills {
+      font-size: 14px;
+      font-weight: 800;
+      color: #F59E0B;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .ov-fragger-lbl {
+      font-size: 8px;
+      font-weight: 800;
+      color: #64748B;
+      letter-spacing: .05em;
+    }
   </style>
 </head>
 <body>
@@ -278,6 +358,22 @@
   <!-- Team Rows -->
   <div class="ov-rows" id="ov-rows">
     <!-- Populated immediately by JS with default teams, updated live via WS & REST -->
+  </div>
+
+  <!-- Top Fragger / MVP Footer -->
+  <div class="ov-fragger-card" id="ov-fragger-card">
+    <div class="ov-fragger-left">
+      <span class="ov-fragger-tag">MVP</span>
+      <span class="ov-bar" id="ov-frag-bar" style="background:#F97316; height:12px;"></span>
+      <div class="ov-fragger-details">
+        <span class="ov-fragger-name" id="ov-frag-name">—</span>
+        <span class="ov-fragger-team" id="ov-frag-team">—</span>
+      </div>
+    </div>
+    <div class="ov-fragger-stat">
+      <span class="ov-fragger-kills" id="ov-frag-kills">0</span>
+      <span class="ov-fragger-lbl">KILLS</span>
+    </div>
   </div>
 </div>
 
@@ -309,6 +405,19 @@
 
   function renderScoreboard(snapshot) {
     if (!snapshot) return;
+
+    // Independent Visibility Control
+    const overlayCfg = snapshot.overlay_config || {};
+    const urlParams  = new URLSearchParams(window.location.search);
+    const forceShow  = urlParams.get('force') === '1' || urlParams.get('force') === 'true';
+    const wrapEl     = document.getElementById('overlay-wrap');
+    if (wrapEl) {
+      if (forceShow || overlayCfg.scoreboard_visible !== false) {
+        wrapEl.classList.remove('hidden');
+      } else {
+        wrapEl.classList.add('hidden');
+      }
+    }
 
     let teams = snapshot.teams;
     if (!teams || teams.length === 0) {
@@ -362,6 +471,20 @@
     });
 
     rowsEl.innerHTML = html;
+
+    // Render Top Fragger / MVP
+    const topFrag = snapshot.mvp || (snapshot.top_fraggers && snapshot.top_fraggers[0]);
+    const fragCard = document.getElementById('ov-fragger-card');
+    if (topFrag && topFrag.player && topFrag.player !== 'None' && (topFrag.kills > 0)) {
+      fragCard.style.display = 'flex';
+      document.getElementById('ov-frag-name').textContent = topFrag.player;
+      document.getElementById('ov-frag-team').textContent = topFrag.team || '—';
+      document.getElementById('ov-frag-kills').textContent = topFrag.kills ?? 0;
+      const fragBar = document.getElementById('ov-frag-bar');
+      if (fragBar) fragBar.style.background = topFrag.color || '#F97316';
+    } else {
+      fragCard.style.display = 'none';
+    }
   }
 
   // Initial immediate render so OBS is never blank

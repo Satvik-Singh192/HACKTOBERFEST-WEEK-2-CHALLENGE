@@ -201,14 +201,43 @@ def main() -> None:
                         frame_index=candidate.frame_index,
                         timestamp_seconds=candidate.timestamp_seconds,
                     )
-                    ml = rec["ml"]
-                    sc = rec["scoring"]
+                    ml = rec.get("ml") or {}
+                    sc = rec.get("scoring") or {}
+                    action = sc.get("action_taken") or "UNKNOWN"
+                    state_changes = sc.get("state_changes") or {}
+                    kills_awarded = state_changes.get("kills_awarded") or []
+                    res_info = sc.get("resolution") or {}
+                    resolved_victim = res_info.get("resolved_victim")
+                    entities = ml.get("extracted_entities") or {}
+                    attacker_txt = entities.get("attacker_text") or "None"
+                    victim_txt = entities.get("victim_text") or "None"
+
                     print(
-                        f">>> [DEBUG TRACE] t={candidate.timestamp_seconds:.2f}s | "
-                        f"Attacker: '{ml['extracted_entities']['attacker_text']}' | "
-                        f"Victim: '{ml['extracted_entities']['victim_text']}' | "
-                        f"Action: {sc.get('action_taken')}"
+                        f"\n>>> [DEBUG TRACE] t={candidate.timestamp_seconds:.2f}s | "
+                        f"Attacker: '{attacker_txt}' | "
+                        f"Victim: '{victim_txt}' | "
+                        f"Action: {action}"
                     )
+                    import json
+                    debug_dict = {
+                        "action_taken": action,
+                        "kills_awarded": kills_awarded,
+                        "last_knocked_by": dict(debugger.store.team_manager.last_knocked_by),
+                        "team_scores": {
+                            t["team"]: {"kills": t["kills"], "total": t["total"]}
+                            for t in (sc.get("scoreboard_top3") or [])
+                        },
+                        "victim_status": next(
+                            (
+                                p.status.value
+                                for t in debugger.store.team_manager.teams.values()
+                                for p in t.players
+                                if p.name == resolved_victim
+                            ),
+                            None,
+                        ) if resolved_victim else None,
+                    }
+                    print(f">>> [DEBUG DICTIONARY]:\n{json.dumps(debug_dict, indent=2)}")
                     debugger.generate_markdown_report()
                 except Exception as exc:
                     print(f"Error handling debug candidate: {exc}")

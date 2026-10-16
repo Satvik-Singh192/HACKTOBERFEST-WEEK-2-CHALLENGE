@@ -115,6 +115,12 @@ class CalibrateRequest(BaseModel):
     ymax: float
 
 
+class OverlayConfigRequest(BaseModel):
+    scoreboard_visible: Optional[bool] = None
+    fraggers_visible: Optional[bool] = None
+    fraggers_mode: Optional[str] = None  # "top5" or "mvp"
+
+
 # ------------------ System Endpoints ------------------
 @app.get("/")
 async def home():
@@ -145,6 +151,20 @@ async def get_mvp():
 @app.get("/api/fraggers")
 async def get_fraggers():
     return store.get_top_fraggers(limit=5)
+
+
+@app.get("/api/overlay/config")
+async def get_overlay_config():
+    return store.get_overlay_config()
+
+
+@app.post("/api/overlay/config")
+async def update_overlay_config(req: OverlayConfigRequest):
+    patch = {k: v for k, v in req.model_dump().items() if v is not None}
+    cfg = store.update_overlay_config(patch)
+    snapshot = store.get_match_snapshot()
+    await manager.broadcast_snapshot(snapshot)
+    return {"status": "ok", "overlay_config": cfg, "snapshot": snapshot}
 
 
 # ------------------ Match Lifecycle ------------------
@@ -323,6 +343,14 @@ async def load_default_roster():
     snapshot = store.get_match_snapshot()
     await manager.broadcast_snapshot(snapshot)
     return {"status": "ok", "message": "Default tournament roster loaded (KRAIT, NOVA, ZENITH, etc.)", "roster": updated, "snapshot": snapshot}
+
+
+@app.post("/api/roster/load-bmsd")
+async def load_bmsd_roster():
+    updated = store.load_bmsd_roster()
+    snapshot = store.get_match_snapshot()
+    await manager.broadcast_snapshot(snapshot)
+    return {"status": "ok", "message": "BMSD 16-team pro testing roster loaded", "roster": updated, "snapshot": snapshot}
 
 
 @app.post("/api/roster/sync-teammanager")

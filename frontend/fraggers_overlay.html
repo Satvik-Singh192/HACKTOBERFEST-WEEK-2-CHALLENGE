@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGMI Overlay – Top Fraggers & MVP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       BGMI TOURNAMENT DEDICATED TOP FRAGGERS & MVP OVERLAY
+       Dark Military / Tactical Esports Broadcast Chassis (100% Opaque)
+       ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: transparent;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 24px;
+    }
+
+    /* Outer Wrapper with Smooth Fade In / Out */
+    #fragger-wrap {
+      width: 290px;
+      background: #0E121A;
+      border: 1.5px solid #1E2738;
+      border-radius: 6px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #fragger-wrap.hidden {
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .hdr {
+      background: #0A0C10;
+      border-bottom: 2px solid #F97316;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hdr-brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .hdr-bar {
+      width: 3.5px;
+      height: 15px;
+      background: #F97316;
+      border-radius: 2px;
+    }
+
+    .hdr-title {
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #FFFFFF;
+    }
+
+    .hdr-match {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      color: #94A3B8;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #EF4444;
+      animation: pulse-dot 1.4s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.25); }
+    }
+
+    /* ── Subheader Column Labels (Top 5 mode) ───────────────── */
+    .col-labels {
+      display: grid;
+      grid-template-columns: 28px 1fr 60px 42px;
+      padding: 4px 10px;
+      background: #111622;
+      border-bottom: 1px solid #1E2738;
+      font-size: 8.5px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #64748B;
+    }
+
+    /* ── Fragger List Rows ──────────────────────────────────── */
+    .fragger-rows {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .f-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 60px 42px;
+      align-items: center;
+      padding: 6px 10px;
+      border-bottom: 1px solid #141B27;
+      background: #0E121A;
+      transition: background-color 0.2s ease;
+    }
+
+    .f-row:last-child {
+      border-bottom: none;
+    }
+
+    .f-row.rank-1 {
+      background: #161A26;
+      border-left: 3px solid #F59E0B;
+    }
+    .f-row.rank-2 {
+      background: #121724;
+      border-left: 3px solid #38BDF8;
+    }
+    .f-row.rank-3 {
+      background: #131722;
+      border-left: 3px solid #D97706;
+    }
+
+    /* Rank Badge */
+    .f-rank {
+      font-size: 11px;
+      font-weight: 900;
+      color: #64748B;
+      font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .f-row.rank-1 .f-rank { color: #FBBF24; }
+    .f-row.rank-2 .f-rank { color: #7DD3FC; }
+    .f-row.rank-3 .f-rank { color: #F59E0B; }
+
+    /* Player & Team Info */
+    .f-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+      padding-right: 4px;
+    }
+
+    .f-bar {
+      width: 3px;
+      height: 14px;
+      border-radius: 1.5px;
+      flex-shrink: 0;
+    }
+
+    .f-names {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      line-height: 1.15;
+    }
+
+    .f-player {
+      font-size: 11px;
+      font-weight: 800;
+      color: #F1F5F9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+    }
+
+    .f-team {
+      font-size: 8px;
+      font-weight: 700;
+      color: #64748B;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+    }
+
+    /* Status Pill */
+    .f-status {
+      display: flex;
+      justify-content: center;
+    }
+
+    .status-pill {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      padding: 1px 5px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .status-alive {
+      color: #4ADE80;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .status-knocked {
+      color: #60A5FA;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .status-elim {
+      color: #94A3B8;
+      background: rgba(148, 163, 184, 0.1);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      text-decoration: line-through;
+    }
+
+    /* Kills Counter */
+    .f-kills {
+      text-align: right;
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #F97316;
+      font-variant-numeric: tabular-nums;
+    }
+    .f-row.rank-1 .f-kills {
+      color: #FBBF24;
+    }
+
+    /* Flash highlight when kills update */
+    @keyframes row-flash-anim {
+      0%   { background-color: #382715 !important; }
+      100% { background-color: inherit; }
+    }
+    .row-flash {
+      animation: row-flash-anim 0.9s ease;
+    }
+
+    /* ── Mode B: MVP Spotlight Banner ───────────────────────── */
+    .mvp-spotlight {
+      display: none;
+      flex-direction: column;
+      padding: 12px;
+      background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 70%), #0E121A;
+    }
+
+    .mvp-crown-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .mvp-crown-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      color: #F59E0B;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      padding: 2px 7px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+
+    .mvp-player-block {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .mvp-team-bar {
+      width: 4px;
+      height: 34px;
+      border-radius: 2px;
+      background: #F97316;
+      flex-shrink: 0;
+    }
+
+    .mvp-player-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      line-height: 1.15;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mvp-team-name {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .mvp-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mvp-stat-box {
+      background: #0A0C10;
+      border: 1px solid #1E2738;
+      border-radius: 4px;
+      padding: 7px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .mvp-stat-box.primary {
+      border-color: rgba(245, 158, 11, 0.35);
+      background: rgba(245, 158, 11, 0.05);
+    }
+
+    .mvp-stat-val {
+      font-size: 20px;
+      font-weight: 900;
+      color: #FBBF24;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mvp-stat-lbl {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: #64748B;
+      text-transform: uppercase;
+    }
+
+    /* ── Footer Strip ───────────────────────────────────────── */
+    .footer-strip {
+      background: #0A0C10;
+      border-top: 1px solid #1E2738;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 8.5px;
+      font-weight: 700;
+      color: #64748B;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div id="fragger-wrap">
+  <!-- Solid Header -->
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-bar"></div>
+      <span class="hdr-title" id="hdr-title">TOP FRAGGERS</span>
+    </div>
+    <div class="hdr-match">
+      <span class="live-dot" id="live-dot"></span>
+      <span id="match-tag">M1 · LIVE</span>
+    </div>
+  </div>
+
+  <!-- MODE A: Top 5 List Container -->
+  <div id="mode-top5-container">
+    <div class="col-labels">
+      <span>#</span>
+      <span>PLAYER</span>
+      <span style="text-align:center;">STATUS</span>
+      <span style="text-align:right;">KILLS</span>
+    </div>
+
+    <div class="fragger-rows" id="fragger-rows">
+      <!-- Populated dynamically by JS -->
+    </div>
+  </div>
+
+  <!-- MODE B: MVP Spotlight Container -->
+  <div id="mode-mvp-container" class="mvp-spotlight">
+    <div class="mvp-crown-row">
+      <span class="mvp-crown-badge">👑 MATCH MVP</span>
+      <span id="mvp-status-pill" class="status-pill status-alive">ALIVE</span>
+    </div>
+    <div class="mvp-player-block">
+      <div class="mvp-team-bar" id="mvp-team-bar"></div>
+      <div style="min-width:0; overflow:hidden;">
+        <div class="mvp-player-name" id="mvp-player-name">—</div>
+        <div class="mvp-team-name" id="mvp-team-name">—</div>
+      </div>
+    </div>
+    <div class="mvp-stats-grid">
+      <div class="mvp-stat-box primary">
+        <div class="mvp-stat-val" id="mvp-kills-val">0</div>
+        <div class="mvp-stat-lbl">KILLS</div>
+      </div>
+      <div class="mvp-stat-box">
+        <div class="mvp-stat-val" style="color:#60A5FA;" id="mvp-knocks-val">0</div>
+        <div class="mvp-stat-lbl">KNOCKS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-strip">
+    <span id="ftr-left">BGMI TOURNAMENT</span>
+    <span id="ftr-right">OFFICIAL STATS</span>
+  </div>
+</div>
+
+<script>
+  // ── URL Query Overrides ──────────────────────────────────
+  const urlParams  = new URLSearchParams(window.location.search);
+  const forceMode  = urlParams.get('mode');   // 'top5' | 'mvp'
+  const forceShow  = urlParams.get('force') === '1' || urlParams.get('force') === 'true';
+
+  const wrapEl       = document.getElementById('fragger-wrap');
+  const hdrTitleEl   = document.getElementById('hdr-title');
+  const matchTagEl   = document.getElementById('match-tag');
+  const top5Container = document.getElementById('mode-top5-container');
+  const mvpContainer  = document.getElementById('mode-mvp-container');
+  const rowsEl       = document.getElementById('fragger-rows');
+
+  // Track previous kills per player to trigger visual flash animation
+  const previousKills = {};
+
+  // Standard fallback fraggers shown immediately before backend connects
+  const defaultFallbackFraggers = [
+    { rank: 1, player: "TS_HARSH",       team: "TEAM SPIRIT", color: "#F97316", kills: 0, knocks: 0, status: "alive" },
+    { rank: 2, player: "NEMESIS",        team: "NEMESIS",     color: "#EF4444", kills: 0, knocks: 0, status: "alive" },
+    { rank: 3, player: "OGxKRISH",       team: "FLx",         color: "#38BDF8", kills: 0, knocks: 0, status: "alive" },
+    { rank: 4, player: "SANDHU",         team: "SANDHU",      color: "#F59E0B", kills: 0, knocks: 0, status: "alive" },
+    { rank: 5, player: "Devils_Empero",  team: "DEVILS",      color: "#8B5CF6", kills: 0, knocks: 0, status: "alive" },
+  ];
+
+  function renderFraggersOverlay(snapshot) {
+    if (!snapshot) return;
+
+    const overlayCfg = snapshot.overlay_config || {};
+    const matchNum   = snapshot.match_number || 1;
+    const status     = snapshot.status || 'LIVE';
+
+    // 1. Visibility Control
+    const isVisible = forceShow || overlayCfg.fraggers_visible !== false;
+    if (isVisible) {
+      wrapEl.classList.remove('hidden');
+    } else {
+      wrapEl.classList.add('hidden');
+    }
+
+    // 2. Mode Selection (force param overrides remote config)
+    const activeMode = forceMode || overlayCfg.fraggers_mode || 'top5';
+
+    // Update Header
+    matchTagEl.textContent = `M${matchNum} · ${status}`;
+
+    // Get Top Fraggers
+    let fraggers = snapshot.top_fraggers || [];
+    if (!fraggers || fraggers.length === 0) {
+      fraggers = defaultFallbackFraggers;
+    }
+
+    const mvp = snapshot.mvp || fraggers[0] || null;
+
+    if (activeMode === 'mvp') {
+      // ── Render Mode B: MVP Spotlight ─────────────────────
+      hdrTitleEl.textContent = 'MATCH MVP';
+      top5Container.style.display = 'none';
+      mvpContainer.style.display  = 'flex';
+
+      if (mvp) {
+        document.getElementById('mvp-player-name').textContent = mvp.player || '—';
+        document.getElementById('mvp-team-name').textContent   = mvp.team || '—';
+        document.getElementById('mvp-kills-val').textContent   = mvp.kills ?? 0;
+        document.getElementById('mvp-knocks-val').textContent  = mvp.knocks ?? 0;
+
+        const teamBar = document.getElementById('mvp-team-bar');
+        if (teamBar) teamBar.style.background = mvp.color || '#F97316';
+
+        const statusPill = document.getElementById('mvp-status-pill');
+        if (statusPill) {
+          const isElim = mvp.status === 'eliminated';
+          const isKnocked = mvp.status === 'knocked';
+          statusPill.className = `status-pill ${isElim ? 'status-elim' : isKnocked ? 'status-knocked' : 'status-alive'}`;
+          statusPill.textContent = isElim ? 'OUT' : isKnocked ? 'KNOCKED' : 'ALIVE';
+        }
+      }
+    } else {
+      // ── Render Mode A: Top 5 List ────────────────────────
+      hdrTitleEl.textContent = 'TOP FRAGGERS';
+      mvpContainer.style.display  = 'none';
+      top5Container.style.display = 'block';
+
+      let html = '';
+      fraggers.slice(0, 5).forEach((f, idx) => {
+        const rank    = idx + 1;
+        const player  = f.player || '—';
+        const team    = f.team || '—';
+        const color   = f.color || '#F97316';
+        const kills   = f.kills ?? 0;
+        const status  = (f.status || 'alive').toLowerCase();
+        const isElim  = status === 'eliminated';
+        const isKnock = status === 'knocked';
+
+        const isUpdated = previousKills[player] !== undefined && previousKills[player] !== kills;
+        previousKills[player] = kills;
+
+        const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+        const statusBadge = isElim
+          ? '<span class="status-pill status-elim">OUT</span>'
+          : isKnock
+          ? '<span class="status-pill status-knocked">KNK</span>'
+          : '<span class="status-pill status-alive">ALIVE</span>';
+
+        const rankDisplay = rank === 1 ? '👑 1' : `#${rank}`;
+
+        html += `
+          <div class="f-row ${rankClass} ${isUpdated ? 'row-flash' : ''}">
+            <div class="f-rank">${rankDisplay}</div>
+            <div class="f-info">
+              <span class="f-bar" style="background:${color}"></span>
+              <div class="f-names">
+                <span class="f-player">${player}</span>
+                <span class="f-team">${team}</span>
+              </div>
+            </div>
+            <div class="f-status">${statusBadge}</div>
+            <div class="f-kills">${kills}</div>
+          </div>
+        `;
+      });
+
+      rowsEl.innerHTML = html;
+    }
+  }
+
+  // Initial immediate fallback render so OBS is never blank
+  renderFraggersOverlay({
+    status: 'LIVE',
+    match_number: 1,
+    top_fraggers: defaultFallbackFraggers,
+    mvp: defaultFallbackFraggers[0],
+    overlay_config: { fraggers_visible: true, fraggers_mode: forceMode || 'top5' }
+  });
+
+  // ── Bulletproof Dual REST / WebSocket Connectivity ────────
+  const baseUrls = [
+    (location.origin && location.origin.startsWith('http')) ? location.origin : null,
+    'http://127.0.0.1:8000',
+    'http://localhost:8000'
+  ].filter(Boolean);
+
+  async function fetchScoreboardFallback() {
+    for (const base of baseUrls) {
+      try {
+        const res = await fetch(`${base}/scoreboard`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          renderFraggersOverlay(data);
+          return;
+        }
+      } catch (e) {}
+    }
+  }
+
+  let ws = null;
+  function connectWebSocket() {
+    const wsHost = (location.host && !location.host.startsWith('file')) ? location.host : '127.0.0.1:8000';
+    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProto}//${wsHost}/scoreboard`;
+
+    try {
+      ws = new WebSocket(wsUrl);
+      ws.onopen = () => {
+        fetchScoreboardFallback();
+      };
+      ws.onmessage = (event) => {
+        try {
+          const snap = JSON.parse(event.data);
+          renderFraggersOverlay(snap);
+        } catch (e) {}
+      };
+      ws.onclose = () => {
+        setTimeout(connectWebSocket, 2500);
+      };
+      ws.onerror = () => ws.close();
+    } catch (e) {
+      setTimeout(connectWebSocket, 2500);
+    }
+  }
+
+  connectWebSocket();
+  setInterval(fetchScoreboardFallback, 2000);
+</script>
+</body>
+</html>

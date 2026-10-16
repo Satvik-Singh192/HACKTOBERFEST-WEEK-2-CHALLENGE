@@ -21,6 +21,8 @@
       <a class="nav-link active" href="console.html">Console</a>
       <a class="nav-link" href="setup.html">Setup</a>
       <a class="nav-link" href="history.html">History</a>
+      <a class="nav-link" href="overlay.html" target="_blank" title="Points Table Overlay (OBS)">📺 Points Overlay</a>
+      <a class="nav-link" href="fraggers_overlay.html" target="_blank" title="Top Fraggers & MVP Overlay (OBS)">🎖️ Fraggers Overlay</a>
     </nav>
     <div class="topbar-right">
       <span id="match-badge" class="match-status live">LIVE · M1</span>
@@ -42,9 +44,13 @@
       <div class="stat-val" id="s-map">—</div>
       <div class="stat-lbl">Map</div>
     </div>
-    <div class="stat-box" style="border-right:none;">
+    <div class="stat-box">
       <div class="stat-val" id="s-leader">—</div>
       <div class="stat-lbl">Leading Team</div>
+    </div>
+    <div class="stat-box" style="border-right:none;">
+      <div class="stat-val" style="color:var(--amber);" id="s-mvp">—</div>
+      <div class="stat-lbl">Top Fragger (MVP)</div>
     </div>
   </div>
 
@@ -65,6 +71,7 @@
           <div style="width:1px; height:22px; background:var(--border); margin:0 4px;"></div>
           <button class="btn btn-secondary btn-sm" onclick="loadDefaultRoster()" title="Base Tournament Teams (KRAIT, NOVA, ZENITH...)">🏆 Default Teams</button>
           <button class="btn btn-secondary btn-sm" onclick="loadTestingRoster()" title="Video Testing Teams (TS, NEMESIS, FLx...)">🎮 Testing Teams</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadBmsdRoster()" title="BMSD 16 Pro Teams (Testing)" style="border-color:#38BDF8; color:#38BDF8;">⚡ BMSD Teams</button>
           <button class="btn btn-danger btn-sm" onclick="undoKill()">↩ Undo</button>
           <div style="margin-left:auto;">
             <span style="font-size:11px; color:var(--muted);">Last event: <span id="last-event-txt">—</span></span>
@@ -97,8 +104,69 @@
       </div>
     </div>
 
-    <!-- RIGHT: Operator Action Grid -->
+    <!-- RIGHT: Overlay Controls + Top Fraggers + Operator Action Grid -->
     <div style="display:flex; flex-direction:column; gap:12px; overflow:auto;">
+      <!-- Broadcast Overlays Independent Control Card -->
+      <div class="card" style="flex-shrink:0;">
+        <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-weight:700;">📺 Broadcast Overlays</span>
+          <span style="font-size:10px; color:var(--muted); font-weight:600;">INDEPENDENT OBS CHANNELS</span>
+        </div>
+        <div class="card-body" style="padding:10px 12px; display:flex; flex-direction:column; gap:10px;">
+          <!-- Channel 1: Points Table -->
+          <div style="background:#0a0c10; border:1px solid var(--border); border-radius:6px; padding:8px 10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-weight:700; font-size:12px;">📊 Points Table</span>
+                <span id="ov-pts-status" style="font-size:9px; font-weight:800; padding:1px 5px; border-radius:3px; background:rgba(34,197,94,0.15); color:#4ade80;">VISIBLE</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <button class="btn btn-secondary btn-sm" id="btn-toggle-pts" style="padding:2px 8px; font-size:11px;" onclick="toggleOverlay('scoreboard_visible')">👁️ Hide</button>
+                <button class="btn btn-secondary btn-sm" style="padding:2px 6px; font-size:11px;" title="Copy OBS Browser Source URL" onclick="copyObsUrl('overlay.html')">📋 URL</button>
+                <a class="btn btn-secondary btn-sm" style="padding:2px 6px; font-size:11px;" title="Open in browser" href="overlay.html" target="_blank">↗</a>
+              </div>
+            </div>
+            <div style="font-size:10px; color:var(--muted); font-family:var(--font-mono); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
+              overlay.html
+            </div>
+          </div>
+
+          <!-- Channel 2: Top Fraggers / MVP -->
+          <div style="background:#0a0c10; border:1px solid var(--border); border-radius:6px; padding:8px 10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-weight:700; font-size:12px;">🎖️ Top Fraggers</span>
+                <span id="ov-frag-status" style="font-size:9px; font-weight:800; padding:1px 5px; border-radius:3px; background:rgba(34,197,94,0.15); color:#4ade80;">VISIBLE</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <button class="btn btn-secondary btn-sm" id="btn-toggle-frag" style="padding:2px 8px; font-size:11px;" onclick="toggleOverlay('fraggers_visible')">👁️ Hide</button>
+                <button class="btn btn-secondary btn-sm" style="padding:2px 6px; font-size:11px;" title="Copy OBS Browser Source URL" onclick="copyObsUrl('fraggers_overlay.html')">📋 URL</button>
+                <a class="btn btn-secondary btn-sm" style="padding:2px 6px; font-size:11px;" title="Open in browser" href="fraggers_overlay.html" target="_blank">↗</a>
+              </div>
+            </div>
+            <!-- Mode Switcher -->
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:4px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.05);">
+              <span style="font-size:10px; color:var(--muted); font-weight:600;">DISPLAY MODE:</span>
+              <div style="display:flex; gap:4px;">
+                <button class="btn btn-sm" id="btn-mode-top5" style="padding:2px 8px; font-size:10px; font-weight:700; border:1px solid var(--border); background:var(--accent); color:#fff;" onclick="setFraggersMode('top5')">Top 5 List</button>
+                <button class="btn btn-sm" id="btn-mode-mvp" style="padding:2px 8px; font-size:10px; font-weight:700; border:1px solid var(--border); background:transparent; color:var(--muted);" onclick="setFraggersMode('mvp')">MVP Card</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Fraggers Leaderboard -->
+      <div class="card" style="flex-shrink:0;">
+        <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-weight:700;">🎖️ Top Fraggers</span>
+          <span style="font-size:11px; color:var(--muted); font-weight:500;">MVP STANDINGS</span>
+        </div>
+        <div class="card-body" style="padding:8px 12px;" id="fraggers-list">
+          <div style="font-size:12px; color:var(--muted); text-align:center; padding:10px;">No kills registered yet</div>
+        </div>
+      </div>
+
       <div class="card" style="flex:1; min-height:0; overflow:auto;">
         <div class="card-header">
           Operator Actions
@@ -196,6 +264,15 @@
     }
   }
 
+  async function loadBmsdRoster() {
+    if (!confirm('Switch to BMSD 16-team testing roster?')) return;
+    const r = await api('/api/roster/load-bmsd', 'POST');
+    if (r) {
+      toast('⚡ BMSD 16-team pro roster loaded', 'success');
+      refreshConsole();
+    }
+  }
+
   // ── Kill / Knock / Eliminate ─────────────────────────────
   async function sendKill(team, delta) {
     const r = await api('/api/kill', 'POST', { team, delta });
@@ -210,6 +287,94 @@
     if (!confirm(`Eliminate ${team}?`)) return;
     await api('/api/eliminate', 'POST', { team });
     toast(`${team} eliminated`, 'info');
+  }
+
+  // ── Overlay Independent Controls ─────────────────────────
+  let currentOverlayConfig = {
+    scoreboard_visible: true,
+    fraggers_visible: true,
+    fraggers_mode: 'top5'
+  };
+
+  async function toggleOverlay(key) {
+    const newVal = !currentOverlayConfig[key];
+    const r = await api('/api/overlay/config', 'POST', { [key]: newVal });
+    if (r?.status === 'ok') {
+      currentOverlayConfig = r.overlay_config;
+      updateOverlayControlsUI(r.overlay_config);
+      toast(`${key === 'scoreboard_visible' ? 'Points Table' : 'Top Fraggers'} overlay is now ${newVal ? 'VISIBLE' : 'HIDDEN'}`, 'info');
+    }
+  }
+
+  async function setFraggersMode(mode) {
+    const r = await api('/api/overlay/config', 'POST', { fraggers_mode: mode });
+    if (r?.status === 'ok') {
+      currentOverlayConfig = r.overlay_config;
+      updateOverlayControlsUI(r.overlay_config);
+      toast(`Top Fraggers overlay mode: ${mode === 'top5' ? 'Top 5 List' : 'MVP Spotlight'}`, 'success');
+    }
+  }
+
+  function copyObsUrl(filename) {
+    const url = `${activeApiBase}/frontend/${filename}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        toast(`Copied OBS URL: ${url}`, 'success');
+      }).catch(() => prompt('Copy OBS Browser URL:', url));
+    } else {
+      prompt('Copy OBS Browser URL:', url);
+    }
+  }
+
+  function updateOverlayControlsUI(cfg) {
+    if (!cfg) return;
+    currentOverlayConfig = { ...currentOverlayConfig, ...cfg };
+
+    // Points table status
+    const ptsVis = currentOverlayConfig.scoreboard_visible !== false;
+    const ptsStatusEl = document.getElementById('ov-pts-status');
+    const ptsBtn = document.getElementById('btn-toggle-pts');
+    if (ptsStatusEl) {
+      ptsStatusEl.textContent = ptsVis ? 'VISIBLE' : 'HIDDEN';
+      ptsStatusEl.style.color = ptsVis ? '#4ade80' : '#94a3b8';
+      ptsStatusEl.style.background = ptsVis ? 'rgba(34,197,94,0.15)' : 'rgba(148,163,184,0.1)';
+    }
+    if (ptsBtn) {
+      ptsBtn.textContent = ptsVis ? '👁️ Hide' : '👁️ Show';
+      ptsBtn.className = ptsVis ? 'btn btn-secondary btn-sm' : 'btn btn-success btn-sm';
+    }
+
+    // Fraggers status
+    const fragVis = currentOverlayConfig.fraggers_visible !== false;
+    const fragStatusEl = document.getElementById('ov-frag-status');
+    const fragBtn = document.getElementById('btn-toggle-frag');
+    if (fragStatusEl) {
+      fragStatusEl.textContent = fragVis ? 'VISIBLE' : 'HIDDEN';
+      fragStatusEl.style.color = fragVis ? '#4ade80' : '#94a3b8';
+      fragStatusEl.style.background = fragVis ? 'rgba(34,197,94,0.15)' : 'rgba(148,163,184,0.1)';
+    }
+    if (fragBtn) {
+      fragBtn.textContent = fragVis ? '👁️ Hide' : '👁️ Show';
+      fragBtn.className = fragVis ? 'btn btn-secondary btn-sm' : 'btn btn-success btn-sm';
+    }
+
+    // Fraggers mode buttons
+    const mode = currentOverlayConfig.fraggers_mode || 'top5';
+    const btnTop5 = document.getElementById('btn-mode-top5');
+    const btnMvp = document.getElementById('btn-mode-mvp');
+    if (btnTop5 && btnMvp) {
+      if (mode === 'mvp') {
+        btnMvp.style.background = 'var(--accent)';
+        btnMvp.style.color = '#fff';
+        btnTop5.style.background = 'transparent';
+        btnTop5.style.color = 'var(--muted)';
+      } else {
+        btnTop5.style.background = 'var(--accent)';
+        btnTop5.style.color = '#fff';
+        btnMvp.style.background = 'transparent';
+        btnMvp.style.color = 'var(--muted)';
+      }
+    }
   }
 
   // ── Render ───────────────────────────────────────────────
@@ -232,6 +397,57 @@
     document.getElementById('s-teams').textContent  = alive;
     document.getElementById('s-map').textContent    = mapName.split(' ')[0];
     document.getElementById('s-leader').textContent = leader?.team || '—';
+
+    // Update overlay independent controls UI
+    if (snap.overlay_config) {
+      updateOverlayControlsUI(snap.overlay_config);
+    }
+
+    // Top Fragger (MVP) status box
+    const mvp = snap.mvp || (snap.top_fraggers && snap.top_fraggers[0] && snap.top_fraggers[0].kills > 0 ? snap.top_fraggers[0] : null);
+    const mvpEl = document.getElementById('s-mvp');
+    if (mvpEl) {
+      mvpEl.textContent = mvp ? `${mvp.player} (${mvp.kills})` : '—';
+      mvpEl.title = mvp ? `${mvp.player} · ${mvp.team} · ${mvp.kills} Kills` : '';
+    }
+
+    // Top Fraggers Leaderboard list (top 5)
+    const fraggersContainer = document.getElementById('fraggers-list');
+    if (fraggersContainer) {
+      const fraggers = (snap.top_fraggers || []).filter(f => f.kills > 0).slice(0, 5);
+      if (fraggers.length === 0) {
+        fraggersContainer.innerHTML = '<div style="font-size:12px; color:var(--muted); text-align:center; padding:10px;">No kills registered yet</div>';
+      } else {
+        fraggersContainer.innerHTML = fraggers.map((f, i) => {
+          const rank = i + 1;
+          const rankCol = rank === 1 ? 'var(--amber)' : rank === 2 ? '#94a3b8' : rank === 3 ? '#b45309' : 'var(--muted)';
+          const isElim = f.status === 'eliminated';
+          const isKnocked = f.status === 'knocked';
+          const statusBadge = isElim 
+            ? '<span style="font-size:9px; font-weight:700; color:#ef4444; background:rgba(239,68,68,0.15); padding:1px 4px; border-radius:3px;">OUT</span>'
+            : isKnocked
+            ? '<span style="font-size:9px; font-weight:700; color:#3b82f6; background:rgba(59,130,246,0.15); padding:1px 4px; border-radius:3px;">KNOCKED</span>'
+            : '<span style="font-size:9px; font-weight:700; color:#22c55e; background:rgba(34,197,94,0.15); padding:1px 4px; border-radius:3px;">ALIVE</span>';
+
+          return `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:12px;">
+              <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+                <span style="font-weight:800; color:${rankCol}; width:16px; text-align:center; flex-shrink:0;">#${rank}</span>
+                <span style="width:3px; height:16px; background:${f.color || '#f97316'}; border-radius:1px; flex-shrink:0;"></span>
+                <div style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  <span style="font-weight:700; color:var(--text);">${f.player}</span>
+                  <span style="font-size:10px; color:var(--muted); margin-left:4px;">${f.team}</span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:8px;">
+                ${statusBadge}
+                <span style="font-weight:800; font-size:13px; color:var(--accent); min-width:28px; text-align:right;">${f.kills}K</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
 
     // Match badge
     const badge = document.getElementById('match-badge');

@@ -76,6 +76,18 @@ class TeamManager:
                 f"Could not confidently match victim: {event.victim}"
             )
 
+        # If the victim is already ELIMINATED, discard this event entirely.
+        # This prevents lingering kill/knock banners (which stay on screen
+        # for ~3s in BGMI) from being re-processed on subsequent frames.
+        try:
+            victim_player = self.get_player(victim)
+            if victim_player.status == PlayerStatus.ELIMINATED:
+                raise ValueError(
+                    f"Victim '{victim}' is already eliminated — skipping lingering banner frame"
+                )
+        except KeyError:
+            pass  # Player lookup failed; let process_events handle it
+
         attacker = event.attacker
 
         if attacker is not None:
@@ -109,6 +121,10 @@ class TeamManager:
 
         # finish handler
         if Icon.KNOCK not in event.icons:
+            if victim.status == PlayerStatus.ELIMINATED:
+                # Victim is already eliminated; ignore duplicate banner detections to prevent inflated kills
+                return
+
             previous_knocker = self.last_knocked_by.get(event.victim)
 
             # Victim is eliminated regardless of who finished them.
@@ -118,17 +134,27 @@ class TeamManager:
             if event.attacker is not None and event.attacker.casefold() != "playzone":
                 # A known, actual player finished the victim.
                 finisher_team = self.get_team(event.attacker)
-            
-                if finisher_team.name != victim_team.name:
-                    self.get_player(event.attacker).kills += 1
 
-                elif (
+                if (
                     previous_knocker is not None
                     and previous_knocker.casefold() != "playzone"
                 ):
                     knocker_team = self.get_team(previous_knocker)
-                    if knocker_team.name != victim_team.name:
-                        self.get_player(previous_knocker).kills += 1
+                    # If person A knocked enemy B, and person C of same team as A finishes enemy B,
+                    # the kill should go to player A only.
+                    if knocker_team.name == finisher_team.name:
+                        if knocker_team.name != victim_team.name:
+                            self.get_player(previous_knocker).kills += 1
+                    else:
+                        # Third-party steal or finisher from different team
+                        if finisher_team.name != victim_team.name:
+                            self.get_player(event.attacker).kills += 1
+                        elif knocker_team.name != victim_team.name:
+                            self.get_player(previous_knocker).kills += 1
+                else:
+                    # Direct elimination without prior knock
+                    if finisher_team.name != victim_team.name:
+                        self.get_player(event.attacker).kills += 1
 
             elif previous_knocker is not None:
                 if previous_knocker.casefold() != "playzone":
@@ -410,6 +436,133 @@ class TeamManager:
                 Player(name="ANURAG"),
             ],
         ))
+
+        self.initialize_player_matcher()
+
+    def load_bmsd_teams(self) -> None:
+        """Register the 16 BMSD professional teams and players for testing."""
+        self.teams.clear()
+        self.player_team_map.clear()
+        self.alias_to_canonical.clear()
+
+        bmsd_data = {
+            "NINZ": [
+                "NINZ Fierce",
+                "NINZ Apollo",
+                "NINZ Auxin",
+                "NINZ Shadow7",
+                "NINZ javin",
+            ],
+            "IQOO 8BIT": [
+                "IQOO 8BIT Sarang",
+                "IQOO 8BIT Juicy",
+                "IQOO 8BIT Shubh",
+                "IQOO 8BIT skipzz",
+                "IQOO 8BIT Shorty",
+            ],
+            "IQOO RNTX": [
+                "IQOO RNTX Tracegod",
+                "IQOO RNTX Pain",
+                "IQOO RNTX NinjaJod",
+                "IQOO RNTX ProToN",
+                "IQOO RNTX Sukuna",
+            ],
+            "BLEG": [
+                "BLEG Areeb",
+                "BLEG EGGY",
+                "BLEG Lobster",
+                "BLEG Ralphie",
+                "BLEG FanOP",
+            ],
+            "TAG": [
+                "TAG Jelly",
+                "TAG KioLmao",
+                "TAG JONATHAN",
+                "TAG Hydro",
+                "TAG Harsh",
+            ],
+            "NBE": [
+                "NBE Aadi",
+                "NBE Arjun",
+                "NBE KRATOS",
+                "NBE Phoenix",
+                "NBE KnowMe",
+            ],
+            "IQOO SOUL": [
+                "IQOO SOUL Goblin",
+                "IQOO SOUL NakuL",
+                "IQOO SOUL LEGIT",
+                "IQOO SOUL Thunder",
+                "IQOO SOUL Jokerr",
+            ],
+            "K9": [
+                "K9 Saumraj",
+                "K9 SnowJOD",
+                "K9 Smoker46",
+                "K9 Taurus",
+                "K9 Stranger",
+            ],
+            "V1BA": [
+                "V1BA Punkk",
+                "V1BA Omega",
+                "V1BA Termi",
+                "V1BA Shayaan",
+                "V1BA Achuk",
+            ],
+            "GODL": [
+                "GODL Manya",
+                "GODL ADMINO",
+                "GODL Spower",
+                "GODL Godz",
+                "GODL Saumay",
+            ],
+            "OR": [
+                "OR Omega",
+                "OR NinjaBoi",
+                "OR Slug",
+                "OR Knight",
+            ],
+            "GDR": [
+                "GDR Neyo",
+                "GDR AquaNox",
+                "GDR DeltaPG",
+                "GDR Justin",
+            ],
+            "MYTH": [
+                "MYTH Lucifer",
+                "MYTH Daddy",
+                "MYTH Detrox",
+                "MYTH Harshil",
+                "MYTH Aryton",
+            ],
+            "WELT": [
+                "WELT DragonOP",
+                "WELT PokoWNL",
+                "WELT Rico",
+                "WELT SHYAM",
+                "WELT GokulWNL",
+            ],
+            "GEN": [
+                "GEN HunterZ",
+                "GEN Zap",
+                "GEN GravityJOD",
+                "GEN FurY",
+                "GEN VipeR",
+            ],
+            "WF": [
+                "WF Kanha",
+                "WF SENSEI",
+                "WF Goten",
+                "WF SPRAYGOD",
+                "WF Sam999",
+            ],
+        }
+
+        for tname, pnames in bmsd_data.items():
+            self.add_team(Team(
+                name=tname,
+                players=[Player(name=p) for p in pnames]
+            ))
 
         self.initialize_player_matcher()
 
