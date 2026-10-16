@@ -2,19 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>BGMI Live Points Table – Opaque Overlay</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800&family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
        BGMI LIVE SCOREBOARD — 100% OPAQUE OBS OVERLAY
-       Designed to place over in-game BGMI spectator sections.
-       100% Solid background: ZERO transparency so HUD is fully covered.
+       Scoreboard chassis is 100% SOLID OPAQUE (hides in-game HUD).
+       Everything outside the chassis is 100% ALPHA TRANSPARENT.
        ============================================================ */
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root, html, body {
+    :root {
+      color-scheme: normal;
+      background: transparent !important;
+      background-color: transparent !important;
+      background-color: rgba(0, 0, 0, 0) !important;
+    }
+
+    html, body {
       background: transparent !important;
       background-color: transparent !important;
       background-color: rgba(0, 0, 0, 0) !important;
