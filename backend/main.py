@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
     manager.bind_event_loop(asyncio.get_running_loop())
     print("BGMI Live Scoreboard backend started with persistent storage")
-    print("Opening browser → http://127.0.0.1:8000/frontend/setup.html")
+    print("Opening browser -> http://127.0.0.1:8000/frontend/setup.html")
 
     # Open the browser after a short delay so the server is ready
     def _open_browser():
@@ -269,7 +269,34 @@ async def reset_roster_defaults():
     updated = store.reset_roster_defaults()
     snapshot = store.get_match_snapshot()
     await manager.broadcast_snapshot(snapshot)
-    return {"status": "ok", "roster": updated}
+    return {"status": "ok", "roster": updated, "snapshot": snapshot}
+
+
+@app.post("/api/roster/load-testing")
+async def load_testing_roster():
+    updated = store.load_testing_roster()
+    snapshot = store.get_match_snapshot()
+    await manager.broadcast_snapshot(snapshot)
+    return {"status": "ok", "message": "Video testing roster loaded (TS, NEMESIS, FLx, TEAM 9)", "roster": updated, "snapshot": snapshot}
+
+
+@app.post("/api/roster/load-default")
+async def load_default_roster():
+    updated = store.load_default_roster()
+    snapshot = store.get_match_snapshot()
+    await manager.broadcast_snapshot(snapshot)
+    return {"status": "ok", "message": "Default tournament roster loaded (KRAIT, NOVA, ZENITH, etc.)", "roster": updated, "snapshot": snapshot}
+
+
+@app.post("/api/roster/sync-teammanager")
+async def sync_teammanager_roster():
+    from backend.teamManager import TeamManager
+    tm = TeamManager()
+    tm.load_video_testing_teams()
+    updated = store.sync_from_team_manager(tm)
+    snapshot = store.get_match_snapshot()
+    await manager.broadcast_snapshot(snapshot)
+    return {"status": "ok", "message": "Synced teams directly from TeamManager", "roster": updated, "snapshot": snapshot}
 
 
 @app.get("/api/roster/ocr-lookup")

@@ -23,6 +23,10 @@ class EventPipeline:
             from backend.state import store
             from backend.teams import Team, Player
 
+            self.team_manager.teams.clear()
+            self.team_manager.player_team_map.clear()
+            self.team_manager.alias_to_canonical.clear()
+
             for entry in store.roster:
                 team_name = entry.get("team", "")
                 players = [

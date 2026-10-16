@@ -54,13 +54,15 @@
     <div style="display:flex; flex-direction:column; gap:12px;">
 
       <!-- Section header -->
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between" style="flex-wrap:wrap; gap:8px;">
         <div>
           <div style="font-size:16px; font-weight:700; color:var(--text);">Team Roster</div>
-          <div style="font-size:12px; color:var(--muted); margin-top:2px;">Add up to 16 teams. Each player can have OCR aliases.</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">Select base tournament roster or switch to video testing teams (TS, NEMESIS, FLx).</div>
         </div>
-        <div class="flex gap-8">
-          <button class="btn btn-secondary btn-sm" onclick="resetDefaults()">Reset Defaults</button>
+        <div class="flex gap-8" style="flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="loadDefaultRoster()" title="Base Tournament Teams (KRAIT, NOVA, ZENITH...)">🏆 Default Teams</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadTestingRoster()" title="Teams matching test video (TS, NEMESIS, FLx...)">🎮 Video Testing Teams</button>
+          <button class="btn btn-secondary btn-sm" onclick="syncTeamManager()" title="Sync directly from TeamManager code">🔄 TeamManager Sync</button>
           <button class="btn btn-primary btn-sm" onclick="openModal()">+ Add Team</button>
         </div>
       </div>
@@ -380,10 +382,33 @@
   }
 
   async function resetDefaults() {
-    if (!confirm('Reset roster to the default 8 teams?')) return;
-    await api('/api/roster/reset-default', 'POST');
-    toast('Roster reset to defaults', 'info');
-    loadRoster();
+    return loadDefaultRoster();
+  }
+
+  async function loadDefaultRoster() {
+    if (!confirm('Load standard tournament teams (KRAIT, NOVA, ZENITH, VORTEX, etc.)?')) return;
+    const r = await api('/api/roster/load-default', 'POST');
+    if (r) {
+      toast('Default tournament roster loaded (KRAIT, NOVA, ZENITH...)', 'success');
+      loadRoster();
+    }
+  }
+
+  async function loadTestingRoster() {
+    if (!confirm('Load video testing teams (TS, NEMESIS, FLx, TEAM 9)?')) return;
+    const r = await api('/api/roster/load-testing', 'POST');
+    if (r) {
+      toast('Video testing roster loaded (TS, NEMESIS, FLx, TEAM 9)', 'success');
+      loadRoster();
+    }
+  }
+
+  async function syncTeamManager() {
+    const r = await api('/api/roster/sync-teammanager', 'POST');
+    if (r) {
+      toast('Synced teams directly from TeamManager', 'success');
+      loadRoster();
+    }
   }
 
   // ── Color picker sync ─────────────────────────────────

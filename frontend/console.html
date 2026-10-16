@@ -67,7 +67,9 @@
           <button class="btn btn-success btn-sm" onclick="endMatch()">✓ End Match</button>
           <button class="btn btn-secondary btn-sm" onclick="newMatch()">+ New Match</button>
           <div style="width:1px; height:22px; background:var(--border); margin:0 4px;"></div>
-          <button class="btn btn-danger btn-sm" onclick="undoKill()">↩ Undo Kill</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadDefaultRoster()" title="Base Tournament Teams (KRAIT, NOVA, ZENITH...)">🏆 Default Teams</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadTestingRoster()" title="Video Testing Teams (TS, NEMESIS, FLx...)">🎮 Testing Teams</button>
+          <button class="btn btn-danger btn-sm" onclick="undoKill()">↩ Undo</button>
           <div style="margin-left:auto;">
             <span style="font-size:11px; color:var(--muted);">Last event: <span id="last-event-txt">—</span></span>
           </div>
@@ -178,6 +180,24 @@
     const r = await api('/api/undo', 'POST');
     if (r?.status === 'ok') toast('↩ Last kill undone', 'info');
     else toast('Nothing to undo', 'error');
+  }
+
+  async function loadTestingRoster() {
+    if (!confirm('Switch to video testing roster (TS, NEMESIS, FLx, TEAM 9)?')) return;
+    const r = await api('/api/roster/load-testing', 'POST');
+    if (r) {
+      toast('🎮 Video testing teams loaded (TS, NEMESIS, FLx, TEAM 9)', 'success');
+      refreshConsole();
+    }
+  }
+
+  async function loadDefaultRoster() {
+    if (!confirm('Switch to default tournament roster (KRAIT, NOVA, ZENITH, VORTEX...)?')) return;
+    const r = await api('/api/roster/load-default', 'POST');
+    if (r) {
+      toast('🏆 Default tournament teams loaded (KRAIT, NOVA, ZENITH...)', 'success');
+      refreshConsole();
+    }
   }
 
   // ── Kill / Knock / Eliminate ─────────────────────────────

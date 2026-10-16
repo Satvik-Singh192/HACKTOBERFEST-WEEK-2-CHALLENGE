@@ -122,6 +122,90 @@ DEFAULT_ROSTER: List[Dict[str, Any]] = [
     },
 ]
 
+# Testing Roster matching the video and TeamManager definitions
+TESTING_VIDEO_ROSTER: List[Dict[str, Any]] = [
+    {
+        "team": "TS",
+        "color": "#38BDF8",
+        "players": [
+            {"name": "TS_FRAGGER", "aliases": ["TS-FRAGGER", "TS卍FRAGGER", "TS FRAGGER", "TSPEFRAGGER", "TSALFRAGGER", "FRAGGER"]},
+            {"name": "SNIDE", "aliases": ["SNIDE.", "· SNIDE ·", "- SNIDE -", "SNIDE"]},
+            {"name": "TS_HARSH", "aliases": ["TS-HARSH", "TS卍HARSH", "TS HARSH", "TS HAR1H", "HARSH"]},
+            {"name": "TS_PRESENCE", "aliases": ["TS-PRESENCE", "TS卍PRESENCE", "TS PRESENCE", "PRESENCE"]},
+        ],
+    },
+    {
+        "team": "NEMESIS",
+        "color": "#F43F5E",
+        "players": [
+            {"name": "NEMESIS", "aliases": ["NÈMÈSîS", "NEMES IS", "NEMESIS1"]},
+            {"name": "YADAV", "aliases": ["Y A D A V", "YADAV_", "「 YADAV 」"]},
+            {"name": "UNKN0WN", "aliases": ["UNKNOWN", "bUnkn0wn", "Unknown", "OUNKNDWN", "BUNKNWN"]},
+            {"name": "ALPHA_BEAST", "aliases": ["ALPHA-Beast", "ALPHA文Beast", "ALPHABeast", "BEASTJOKERRR"]},
+        ],
+    },
+    {
+        "team": "FLx",
+        "color": "#A855F7",
+        "players": [
+            {"name": "FLx_ELNdix", "aliases": ["FLx ELNdix", "ELNdix"]},
+            {"name": "FLx_KRISH", "aliases": ["FLx KRISH", "KRISH"]},
+            {"name": "SANDHU", "aliases": ["SANDHU", "SANDHU_OP"]},
+            {"name": "MPX_KING", "aliases": ["MPXKINGOP", "TMPXKINGOP"]},
+        ],
+    },
+    {
+        "team": "TEAM 9",
+        "color": "#EAB308",
+        "players": [
+            {"name": "JAYKISHAN", "aliases": ["जयंतार", "JAY", "JAYKISHAN"]},
+            {"name": "KALASHI", "aliases": ["『KALASHI』", "KALASHI"]},
+            {"name": "VAISHNAV", "aliases": ["IMxVAISHNAV", "VAISHNAV"]},
+            {"name": "OP_PLAYER", "aliases": ["OP_PLAYER", "PLAYER9"]},
+        ],
+    },
+    {
+        "team": "KRAIT",
+        "color": "#FF7A45",
+        "players": [
+            {"name": "Ravi", "aliases": ["Rav1", "R4VI"]},
+            {"name": "Kabir", "aliases": ["K4bir"]},
+            {"name": "Arjun", "aliases": ["Arj"]},
+            {"name": "Yash", "aliases": []},
+        ],
+    },
+    {
+        "team": "NOVA",
+        "color": "#4DA3FF",
+        "players": [
+            {"name": "Aarav", "aliases": ["Aar4v", "NOVA_A"]},
+            {"name": "Rahul", "aliases": ["Rah"]},
+            {"name": "Vicky", "aliases": ["Vic"]},
+            {"name": "Punit", "aliases": []},
+        ],
+    },
+    {
+        "team": "ZENITH",
+        "color": "#A78BFA",
+        "players": [
+            {"name": "Sam", "aliases": ["5am", "Z3NlTH_Sam"]},
+            {"name": "Rex", "aliases": ["R3x"]},
+            {"name": "Max", "aliases": ["M4x"]},
+            {"name": "Leo", "aliases": []},
+        ],
+    },
+    {
+        "team": "VORTEX",
+        "color": "#2DD4BF",
+        "players": [
+            {"name": "Isha", "aliases": ["lsha", "V0RT3X_lsha"]},
+            {"name": "Ron", "aliases": []},
+            {"name": "Karan", "aliases": []},
+            {"name": "Neil", "aliases": []},
+        ],
+    },
+]
+
 
 def _ensure_data_dir() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -457,6 +541,52 @@ class StateStore:
         self.roster = deepcopy(DEFAULT_ROSTER)
         self._save_roster()
         self._sync_match_with_roster()
+        return self.roster
+
+    def load_testing_roster(self) -> List[Dict[str, Any]]:
+        """Switch to video testing roster (TS, NEMESIS, FLx, TEAM 9)."""
+        self.roster = deepcopy(TESTING_VIDEO_ROSTER)
+        self._save_roster()
+        self._sync_match_with_roster()
+        return self.roster
+
+    def load_default_roster(self) -> List[Dict[str, Any]]:
+        """Switch to standard tournament roster (KRAIT, NOVA, ZENITH, etc.)."""
+        self.roster = deepcopy(DEFAULT_ROSTER)
+        self._save_roster()
+        self._sync_match_with_roster()
+        return self.roster
+
+    def sync_from_team_manager(self, team_manager: Any = None) -> List[Dict[str, Any]]:
+        """Extract teams and players directly from a TeamManager instance."""
+        if team_manager is None:
+            try:
+                from backend.teamManager import TeamManager
+                team_manager = TeamManager()
+                team_manager.load_video_testing_teams()
+            except Exception:
+                return self.roster
+
+        new_roster = []
+        default_colors = ["#38BDF8", "#F43F5E", "#A855F7", "#EAB308", "#FF7A45", "#4DA3FF", "#A78BFA", "#2DD4BF"]
+        for idx, (tname, team_obj) in enumerate(team_manager.teams.items()):
+            color = default_colors[idx % len(default_colors)]
+            players = []
+            for p in getattr(team_obj, "players", []):
+                players.append({
+                    "name": p.name,
+                    "aliases": getattr(p, "aliases", [])
+                })
+            new_roster.append({
+                "team": tname.upper(),
+                "color": color,
+                "players": players
+            })
+
+        if new_roster:
+            self.roster = new_roster
+            self._save_roster()
+            self._sync_match_with_roster()
         return self.roster
 
     def _sync_match_with_roster(self) -> None:

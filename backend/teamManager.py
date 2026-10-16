@@ -210,6 +210,54 @@ class TeamManager:
         if is_eliminated:
             self.awardPlacementPoints(team)
 
+    def load_video_testing_teams(self) -> None:
+        """Register the exact teams and players present in the testing video."""
+        self.teams.clear()
+        self.player_team_map.clear()
+        self.alias_to_canonical.clear()
+
+        self.add_team(Team(
+            name="TS",
+            players=[
+                Player(name="TS_FRAGGER", aliases=["TS-FRAGGER", "TS卍FRAGGER", "TS FRAGGER", "TSPEFRAGGER", "TSALFRAGGER", "FRAGGER"]),
+                Player(name="SNIDE", aliases=["SNIDE.", "· SNIDE ·", "- SNIDE -", "SNIDE"]),
+                Player(name="TS_HARSH", aliases=["TS-HARSH", "TS卍HARSH", "TS HARSH", "TS HAR1H", "HARSH"]),
+                Player(name="TS_PRESENCE", aliases=["TS-PRESENCE", "TS卍PRESENCE", "TS PRESENCE", "PRESENCE"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="NEMESIS",
+            players=[
+                Player(name="NEMESIS", aliases=["NÈMÈSîS", "NEMES IS", "NEMESIS1"]),
+                Player(name="YADAV", aliases=["Y A D A V", "YADAV_", "「 YADAV 」"]),
+                Player(name="UNKN0WN", aliases=["UNKNOWN", "bUnkn0wn", "Unknown", "OUNKNDWN", "BUNKNWN"]),
+                Player(name="ALPHA_BEAST", aliases=["ALPHA-Beast", "ALPHA文Beast", "ALPHABeast", "BEASTJOKERRR"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="FLx",
+            players=[
+                Player(name="FLx_ELNdix", aliases=["FLx ELNdix", "ELNdix"]),
+                Player(name="FLx_KRISH", aliases=["FLx KRISH", "KRISH"]),
+                Player(name="SANDHU", aliases=["SANDHU", "SANDHU_OP"]),
+                Player(name="MPX_KING", aliases=["MPXKINGOP", "TMPXKINGOP"]),
+            ],
+        ))
+
+        self.add_team(Team(
+            name="TEAM 9",
+            players=[
+                Player(name="JAYKISHAN", aliases=["जयंतार", "JAY", "JAYKISHAN"]),
+                Player(name="KALASHI", aliases=["『KALASHI』", "KALASHI"]),
+                Player(name="VAISHNAV", aliases=["IMxVAISHNAV", "VAISHNAV"]),
+                Player(name="OP_PLAYER", aliases=["OP_PLAYER", "PLAYER9"]),
+            ],
+        ))
+
+        self.initialize_player_matcher()
+
 if __name__ == "__main__":
     manager = TeamManager()
 
